@@ -10,9 +10,9 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /10x-new — Rozpocznij Nową Zmianę
+# /10x-new — Rozpocznij nową zmianę
 
-Uruchom nowy folder zmian w `context/changes/<change-id>/`. Tworzy mały plik tożsamości (`change.md`) i wskazuje użytkownikowi następną umiejętność.
+Zainicjuj nowy folder zmiany w `context/changes/<change-id>/`. Tworzy mały plik tożsamości (`change.md`) i wskazuje użytkownikowi następną umiejętność.
 
 „Zmiana” to pojedyncza jednostka pracy od początku do końca — badania, planowanie, implementacja i przegląd, wszystko to znajduje się w jednym folderze oznaczonym `<change-id>`.
 
@@ -25,17 +25,17 @@ Po wywołaniu tego polecenia:
    - Jeśli NIE podano argumentu, odpowiedz następującą wiadomością i **ZATRZYMAJ**:
 
 ```
-Utworzę nowy folder zmian. Podaj change-id (slug w kebab-case):
+Utworzę nowy folder zmiany. Podaj change-id (slug w formacie kebab-case):
 
 Przykłady:
   /10x-new context-dir-restructure
   /10x-new oauth-login add Google sign-in so users skip the email-password step
   /10x-new @context/changes/oauth-login/
 
-Pierwszy token staje się change-id. Wszystko, co po nim następuje, to swobodny zamiar — używany do napisania bogatszego tytułu i wybrania sugestii następnego kroku. Akceptowane są odwołania w stylu ścieżki (z wiodącym znakiem `@` lub bez); ostatni segment ścieżki jest używany jako change-id.
+Pierwszy token staje się change-id. Wszystko po nim to swobodny zamiar — używany do napisania bogatszego tytułu i wyboru sugestii następnego kroku. Akceptowane są odwołania w stylu ścieżki (z wiodącym znakiem `@` lub bez); ostatni segment ścieżki jest używany jako change-id.
 
 Change-id musi być:
-- w kebab-case (małe litery, cyfry, myślniki; bez wiodącego/końcowego myślnika, bez podwójnych myślników)
+- w formacie kebab-case (małe litery, cyfry, myślniki; bez wiodącego/końcowego myślnika, bez podwójnych myślników)
 - unikalny w `context/changes/` i `context/archive/`
 ```
 
@@ -50,7 +50,7 @@ Podziel surowy ciąg argumentów na pierwszym ciągu białych znaków:
   2. Usuń końcowy `/`, jeśli występuje.
   3. Jeśli wynik zawiera `/`, weź ostatni niepusty segment ścieżki (`context/changes/feature-x` → `feature-x`).
   4. Wynikiem jest `<change-id>`.
-- **Wszystko po pierwszym tokenie** = swobodny zamiar. Może być pusty. Może to być zdanie lub akapit. **Nie** traktuj tego jako dosłownego tytułu do wstawienia w całości.
+- **Wszystko po pierwszym tokenie** = swobodny zamiar. Może być pusty. Może być zdaniem lub akapitem. **Nie** traktuj go jako dosłownego tytułu do wstawienia w całości.
 
 Przykłady:
 
@@ -78,8 +78,8 @@ Przed utworzeniem czegokolwiek:
 
 1. Utwórz katalog `context/changes/<change-id>/`.
 2. Wyprowadź `<title>`:
-   - Jeśli ciąg zamiaru jest pusty, humanizuj change-id: zastąp myślniki spacjami i napisz pierwszą literę wielką (np. `multi-course-access` → `Multi course access`).
-   - Jeśli ciąg zamiaru nie jest pusty, napisz zwięzły, czytelny dla człowieka tytuł (≤ 80 znaków, wielkość liter w zdaniu, bez kropki na końcu), który oddaje istotę zmiany. Zamiar jest *wskazówką*, a nie dosłownym tekstem — możesz go przeformułować. Nie wrzucaj akapitu do tytułu.
+   - Jeśli ciąg zamiaru jest pusty, zhumanizuj change-id: zastąp myślniki spacjami i napisz pierwszą literę wielką (np. `multi-course-access` → `Multi course access`).
+   - Jeśli ciąg zamiaru nie jest pusty, napisz zwięzły, czytelny dla człowieka tytuł (≤ 80 znaków, wielkość liter zdania, bez kropki na końcu), który oddaje istotę zmiany. Zamiar jest *wskazówką*, a nie dosłownym tekstem — możesz go przeformułować. Nie wstawiaj całego akapitu do tytułu.
 3. Wyprowadź treść `## Notes`:
    - Jeśli ciąg zamiaru jest pusty, wyemituj komentarz z podpowiedzią: `<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->`
    - Jeśli ciąg zamiaru nie jest pusty, wstaw go dosłownie jako treść Notatek — słowa użytkownika są zalążkiem. W takim przypadku nie emituj również komentarza z podpowiedzią (użytkownik pokazał, że wie, do czego służą Notatki).
@@ -108,7 +108,7 @@ Zobacz `reference/change-md.md` dla pełnego odniesienia do schematu (dozwolone 
 
 Po pomyślnym utworzeniu, wydrukuj monit o następny krok i skopiuj sugerowane polecenie do schowka.
 
-Domyślnym następnym krokiem jest `/10x-plan <change-id>` — większość zmian przechodzi bezpośrednio do planowania. Pozostałe dwie umiejętności są sytuacyjne: `/10x-research`, gdy przeanalizowany zamiar (lub otaczająca tura) sugeruje, że zmiana wymaga znaczącej eksploracji bazy kodu, zanim będzie można napisać plan, oraz `/10x-frame`, gdy zamiar sygnalizuje, że ramy są podejrzane — albo w kształcie błędu („napraw”, „błąd”, „zepsuty”, „dlaczego jest”, „przyczyna źródłowa”, „regresja”, „samodiagnozowane rozwiązanie”), albo w kształcie zakresu/projektu („czy w ogóle powinniśmy”, „czy to jest właściwe”, „co tak naprawdę jest zepsute”, „przemyśl”, „zakwestionuj założenie”). Wybierz opcję sytuacyjną tylko wtedy, gdy sygnał jest wyraźny; w przeciwnym razie domyślnie użyj `/10x-plan`.
+Domyślnym następnym krokiem jest `/10x-plan <change-id>` — większość zmian przechodzi bezpośrednio do planowania. Dwie pozostałe umiejętności są sytuacyjne: `/10x-research`, gdy przeanalizowany zamiar (lub otaczająca tura) sugeruje, że zmiana wymaga znaczącej eksploracji bazy kodu, zanim będzie można napisać plan, oraz `/10x-frame`, gdy zamiar sygnalizuje, że ramy są podejrzane — albo w kształcie błędu („napraw”, „błąd”, „zepsuty”, „dlaczego jest”, „przyczyna źródłowa”, „regresja”, „samodiagnozowane rozwiązanie”), albo w kształcie zakresu/projektu („czy w ogóle powinniśmy”, „czy to jest właściwe”, „co tak naprawdę jest zepsute”, „przemyśl”, „zakwestionuj założenie”). Wybierz opcję sytuacyjną tylko wtedy, gdy sygnał jest wyraźny; w przeciwnym razie domyślnie użyj `/10x-plan`.
 
 ```bash
 NEXT_CMD="/10x-plan <change-id>"   # default; see above for when to switch to /10x-research or /10x-frame
@@ -130,7 +130,7 @@ Następny krok:
 
 Inne opcje:
   /10x-research <change-id>   — najpierw zbadaj bazę kodu (gdy planowanie wymaga ugruntowania)
-  /10x-frame <change-id>      — najpierw zakwestionuj ramy (gdy objaw i proponowana poprawka są podane jako jedno, lub gdy nie jest jasne, jaki jest właściwy zakres do zaplanowania)
+  /10x-frame <change-id>      — najpierw zakwestionuj ramy (gdy objaw i proponowana poprawka są podane jako jedno, lub gdy niejasny jest właściwy zakres do zaplanowania)
 ```
 
 Jeśli żadne narzędzie do schowka nie jest dostępne (`pbcopy`, `clip.exe`, `xclip`, `Set-Clipboard`), pomiń adnotację `(✓ skopiowano do schowka)`, ale nadal wydrukuj sugestię.
@@ -140,4 +140,4 @@ Jeśli żadne narzędzie do schowka nie jest dostępne (`pbcopy`, `clip.exe`, `x
 - Nie zapisuje `frame.md`, `research.md`, `plan.md` ani żadnych innych artefaktów — pochodzą one z odpowiednich umiejętności.
 - Nie zapisuje do żadnego pliku stanu; sekcja `## Progress` w `plan.md` jest jedynym źródłem prawdy o stanie wykonania.
 - Nie wymusza przejść statusu — `change.md` jest tylko do zapisu.
-- Nie tworzy katalogu nadrzędnego `context/changes/`; jeśli go brakuje, repozytorium nie jest uruchomione dla tej struktury i użytkownik powinien najpierw to rozwiązać.
+- Nie tworzy katalogu nadrzędnego `context/changes/`; jeśli go brakuje, repozytorium nie jest zainicjowane dla tej struktury i użytkownik powinien najpierw to rozwiązać.
