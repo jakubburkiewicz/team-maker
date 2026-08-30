@@ -438,25 +438,25 @@ bo `Competency` jest typem związanym.
 
 #### Automatyczne
 
-- [x] 2.1 Sprawdzanie typów i linting przechodzą: `npx astro sync && npm run lint`
-- [x] 2.2 Build przechodzi: `npm run build`
-- [x] 2.3 `npm test` nadal przechodzi
-- [x] 2.4 `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca dopasowań
+- [x] 2.1 Sprawdzanie typów i linting przechodzą: `npx astro sync && npm run lint` — 4baeb5c
+- [x] 2.2 Build przechodzi: `npm run build` — 4baeb5c
+- [x] 2.3 `npm test` nadal przechodzi — 4baeb5c
+- [x] 2.4 `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca dopasowań — 4baeb5c
 
 #### Ręczne
 
-- [x] 2.5 Sygnatura `evaluateTeam` pokrywa trzy wyjścia z `## Business Logic` plus naruszenia limitów
+- [x] 2.5 Sygnatura `evaluateTeam` pokrywa trzy wyjścia z `## Business Logic` plus naruszenia limitów — 4baeb5c
 
 ### Faza 3: Zestaw weryfikacyjny reguły
 
 #### Automatyczne
 
-- [ ] 3.1 `npm test` przechodzi ze wszystkimi przypadkami ze `## Strategia testowania`
-- [ ] 3.2 Linting przechodzi: `npm run lint`
-- [ ] 3.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 3.1 `npm test` przechodzi ze wszystkimi przypadkami ze `## Strategia testowania`
+- [x] 3.2 Linting przechodzi: `npm run lint`
+- [x] 3.3 Build przechodzi: `npx astro sync && npm run build`
 
 #### Ręczne
 
-- [ ] 3.4 Mutacja kontrolna progu (2 → 1) czerwieni zestaw; zmiana cofnięta
-- [ ] 3.5 Mutacja kontrolna limitu składu (6 → 7) czerwieni zestaw; zmiana cofnięta
-- [ ] 3.6 Przebieg CI na PR jest zielony i pokazuje krok testowy między `lint` a `build`
+- [x] 3.4 Mutacja kontrolna progu (2 → 1) czerwieni zestaw; zmiana cofnięta
+- [x] 3.5 Mutacja kontrolna limitu składu (6 → 7) czerwieni zestaw; zmiana cofnięta
+- [x] 3.6 Przebieg CI na PR jest zielony i pokazuje krok testowy między `lint` a `build`
