@@ -9,6 +9,8 @@ team-maker is an Astro 6 SSR app (React 19 islands, Tailwind 4, Supabase auth) d
 - Auth API routes signal failure by redirecting with `?error=<encodeURIComponent(message)>`, not by returning JSON. Keep that shape.
 - Never write to `context/archive/` — archived changes are immutable.
 - No test runner is installed, and `zod` is not a dependency. Do not add test commands or zod validation unless asked.
+- Deploy target is Cloudflare **Workers with static assets**, not Cloudflare Pages — `@astrojs/cloudflare` v13+ dropped Pages support. The deploy command is `npx wrangler deploy`; `wrangler pages deploy` is wrong and will fail.
+- Local dev is `npm run dev` — Astro 6 runs the real `workerd` runtime through the Cloudflare Vite plugin. Do not use `wrangler dev`. Local secrets live in `.dev.vars` (gitignored), production secrets in `npx wrangler secret put <NAME>`.
 
 ## Commands
 
@@ -34,4 +36,4 @@ Baseline layout: @README.md. What it omits — shadcn primitives sit in `src/com
 
 - Conventional Commits, scope optional: `feat:`, `docs(foundation):`.
 - husky + lint-staged auto-fix staged files on commit (see `lint-staged` in @package.json).
-- `.github/workflows/ci.yml` triggers only on `master`, but this repo's branch is `main` — CI does not currently run. Verify with `npm run lint && npm run build` before pushing.
+- `.github/workflows/ci.yml` runs on `main` for both push and pull requests: `npx astro sync`, then `npm run lint`, then `npm run build`. Run those three locally before pushing.

@@ -5,7 +5,7 @@ project_name: team-maker
 hints:
   language_family: js
   team_size: solo
-  deployment_target: cloudflare-pages
+  deployment_target: cloudflare-workers
   ci_provider: github-actions
   ci_default_flow: auto-deploy-on-merge
   bootstrapper_confidence: first-class
@@ -32,6 +32,8 @@ schematy walidacji na granicach dają regule domenowej — siedem kompetencji, p
 limity 6 członków i 2 perków — jedno miejsce egzekwowania, wspólne dla interfejsu i zapisu,
 co jest wymagane przez Guardrail "zapisana drużyna zawsze spełnia próg". React 19 jako wyspy
 interaktywne obsługuje wykres pajęczynowy przeliczany lokalnie poniżej 200 ms, bez potrzeby
-realtime. Wdrożenie na Cloudflare Pages jest domyślnym wyjściem startera, a GitHub Actions
-z auto-wdrożeniem po scaleniu domyka pętlę: PR → testy → wdrożenie. Stos przechodzi wszystkie
-cztery bramki przyjazne dla agenta, więc nie potrzebuje kompensacji w CLAUDE.md.
+realtime. Wdrożenie idzie na Cloudflare Workers ze static assets — adapter Astro 6 nie
+obsługuje już Cloudflare Pages, więc komendą jest `wrangler deploy`, nie `wrangler pages deploy`
+— a GitHub Actions z auto-wdrożeniem po scaleniu domyka pętlę: PR → testy → wdrożenie. Stos
+przechodzi wszystkie cztery bramki przyjazne dla agenta, więc nie potrzebuje kompensacji
+w CLAUDE.md.
