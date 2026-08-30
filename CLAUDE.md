@@ -1,3 +1,6 @@
+Reguły projektowe dla tego repozytorium: @AGENTS.md — przeczytaj je najpierw.
+Poniższa sekcja to materiał kursu, nie reguły projektu.
+
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
 ## 10xDevs AI Toolkit — Moduł 1, Lekcja 4

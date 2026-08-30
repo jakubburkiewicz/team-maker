@@ -256,6 +256,6 @@ Next: a future skill will set up agent context (CLAUDE.md, AGENTS.md). For now, 
 Useful manual steps in the meantime:
 - Switch to Node 22 (`nvm use`, the repo ships `.nvmrc` pinned to 22.14.0) before running `npm run dev`.
 - `git init` is not needed — this directory already has its own repo history; the starter's upstream `.git/` was removed before the move-up.
-- Review `CLAUDE.md.scaffold` against your existing `CLAUDE.md` (`diff CLAUDE.md CLAUDE.md.scaffold`) and decide which parts to keep.
+- ~~Review `CLAUDE.md.scaffold` against your existing `CLAUDE.md`.~~ Done: the durable rules were folded into `AGENTS.md` by `/10x-agents-md`; the rest was starter boilerplate that contradicted this project (zod, `prerender = false`, `supabase/migrations/`), so the file was deleted. Recover it with `git show 049d5b4:CLAUDE.md.scaffold` if ever needed.
 - Copy `.env.example` to `.env` and fill in Supabase credentials; configure Row Level Security early (a known gotcha for this starter).
 - Address audit findings per your project's risk tolerance — the full breakdown is above. `npm audit fix` resolves every finding listed; the CRITICAL (`tar`) and the direct HIGH (`astro`) are the ones worth reviewing first.
