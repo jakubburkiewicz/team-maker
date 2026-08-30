@@ -136,10 +136,19 @@ złożoność, wygrywa uproszczenie.
 
 ### Uwierzytelnianie i dostęp
 
-- FR-001: Gość może założyć konto podając adres e-mail i hasło. Priorytet: musi być
+- FR-001: Gość może założyć konto podając adres e-mail i hasło, a następnie potwierdzić adres
+  klikając link wysłany pocztą. Priorytet: musi być
   > Sokrates: Rozważono kontrargument: "otwarta rejestracja bez weryfikacji adresu zaprasza
   > konta śmieciowe". Rozstrzygnięcie: zachowano; MVP nie przechowuje danych wrażliwych,
   > a weryfikacja e-mail dokłada zależność od dostarczalności poczty.
+  >
+  > **Zmiana decyzji 2026-08-30 (po pierwszym wdrożeniu).** Pierwotne rozstrzygnięcie zakładało
+  > brak potwierdzania adresu. Weryfikacja produkcyjna pokazała, że projekt Supabase ma
+  > potwierdzanie włączone domyślnie i cała ścieżka działa out-of-the-box. Wyłączenie go byłoby
+  > świadomą zmianą konfiguracji produkcyjnego auth — kosztem, nie oszczędnością. Decyzja
+  > odwrócona: potwierdzanie zostaje. Ryzyko z pierwotnego uzasadnienia (zależność od
+  > dostarczalności poczty dla persony głównej, która wchodzi raz) jest **przyjęte świadomie**,
+  > nie unieważnione.
 - FR-002: Zarejestrowany gracz może zalogować się adresem e-mail i hasłem. Priorytet: musi być
   > Sokrates: Rozważono kontrargument: "brak resetu hasła — gracz, który zapomni hasła,
   > nie ma ścieżki powrotu". Rozstrzygnięcie: zachowano bez zmian; reset hasła trafia do
@@ -262,8 +271,11 @@ początkowych, nie kodu, i podlega weryfikacji testem.
 Model wieloużytkownikowy, płaski — jedna rola: **gracz**. Brak administratora, brak
 współdzielenia, brak zaproszeń.
 
-- **Rejestracja**: samoobsługowa, e-mail + hasło. Konto jest aktywne natychmiast po
-  rejestracji — potwierdzenie adresu e-mail nie jest wymagane.
+- **Rejestracja**: samoobsługowa, e-mail + hasło, z potwierdzeniem adresu. Po zapisaniu
+  formularza gracz trafia na ekran `/auth/confirm-email`, dostaje link pocztą i klika go;
+  dopiero wtedy konto jest aktywne. Kliknięcie linku **nie loguje** — gracz wraca na stronę
+  główną jako niezalogowany i przechodzi przez ekran logowania. Zachowanie domyślne Supabase,
+  przyjęte świadomie 2026-08-30 (patrz FR-001).
 - **Logowanie**: e-mail + hasło.
 - **Izolacja zasobów**: zalogowany gracz widzi, tworzy, aktualizuje i usuwa
   wyłącznie własne drużyny. Drużyny innych graczy są niewidoczne i niedostępne —

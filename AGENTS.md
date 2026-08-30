@@ -10,7 +10,9 @@ team-maker is an Astro 6 SSR app (React 19 islands, Tailwind 4, Supabase auth) d
 - Never write to `context/archive/` — archived changes are immutable.
 - No test runner is installed, and `zod` is not a dependency. Do not add test commands or zod validation unless asked.
 - Deploy target is Cloudflare **Workers with static assets**, not Cloudflare Pages — `@astrojs/cloudflare` v13+ dropped Pages support. The deploy command is `npx wrangler deploy`; `wrangler pages deploy` is wrong and will fail.
-- Local dev is `npm run dev` — Astro 6 runs the real `workerd` runtime through the Cloudflare Vite plugin. Do not use `wrangler dev`. Local secrets live in `.dev.vars` (gitignored), production secrets in `npx wrangler secret put <NAME>`.
+- Local dev is `npm run dev` — Astro 6 runs the real `workerd` runtime through the Cloudflare Vite plugin. Do not use `wrangler dev`. Local secrets live in `.env` (gitignored; wrangler 4.90 loads it the same way it loads `.dev.vars`), production secrets in `npx wrangler secret put <NAME>`.
+- Never run `supabase config push`. `supabase/config.toml` configures the **local** `supabase start` stack only; the hosted project is configured in the Supabase dashboard and is not linked. Pushing would send `site_url = "http://127.0.0.1:3000"`, `additional_redirect_urls = ["https://127.0.0.1:3000"]` and the `email_sent = 2` rate limit to production, pointing production email links at localhost.
+- Email confirmation is ON in production and OFF in `config.toml` (`enable_confirmations`, line 209). That split is deliberate — see `context/deployment/deploy-plan.md`. Do not "fix" it.
 
 ## Commands
 
