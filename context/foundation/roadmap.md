@@ -367,4 +367,6 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 
 ## Zrobione
 
-(Pusta przy pierwszym generowaniu. Wpisy dopisuje `/10x-archive` przy archiwizacji zmiany.)
+- **F-01: (fundament) regułę siedmiu kompetencji da się wykonać i sprawdzić poza przeglądarką,
+  jednym uruchomieniem, na dowolnym składzie podanym jako dane wejściowe** — Zarchiwizowano
+  2026-08-30 → `context/archive/2026-08-30-domain-rule-verification-harness/`. Lekcja: —.
