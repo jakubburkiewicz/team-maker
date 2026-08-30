@@ -1,7 +1,7 @@
 ---
 change_id: domain-rule-verification-harness
 title: Wykonywalna weryfikacja reguły siedmiu kompetencji
-status: planned
+status: implementing
 created: 2026-08-30
 updated: 2026-08-30
 archived_at: null

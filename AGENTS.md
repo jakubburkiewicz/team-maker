@@ -8,7 +8,7 @@ team-maker is an Astro 6 SSR app (React 19 islands, Tailwind 4, Supabase auth) d
 - Read those secrets only from `astro:env/server`. Never `import.meta.env` or `process.env` for Supabase credentials.
 - Auth API routes signal failure by redirecting with `?error=<encodeURIComponent(message)>`, not by returning JSON. Keep that shape.
 - Never write to `context/archive/` — archived changes are immutable.
-- No test runner is installed, and `zod` is not a dependency. Do not add test commands or zod validation unless asked.
+- The test runner is Vitest: `npm test` runs `vitest run` (single pass, no watch) over `src/**/*.test.ts`. Tests are pure — they must not bootstrap Astro or Supabase, so nothing under test may import `astro:*` or `@/lib/supabase`. `zod` is still not a dependency; do not add zod validation unless asked.
 - Deploy target is Cloudflare **Workers with static assets**, not Cloudflare Pages — `@astrojs/cloudflare` v13+ dropped Pages support. The deploy command is `npx wrangler deploy`; `wrangler pages deploy` is wrong and will fail.
 - Local dev is `npm run dev` — Astro 6 runs the real `workerd` runtime through the Cloudflare Vite plugin. Do not use `wrangler dev`. Local secrets live in `.env` (gitignored; wrangler 4.90 loads it the same way it loads `.dev.vars`), production secrets in `npx wrangler secret put <NAME>`.
 - Never run `supabase config push`. `supabase/config.toml` configures the **local** `supabase start` stack only; the hosted project is configured in the Supabase dashboard and is not linked. Pushing would send `site_url = "http://127.0.0.1:3000"`, `additional_redirect_urls = ["https://127.0.0.1:3000"]` and the `email_sent = 2` rate limit to production, pointing production email links at localhost.
@@ -16,7 +16,7 @@ team-maker is an Astro 6 SSR app (React 19 islands, Tailwind 4, Supabase auth) d
 
 ## Commands
 
-- Full script list: the `scripts` block in @package.json (`dev`, `build`, `preview`, `lint`, `lint:fix`, `format`).
+- Full script list: the `scripts` block in @package.json (`dev`, `build`, `preview`, `lint`, `lint:fix`, `format`, `test`).
 - `npx astro sync` — regenerate `.astro/types.d.ts`. Not a script: run it by hand on a fresh clone before `lint`, as CI does, or type-checked rules fail on missing generated types.
 
 ## Project structure
@@ -38,4 +38,4 @@ Baseline layout: @README.md. What it omits — shadcn primitives sit in `src/com
 
 - Conventional Commits, scope optional: `feat:`, `docs(foundation):`.
 - husky + lint-staged auto-fix staged files on commit (see `lint-staged` in @package.json).
-- `.github/workflows/ci.yml` runs on `main` for both push and pull requests: `npx astro sync`, then `npm run lint`, then `npm run build`. Run those three locally before pushing.
+- `.github/workflows/ci.yml` runs on `main` for both push and pull requests: `npx astro sync`, then `npm run lint`, then `npm test`, then `npm run build`. Run those four locally before pushing. `npm test` sits before `build` on purpose — `build` is the only step that needs the Supabase secrets, so the tests still signal on runs without them.

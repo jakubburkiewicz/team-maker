@@ -425,14 +425,14 @@ bo `Competency` jest typem związanym.
 
 #### Automatyczne
 
-- [ ] 1.1 `npm test` uruchamia się i przechodzi
-- [ ] 1.2 Linting przechodzi: `npm run lint`
-- [ ] 1.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 1.4 `.github/workflows/ci.yml` zawiera krok `npm test` między `npm run lint` a `npm run build`
+- [x] 1.1 `npm test` uruchamia się i przechodzi
+- [x] 1.2 Linting przechodzi: `npm run lint`
+- [x] 1.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 1.4 `.github/workflows/ci.yml` zawiera krok `npm test` między `npm run lint` a `npm run build`
 
 #### Ręczne
 
-- [ ] 1.5 `AGENTS.md` nie twierdzi już, że uruchamiacza testów nie ma, a polecenie zgadza się z `package.json`
+- [x] 1.5 `AGENTS.md` nie twierdzi już, że uruchamiacza testów nie ma, a polecenie zgadza się z `package.json`
 
 ### Faza 2: Kontrakt reguły domenowej
 
