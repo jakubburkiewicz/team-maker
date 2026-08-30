@@ -425,27 +425,27 @@ bo `Competency` jest typem związanym.
 
 #### Automatyczne
 
-- [x] 1.1 `npm test` uruchamia się i przechodzi
-- [x] 1.2 Linting przechodzi: `npm run lint`
-- [x] 1.3 Build przechodzi: `npx astro sync && npm run build`
-- [x] 1.4 `.github/workflows/ci.yml` zawiera krok `npm test` między `npm run lint` a `npm run build`
+- [x] 1.1 `npm test` uruchamia się i przechodzi — 891a1ec
+- [x] 1.2 Linting przechodzi: `npm run lint` — 891a1ec
+- [x] 1.3 Build przechodzi: `npx astro sync && npm run build` — 891a1ec
+- [x] 1.4 `.github/workflows/ci.yml` zawiera krok `npm test` między `npm run lint` a `npm run build` — 891a1ec
 
 #### Ręczne
 
-- [x] 1.5 `AGENTS.md` nie twierdzi już, że uruchamiacza testów nie ma, a polecenie zgadza się z `package.json`
+- [x] 1.5 `AGENTS.md` nie twierdzi już, że uruchamiacza testów nie ma, a polecenie zgadza się z `package.json` — 891a1ec
 
 ### Faza 2: Kontrakt reguły domenowej
 
 #### Automatyczne
 
-- [ ] 2.1 Sprawdzanie typów i linting przechodzą: `npx astro sync && npm run lint`
-- [ ] 2.2 Build przechodzi: `npm run build`
-- [ ] 2.3 `npm test` nadal przechodzi
-- [ ] 2.4 `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca dopasowań
+- [x] 2.1 Sprawdzanie typów i linting przechodzą: `npx astro sync && npm run lint`
+- [x] 2.2 Build przechodzi: `npm run build`
+- [x] 2.3 `npm test` nadal przechodzi
+- [x] 2.4 `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca dopasowań
 
 #### Ręczne
 
-- [ ] 2.5 Sygnatura `evaluateTeam` pokrywa trzy wyjścia z `## Business Logic` plus naruszenia limitów
+- [x] 2.5 Sygnatura `evaluateTeam` pokrywa trzy wyjścia z `## Business Logic` plus naruszenia limitów
 
 ### Faza 3: Zestaw weryfikacyjny reguły
 
