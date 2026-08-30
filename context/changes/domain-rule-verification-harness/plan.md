@@ -451,12 +451,12 @@ bo `Competency` jest typem związanym.
 
 #### Automatyczne
 
-- [x] 3.1 `npm test` przechodzi ze wszystkimi przypadkami ze `## Strategia testowania`
-- [x] 3.2 Linting przechodzi: `npm run lint`
-- [x] 3.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 3.1 `npm test` przechodzi ze wszystkimi przypadkami ze `## Strategia testowania` — a77015f
+- [x] 3.2 Linting przechodzi: `npm run lint` — a77015f
+- [x] 3.3 Build przechodzi: `npx astro sync && npm run build` — a77015f
 
 #### Ręczne
 
-- [x] 3.4 Mutacja kontrolna progu (2 → 1) czerwieni zestaw; zmiana cofnięta
-- [x] 3.5 Mutacja kontrolna limitu składu (6 → 7) czerwieni zestaw; zmiana cofnięta
-- [x] 3.6 Przebieg CI na PR jest zielony i pokazuje krok testowy między `lint` a `build`
+- [x] 3.4 Mutacja kontrolna progu (2 → 1) czerwieni zestaw; zmiana cofnięta — a77015f
+- [x] 3.5 Mutacja kontrolna limitu składu (6 → 7) czerwieni zestaw; zmiana cofnięta — a77015f
+- [x] 3.6 Przebieg CI na PR jest zielony i pokazuje krok testowy między `lint` a `build` — a77015f
