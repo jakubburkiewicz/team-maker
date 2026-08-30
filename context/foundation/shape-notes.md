@@ -47,11 +47,11 @@ checkpoint:
     - topic: "regula domenowa"
       decision: "walidacja pokrycia: aplikacja rozstrzyga, czy sklad pokrywa 7 kompetencji na poziomie >= 2 pkt"
     - topic: "zakres obliczen"
-      decision: "sumy punktow, brakujace punkty na kompetencje oraz sugestia domykajaca (FR-020, mily dodatek)"
+      decision: "sumy punktow oraz brakujace punkty na kompetencje; sugestia domykajaca odrzucona"
     - topic: "rozwiazywalnosc puli"
       decision: "wiazacy warunek danych poczatkowych: zawsze istnieje co najmniej jedno rozwiazanie"
-    - topic: "priorytet sugestii domykajacej"
-      decision: "FR-020 jako mily dodatek, nie musi byc"
+    - topic: "sugestia domykajaca"
+      decision: "odrzucona po rundzie sokratejskiej; przeniesiona do Non-Goals jako solver poza zakresem MVP"
     - topic: "typ produktu"
       decision: "aplikacja webowa"
     - topic: "skala"
@@ -60,7 +60,7 @@ checkpoint:
       decision: "brak twardego terminu; praca po godzinach"
     - topic: "niespojnosc FR-017 / FR-018"
       decision: "oslabiono FR-018: komunikat ogolny zamiast wyliczania luk; FR-017 pozostaje milym dodatkiem"
-  frs_drafted: 20
+  frs_drafted: 19
   quality_check_status: accepted
 ---
 
@@ -288,12 +288,6 @@ tygodni.
   > Rozstrzygnięcie: FR zmieniony — komunikat musi wprost potwierdzać zapis, zanim pokaże
   > "Work in Progress".
 
-- FR-020: Gracz widzi sugestię, która dostępna postać lub który perk domyka brakującą kompetencję. Priorytet: miły dodatek
-  > Sokrates: Rozważono kontrargument: "sugestia rozwiązuje łamigłówkę za gracza — jeśli
-  > aplikacja mówi, kogo dodać, gracz tylko klika". Rozstrzygnięcie: zachowano jako miły
-  > dodatek; personą główną jest recenzent, który ma zobaczyć działającą logikę, a nie
-  > rozwiązywać zagadkę.
-
 ## Non-Functional Requirements
 
 - Zmiana składu lub perka jest odzwierciedlona na wykresie kompetencji i w stanie przycisku
@@ -366,6 +360,10 @@ współdzielenia, brak zaproszeń.
   okno potwierdzenia.
 - **Współdzielenie drużyn, role i panel administratora** — model dostępu pozostaje płaski, bez
   widoczności cross-user w jakąkolwiek stronę.
+- **Sugestia, która postać lub perk domyka brakującą kompetencję** — aplikacja rozstrzyga, czy
+  skład jest dopuszczalny, ale nie podpowiada, jak go domknąć. Rozważone jako FR-020 i odrzucone:
+  solver przeszukujący pulę to najdroższy element logiki w całym MVP, a wykres pajęczynowy wraz
+  z listą brakujących punktów czynią regułę widoczną bez niego.
 
 ### Niefunkcjonalne
 
@@ -385,8 +383,9 @@ Brak. Kontrola jakości w Kroku 7 nie wykazała luk, a jedyna wykryta niespójno
 
 Reguła domenowa jest niewrażliwa na skalę: walidacja pokrycia liczy najwyżej sześć postaci
 i dwanaście perków, więc jej koszt nie zależy od liczby graczy. Stukrotny wzrost liczby użytkowników
-dotknąłby infrastruktury, nie reguły. Jedynym elementem wrażliwym na skalę byłaby sugestia
-domykająca (FR-020), która ma priorytet "miły dodatek".
+dotknąłby infrastruktury, nie reguły. Jedyny element, który byłby wrażliwy na skalę — sugestia
+domykająca przeszukująca pulę przy każdej zmianie składu — został wykluczony z zakresu
+(patrz `## Non-Goals`).
 
 ## Quality cross-check
 
