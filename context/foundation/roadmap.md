@@ -57,7 +57,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 
 | ID   | Change ID                        | Wynik (użytkownik może …)                                                | Wymagania wstępne | Odnośniki PRD                                    | Status   |
 | ---- | -------------------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------------------ | -------- |
-| F-01 | `domain-rule-verification-harness` | (fundament) reguła domenowa da się wykonać i sprawdzić poza przeglądarką | —                 | Business Logic, Guardrails                       | in-progress |
+| F-01 | `domain-rule-verification-harness` | (fundament) reguła domenowa da się wykonać i sprawdzić poza przeglądarką | —                 | Business Logic, Guardrails                       | done |
 | F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | proposed |
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | proposed |
 | S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | proposed |
@@ -123,14 +123,14 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Wymagania wstępne:** —
 - **Równolegle z:** —
 - **Blokery:** —
-- **Niewiadome:**
-  - Czy weryfikacja ma obejmować wyłącznie czystą regułę, czy także ścieżkę zapisu przez API? — Właściciel: użytkownik. Blok: nie.
+- **Niewiadome:** — (rozstrzygnięte 2026-08-30: wyłącznie czysta reguła domenowa, bez bazy,
+  trasy API i dwóch kont — patrz `context/changes/domain-rule-verification-harness/change.md`)
 - **Ryzyko:** Sekwencjonowane jako pierwsze, bo trzy późniejsze pozycje opierają na nim swój dowód,
   a dorabianie weryfikacji po fakcie zwykle kończy się jej pominięciem. Ryzyko przeciwne jest realne:
   `AGENTS.md` odnotowuje brak uruchamiacza testów jako stan świadomy, więc ten fundament dokłada
   pierwszą nową zależność do projektu — musi zostać najmniejszy, jaki wystarczy, inaczej zjada
   okno czasowe, które jest głównym ryzykiem kamienia milowego.
-- **Status:** in-progress
+- **Status:** done
 
 ### F-02: Rozwiązywalna pula postaci i perków
 
@@ -307,8 +307,8 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 
 | Identyfikator mapy drogowej | Identyfikator zmiany               | Sugerowany tytuł problemu                                       | Gotowe do `/10x-plan` | Uwagi                                        |
 | --------------------------- | ---------------------------------- | --------------------------------------------------------------- | --------------------- | -------------------------------------------- |
-| F-01                        | `domain-rule-verification-harness` | Wykonywalna weryfikacja reguły siedmiu kompetencji               | yes                   | Uruchom `/10x-plan domain-rule-verification-harness` |
-| F-02                        | `solvable-character-pool`          | Rozwiązywalna pula 10–12 postaci wraz z perkami                  | no                    | Czeka na F-01                                 |
+| F-01                        | `domain-rule-verification-harness` | Wykonywalna weryfikacja reguły siedmiu kompetencji               | —                     | Done 2026-08-30 (`impl_reviewed`)             |
+| F-02                        | `solvable-character-pool`          | Rozwiązywalna pula 10–12 postaci wraz z perkami                  | yes                   | Uruchom `/10x-plan solvable-character-pool`   |
 | S-01                        | `team-roster-composition`          | Kompletowanie składu z okna wyboru członka                       | no                    | Czeka na F-02                                 |
 | S-02                        | `competency-radar-gate`            | Wybór perków, wykres pajęczynowy i blokada progu                 | no                    | Czeka na S-01                                 |
 | S-03                        | `first-saved-team`                 | Zapis domkniętej drużyny z potwierdzeniem                        | no                    | Gwiazda przewodnia. Czeka na S-02             |
@@ -323,11 +323,10 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 1. **Czy S-08 (licznik brakujących punktów, FR-017) zostaje w zakresie tego kamienia milowego?**
    Przy głównym ryzyku `time` i celu `low-complexity` jest to jedyna pozycja, której cięcie nie
    narusza żadnego Kryterium sukcesu ani Guardraila. — Właściciel: użytkownik. Blokuje: S-08.
-2. **Jak daleko ma sięgać wykonywalna weryfikacja z F-01?**
-   `AGENTS.md` odnotowuje brak uruchamiacza testów jako stan świadomy, a PRD wiąże weryfikację
-   testem tylko dla rozwiązywalności puli. Zakres pośredni — próg poza interfejsem i izolacja
-   dwóch kont — jest decyzją, nie wynika z dokumentów. — Właściciel: użytkownik.
-   Blokuje: brak (F-01 rusza w najmniejszym wariancie; szerszy zakres można dołożyć później).
+2. ~~**Jak daleko ma sięgać wykonywalna weryfikacja z F-01?**~~ — **rozstrzygnięte 2026-08-30**:
+   wyłącznie czysta reguła domenowa (Vitest nad `src/lib/domain/`), bez bazy danych, trasy API
+   i weryfikacji dwóch kont. Szerszy zakres wchodzi z S-03 (próg poza interfejsem) i S-07
+   (izolacja kont). Zapis decyzji: `context/changes/domain-rule-verification-harness/change.md`.
 
 ## Zaparkowane
 

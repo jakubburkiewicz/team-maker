@@ -20,7 +20,16 @@ export type RuleViolation =
   | { kind: "unknown-perk"; characterId: string; perkId: string };
 
 export interface TeamEvaluation {
-  /** Siedem sum punktowych — po jednej na kompetencję. */
+  /**
+   * Siedem sum punktowych — po jednej na kompetencję.
+   *
+   * Sumy odzwierciedlają **surowy wybór gracza**, także ten odrzucony przez limity: trzeci perk
+   * dolicza swój punkt mimo `too-many-perks`, a postać wybrana dwukrotnie dolicza specjalizację
+   * dwa razy. Konsument rysujący wykres (S-02) lub licznik braków (S-08) czyta te sumy wyłącznie
+   * przy pustym `violations` — inaczej pokaże punkty, których reguła nie przyznaje, wbrew
+   * Guardrailowi PRD „wykres zawsze zgodny ze składem". Werdykt `isValid` jest odporny na ten
+   * przypadek niezależnie: naruszenie limitu zawsze go zeruje.
+   */
   scores: Record<Competency, number>;
   /** Punkty brakujące do progu w każdej kompetencji; 0 gdy domknięta. */
   missing: Record<Competency, number>;

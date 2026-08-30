@@ -2,17 +2,22 @@ import { describe, expect, it } from "vitest";
 
 import {
   COMPETENCIES,
-  COMPETENCY_THRESHOLD,
   MAX_TEAM_SIZE,
+  PERKS_PER_CHARACTER,
   evaluateTeam,
   type Competency,
   type TeamComposition,
 } from "@/lib/domain";
 import { TEST_POOL, member, onePointShortComposition, thresholdClosingComposition } from "@/lib/domain/test-fixtures";
 
-/** Czy każda z siedmiu kompetencji stoi co najmniej na progu. */
+/**
+ * Czy każda z siedmiu kompetencji stoi co najmniej na progu.
+ *
+ * Próg jest tu literałem z PRD (FR-018), nie stałą `COMPETENCY_THRESHOLD` — asercja wyrażona
+ * przez pinowaną stałą podąża za jej mutacją i przestaje cokolwiek wiązać.
+ */
 function everyCompetencyAtThreshold(scores: Record<Competency, number>): boolean {
-  return COMPETENCIES.every((competency) => scores[competency] >= COMPETENCY_THRESHOLD);
+  return COMPETENCIES.every((competency) => scores[competency] >= 2);
 }
 
 /** Wszystkie k-elementowe podzbiory, w kolejności rosnących indeksów. */
@@ -26,13 +31,22 @@ function combinations<T>(items: readonly T[], size: number): T[][] {
   return [...withHead, ...combinations(rest, size)];
 }
 
+describe("pula postaci", () => {
+  it("każda postać ma dokładnie PERKS_PER_CHARACTER perków o unikalnych identyfikatorach", () => {
+    for (const character of TEST_POOL) {
+      expect(character.perks).toHaveLength(PERKS_PER_CHARACTER);
+      expect(new Set(character.perks.map((perk) => perk.id)).size).toBe(PERKS_PER_CHARACTER);
+    }
+  });
+});
+
 describe("evaluateTeam — punktacja i próg", () => {
   it("pusty skład ma zerowe sumy, pełne braki i negatywny werdykt bez naruszeń", () => {
     const result = evaluateTeam([], TEST_POOL);
 
     for (const competency of COMPETENCIES) {
       expect(result.scores[competency]).toBe(0);
-      expect(result.missing[competency]).toBe(COMPETENCY_THRESHOLD);
+      expect(result.missing[competency]).toBe(2);
     }
     expect(result.violations).toEqual([]);
     expect(result.isValid).toBe(false);
@@ -64,7 +78,7 @@ describe("evaluateTeam — punktacja i próg", () => {
   it("skład o dokładnie jeden punkt za krótki wskazuje tę jedną kompetencję", () => {
     const result = evaluateTeam(onePointShortComposition(), TEST_POOL);
 
-    expect(result.scores.navigation).toBe(COMPETENCY_THRESHOLD - 1);
+    expect(result.scores.navigation).toBe(1);
     expect(result.missing.navigation).toBe(1);
     for (const competency of COMPETENCIES.filter((candidate) => candidate !== "navigation")) {
       expect(result.missing[competency]).toBe(0);
