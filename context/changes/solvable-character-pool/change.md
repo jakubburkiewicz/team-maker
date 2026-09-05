@@ -1,7 +1,7 @@
 ---
 change_id: solvable-character-pool
 title: Rozwiązywalna pula 10–12 postaci wraz z perkami
-status: plan_reviewed
+status: implementing
 created: 2026-08-30
 updated: 2026-09-05
 ---

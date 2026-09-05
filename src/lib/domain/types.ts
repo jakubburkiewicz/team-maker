@@ -7,8 +7,9 @@
  */
 
 /**
- * Siedem kompetencji jako typ związany. Nazwy są robocze — F-02 może zamienić je na fabularne;
- * kompilator wskaże wtedy każde miejsce, bo `Competency` jest domknięte.
+ * Siedem kompetencji jako typ związany. Nazwy robocze zostały przyjęte jako docelowe
+ * (rozstrzygnięcie F-02) — są czytelne dla obcego bez tutoriala i trafiają dosłownie do enuma
+ * `public.competency` w bazie. Zmiana nazwy to migracja, nie tylko edycja tej tablicy.
  */
 export const COMPETENCIES = [
   "combat",
@@ -49,6 +50,24 @@ export interface Character {
   id: string;
   specialization: Competency;
   perks: readonly Perk[];
+}
+
+/** Perk z treścią — nazwa pod etykietę w interfejsie (PRD → FR-014). */
+export interface PoolPerk extends Perk {
+  name: string;
+}
+
+/**
+ * Postać z treścią pod prawą kolumnę okna wyboru członka (PRD → FR-013).
+ *
+ * Zawężenie `perks` do `readonly PoolPerk[]` jest legalne, bo pole jest `readonly` — dzięki temu
+ * `readonly PoolCharacter[]` jest przypisywalne do `CharacterPool` i wchodzi do `evaluateTeam`
+ * bez rzutowania. Reguła i jej fixture'y nie widzą treści.
+ */
+export interface PoolCharacter extends Character {
+  name: string;
+  description: string;
+  perks: readonly PoolPerk[];
 }
 
 /** Wybór gracza dla jednego członka: która postać i które z jej perków. */

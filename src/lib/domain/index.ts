@@ -8,7 +8,18 @@ export {
   SPECIALIZATION_POINTS,
 } from "@/lib/domain/types";
 
-export type { Character, CharacterPool, Competency, MemberSelection, Perk, TeamComposition } from "@/lib/domain/types";
+export type {
+  Character,
+  CharacterPool,
+  Competency,
+  MemberSelection,
+  Perk,
+  PoolCharacter,
+  PoolPerk,
+  TeamComposition,
+} from "@/lib/domain/types";
+
+export { CHARACTER_POOL } from "@/lib/domain/character-pool";
 
 export { evaluateTeam } from "@/lib/domain/evaluate-team";
 

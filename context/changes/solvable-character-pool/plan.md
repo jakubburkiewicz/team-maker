@@ -575,17 +575,17 @@ bez pomiaru.
 
 #### Automatyczne
 
-- [ ] 1.1 Zestaw przechodzi: `npm test`
-- [ ] 1.2 Lint przechodzi: `npm run lint`
-- [ ] 1.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
-- [ ] 1.5 Zestaw kończy się poniżej pięciu sekund
+- [x] 1.1 Zestaw przechodzi: `npm test`
+- [x] 1.2 Lint przechodzi: `npm run lint`
+- [x] 1.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
+- [x] 1.5 Zestaw kończy się poniżej pięciu sekund
 
 #### Ręczne
 
-- [ ] 1.6 Mutacja: usunięty perk czerwieni przypadek kształtu; drzewo przywrócone
-- [ ] 1.7 Mutacja: zniknięcie kompetencji z puli czerwieni przypadek rozwiązywalności; drzewo przywrócone
-- [ ] 1.8 Treść dwunastu postaci przeczytana i zaakceptowana przez użytkownika
+- [x] 1.6 Mutacja: usunięty perk czerwieni przypadek kształtu; drzewo przywrócone
+- [x] 1.7 Mutacja: zniknięcie kompetencji z puli czerwieni przypadek rozwiązywalności; drzewo przywrócone
+- [x] 1.8 Treść dwunastu postaci przeczytana i zaakceptowana przez użytkownika
 
 ### Faza 2: Schemat, RLS i zasiew w bazie
 
