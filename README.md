@@ -85,13 +85,9 @@ Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
 cp .env.example .env
 ```
 
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
+2. The `supabase/` folder (`config.toml`, `migrations/`) is committed — do **not** run `npx supabase init`.
 
-```bash
-npx supabase init
-```
-
-3. Start the local stack (downloads Docker images on first run):
+3. Start the local stack (downloads Docker images on first run; applies `supabase/migrations/` on a fresh database):
 
 ```bash
 npx supabase start
@@ -112,7 +108,7 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+The schema lives in `supabase/migrations/` (the `competency` enum plus the read-only `characters` and `perks` tables seeded with the character pool). Re-apply them from scratch with `npx supabase db reset`. The seed migration is generated from `src/lib/domain/character-pool.ts` — that file is the source of truth, and `npm test` fails if the two drift apart.
 
 ### Using a cloud Supabase project instead
 

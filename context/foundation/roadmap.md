@@ -58,7 +58,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | ID   | Change ID                        | Wynik (użytkownik może …)                                                | Wymagania wstępne | Odnośniki PRD                                    | Status   |
 | ---- | -------------------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------------------ | -------- |
 | F-01 | `domain-rule-verification-harness` | (fundament) reguła domenowa da się wykonać i sprawdzić poza przeglądarką | —                 | Business Logic, Guardrails                       | done |
-| F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | in-progress |
+| F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | done |
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | proposed |
 | S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | proposed |
 | S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | proposed |
@@ -161,7 +161,12 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   „fundament nie buduje warstwy danych" przestało obowiązywać decyzją użytkownika z sesji
   planowania: F-02 dostarcza pierwszą migrację projektu (enum `competency`, tabele `characters`
   i `perks`, RLS wyłącznie do odczytu) oraz odczyt `getCharacterPool` w `src/lib/character-pool-repo.ts`.
-- **Status:** in-progress
+  Przegląd implementacji 2026-09-05 (`ZAAKCEPTOWANO`, 0 krytycznych) dołożył trzecią migrację —
+  `20260905090700_character_pool_revoke_writes.sql`, obrona w głąb cofająca przywileje zapisu
+  rolom `anon`/`authenticated` na poziomie `GRANT` — oraz konwencję w `AGENTS.md`: moduły danych
+  w `src/lib/` rzucają `Error`, strony i trasy API łapią. Zapis decyzji:
+  `context/changes/solvable-character-pool/reviews/impl-review.md`.
+- **Status:** done
 
 ## Fragmenty
 
@@ -319,8 +324,8 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 | Identyfikator mapy drogowej | Identyfikator zmiany               | Sugerowany tytuł problemu                                       | Gotowe do `/10x-plan` | Uwagi                                        |
 | --------------------------- | ---------------------------------- | --------------------------------------------------------------- | --------------------- | -------------------------------------------- |
 | F-01                        | `domain-rule-verification-harness` | Wykonywalna weryfikacja reguły siedmiu kompetencji               | —                     | Done 2026-08-30 (`impl_reviewed`)             |
-| F-02                        | `solvable-character-pool`          | Rozwiązywalna pula 10–12 postaci wraz z perkami                  | yes                   | Uruchom `/10x-plan solvable-character-pool`   |
-| S-01                        | `team-roster-composition`          | Kompletowanie składu z okna wyboru członka                       | no                    | Czeka na F-02                                 |
+| F-02                        | `solvable-character-pool`          | Rozwiązywalna pula 10–12 postaci wraz z perkami                  | —                     | Done 2026-09-05 (`impl_reviewed`)             |
+| S-01                        | `team-roster-composition`          | Kompletowanie składu z okna wyboru członka                       | yes                   | Uruchom `/10x-plan team-roster-composition`   |
 | S-02                        | `competency-radar-gate`            | Wybór perków, wykres pajęczynowy i blokada progu                 | no                    | Czeka na S-01                                 |
 | S-03                        | `first-saved-team`                 | Zapis domkniętej drużyny z potwierdzeniem                        | no                    | Gwiazda przewodnia. Czeka na S-02             |
 | S-04                        | `own-teams-list-and-detail`        | Lista własnych drużyn ze stanem pustym i widok szczegółów        | no                    | Czeka na S-03                                 |
@@ -381,3 +386,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **F-01: (fundament) regułę siedmiu kompetencji da się wykonać i sprawdzić poza przeglądarką,
   jednym uruchomieniem, na dowolnym składzie podanym jako dane wejściowe** — Zarchiwizowano
   2026-08-30 → `context/archive/2026-08-30-domain-rule-verification-harness/`. Lekcja: —.
+- **F-02: (fundament) zamknięta pula 10–12 postaci — każda ze specjalizacją i trzema perkami —
+  jest dostępna dla aplikacji, a istnienie co najmniej jednego składu domykającego próg zostało
+  potwierdzone weryfikacją, nie założeniem** — Zarchiwizowano 2026-09-05 →
+  `context/archive/2026-08-30-solvable-character-pool/`. Lekcja: —.

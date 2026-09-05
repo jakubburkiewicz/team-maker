@@ -147,6 +147,12 @@ Zakaz `config push` obowiązuje bez zmian — a po zlinkowaniu jest o jedno pole
 i łatwiejszy do przypadkowego uruchomienia (CLI potrafi go sugerować po `link`). Jedyną ścieżką
 zmian w hostowanej bazie pozostaje `supabase db push` z plików w `supabase/migrations/`.
 
+**Oczekuje na `db push` (przegląd implementacji F-02, 2026-09-05):** trzecia migracja
+`20260905090700_character_pool_revoke_writes.sql` — `revoke insert, update, delete, truncate`
+na `characters` i `perks` dla `anon`/`authenticated` (obrona w głąb obok RLS). Istnieje tylko
+w repozytorium; na produkcję trafi przy następnym `supabase db push`. Po zastosowaniu usuń ten
+akapit i dopisz ją do listy powyżej.
+
 ## Rozstrzygnięcia wobec rejestru ryzyk z `infrastructure.md`
 
 | Wpis w rejestrze                                        | Rozstrzygnięcie                                                                                                                                                                                                    |
