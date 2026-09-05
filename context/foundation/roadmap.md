@@ -60,7 +60,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | F-01 | `domain-rule-verification-harness` | (fundament) reguła domenowa da się wykonać i sprawdzić poza przeglądarką | —                 | Business Logic, Guardrails                       | done |
 | F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | done |
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | done        |
-| S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | in-progress |
+| S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | done        |
 | S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | proposed |
 | S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | proposed |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | proposed |
@@ -210,7 +210,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   elementem interfejsu w całym MVP — przy głównym ryzyku „czas" to on najłatwiej rozjedzie się
   z oknem czasowym. Sekwencjonowany zaraz po składzie, bo blokada przycisku z FR-018 jest warunkiem
   wstępnym zapisu, a nie jego ozdobą.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Gracz zapisuje skompletowaną drużynę i dostaje potwierdzenie
 
@@ -405,3 +405,8 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   z listą postaci po lewej i szczegółami wybranej po prawej, dodać do sześciu różnych postaci,
   usunąć członka i przez cały czas widzieć aktualny skład** — Zarchiwizowano 2026-09-05 →
   `context/archive/2026-09-05-team-roster-composition/`. Lekcja: —.
+- **S-02: Gracz może wybrać maksymalnie dwa z trzech perków każdego członka i widzi wykres
+  pajęczynowy siedmiu kompetencji przeliczany po każdej zmianie, wraz z przyciskiem „Wyrusz na
+  zlecenie", który pozostaje zablokowany z komunikatem ogólnym, dopóki którakolwiek kompetencja
+  ma mniej niż dwa punkty** — Zarchiwizowano 2026-09-05 →
+  `context/archive/2026-09-05-competency-radar-gate/`. Lekcja: —.
