@@ -24,3 +24,7 @@ export { CHARACTER_POOL } from "@/lib/domain/character-pool";
 export { evaluateTeam } from "@/lib/domain/evaluate-team";
 
 export type { RuleViolation, TeamEvaluation } from "@/lib/domain/evaluate-team";
+
+export { addMember, removeMember } from "@/lib/domain/roster";
+
+export type { AddMemberResult, RosterRejection } from "@/lib/domain/roster";

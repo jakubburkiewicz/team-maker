@@ -473,14 +473,14 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 
 #### Automatyczne
 
-- [ ] 1.1 `npm test` przechodzi, w tym `src/lib/domain/roster.test.ts`
-- [ ] 1.2 `npm run lint` przechodzi
-- [ ] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase`
-- [ ] 1.4 Żaden test nie importuje `lib/supabase`
+- [x] 1.1 `npm test` przechodzi, w tym `src/lib/domain/roster.test.ts`
+- [x] 1.2 `npm run lint` przechodzi
+- [x] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase`
+- [x] 1.4 Żaden test nie importuje `lib/supabase`
 
 #### Ręczne
 
-- [ ] 1.5 Kontrola mutacyjna `MAX_TEAM_SIZE` → 7 wywala test (drzewo przywrócone)
+- [x] 1.5 Kontrola mutacyjna `MAX_TEAM_SIZE` → 7 wywala test (drzewo przywrócone)
 
 ### Faza 2: Strona `/teams/new` ze stanem błędu i szkieletem składu
 
