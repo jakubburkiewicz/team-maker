@@ -1,7 +1,7 @@
 ---
 change_id: competency-radar-gate
 title: Wybór perków, wykres pajęczynowy i blokada progu
-status: implementing
+status: implemented
 created: 2026-09-05
 updated: 2026-09-05
 ---

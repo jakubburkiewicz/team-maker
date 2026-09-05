@@ -613,16 +613,16 @@ pilnuje `package.json`/`package-lock.json`. Zmiana propsów `RosterSlot` (Faza 3
 
 #### Automatyczne
 
-- [x] 3.1 `npx astro sync && npm run lint` przechodzi
-- [x] 3.2 `npm test` przechodzi
-- [x] 3.3 `npm run build` przechodzi
-- [x] 3.4 `package.json` / `package-lock.json` bez zmian
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi — c89f0da
+- [x] 3.2 `npm test` przechodzi — c89f0da
+- [x] 3.3 `npm run build` przechodzi — c89f0da
+- [x] 3.4 `package.json` / `package-lock.json` bez zmian — c89f0da
 
 #### Ręczne
 
-- [x] 3.5 Karta slotu: `+2 <specjalizacja>`, „Perks 0/2", trzy perki; zaznaczenie i odznaczenie działają, wykres reaguje od razu
-- [x] 3.6 Przy 2/2 trzeci perk wyłączony; odznaczenie odblokowuje
-- [x] 3.7 Przepis domyka próg → wszystkie osie na pierścieniu, przycisk odblokowany, tekst „All seven competencies are covered.", klik bez skutku
-- [x] 3.8 Zdjęcie perka / usunięcie członka blokuje przycisk z powrotem; przywrócenie odblokowuje
-- [x] 3.9 Okno wyboru: „+2 points", „+1" przy perkach, wskazówka o karcie, perki nieklikalne
-- [x] 3.10 Odświeżenie strony zeruje skład i wykres
+- [x] 3.5 Karta slotu: `+2 <specjalizacja>`, „Perks 0/2", trzy perki; zaznaczenie i odznaczenie działają, wykres reaguje od razu — c89f0da
+- [x] 3.6 Przy 2/2 trzeci perk wyłączony; odznaczenie odblokowuje — c89f0da
+- [x] 3.7 Przepis domyka próg → wszystkie osie na pierścieniu, przycisk odblokowany, tekst „All seven competencies are covered.", klik bez skutku — c89f0da
+- [x] 3.8 Zdjęcie perka / usunięcie członka blokuje przycisk z powrotem; przywrócenie odblokowuje — c89f0da
+- [x] 3.9 Okno wyboru: „+2 points", „+1" przy perkach, wskazówka o karcie, perki nieklikalne — c89f0da
+- [x] 3.10 Odświeżenie strony zeruje skład i wykres — c89f0da
