@@ -30,9 +30,9 @@ function buildTeam(count: number): TeamComposition {
 describe("addMember", () => {
   it("dodanie do pustego składu daje jednego członka z pustymi perkami i nie mutuje wejścia", () => {
     const empty: TeamComposition = [];
-    const result = addMember(empty, "vesper", CHARACTER_POOL);
+    const result = addMember(empty, POOL_IDS[0], CHARACTER_POOL);
 
-    expect(result).toEqual({ ok: true, composition: [{ characterId: "vesper", perkIds: [] }] });
+    expect(result).toEqual({ ok: true, composition: [{ characterId: POOL_IDS[0], perkIds: [] }] });
     expect(empty).toEqual([]);
   });
 
@@ -53,9 +53,9 @@ describe("addMember", () => {
   it("ta sama postać drugi raz jest odrzucona z already-in-team", () => {
     const one = buildTeam(1);
 
-    expect(addMember(one, "vesper", CHARACTER_POOL)).toEqual({
+    expect(addMember(one, POOL_IDS[0], CHARACTER_POOL)).toEqual({
       ok: false,
-      reason: { kind: "already-in-team", characterId: "vesper" },
+      reason: { kind: "already-in-team", characterId: POOL_IDS[0] },
     });
   });
 

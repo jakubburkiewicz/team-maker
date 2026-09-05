@@ -232,6 +232,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   potrzebuje), lokalny obieg `supabase start` / `supabase db reset` oraz `supabase db push` na
   zlinkowany projekt hostowany. Klucz obcy z `teams` do `characters(id)` jest przewidziany —
   zasiew puli działa upsertem, bez `delete`.
+  **Punkt kontrolny z przeglądu S-01 (2026-09-05):** `PROTECTED_ROUTES` w `src/middleware.ts`
+  chroni prefiks `/teams`, który **nie** obejmuje `/api/teams/*` — trasy API zapisu muszą trafić
+  do listy jawnie albo sprawdzać `locals.user` w handlerze; RLS pozostaje drugą warstwą.
 - **Status:** proposed
 
 ### S-04: Gracz widzi listę własnych drużyn i otwiera zapisaną drużynę
@@ -250,6 +253,10 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   listy tras chronionych — inaczej FR-004 zostaje spełniony tylko dla ekranów, które istniały
   wcześniej. Fragment ponownie używa widoku kompletowania zgodnie z rozstrzygnięciem FR-008, więc
   ryzykiem jest rozjechanie się dwóch trybów tego samego ekranu, a nie koszt budowy.
+  **Punkt kontrolny z przeglądu S-01 (2026-09-05):** `TeamComposer` mapuje `characterId` spoza
+  puli na pusty slot (`charactersById.get(...) ?? null`) — w S-01 nieosiągalne, ale gdy skład
+  przyjdzie z bazy, a pula z osobnego zapytania, taki członek zniknie ze slotów, choć licznik go
+  policzy. Plan S-04 ma rozstrzygnąć, co robić z nieznanym `characterId`.
 - **Status:** proposed
 
 ### S-05: Gracz zmienia skład zapisanej drużyny

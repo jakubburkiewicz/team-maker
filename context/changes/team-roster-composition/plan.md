@@ -455,6 +455,15 @@ Przed Fazą 2 warto potwierdzić, że migracja
 (`supabase db push`, punkt F6 z przeglądu F-02) — nie blokuje S-01, ale to ostatnia chwila,
 zanim pojawi się interfejs czytający pulę z produkcji.
 
+## Odstępstwa od planu
+
+- **`astro.config.mjs` (Faza 3, commit fafdd83)** — dodano `vite.ssr.optimizeDeps.include:
+  ["astro/env/runtime"]`. Wirtualny `astro:env/server` (z `src/lib/supabase.ts`) jest niewidoczny
+  dla skanera zależności Vite; na zimnym cache pierwsze żądanie reoptymalizowało `deps_ssr`
+  i wyspa React dostawała dwie kopie Reacta („Invalid hook call"). Zmiana jest **dev-only**
+  (`optimizeDeps` nie wpływa na `astro build` ani na bundle Workers) i dotyczy każdej przyszłej
+  wyspy na trasie za Supabase, nie tylko S-01.
+
 ## Referencje
 
 - Roadmapa: `context/foundation/roadmap.md` → `### S-01`

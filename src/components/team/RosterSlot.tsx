@@ -32,6 +32,7 @@ export function RosterSlot({ member, onRecruit, onRemove }: RosterSlotProps) {
       </div>
       <button
         type="button"
+        aria-label={`Remove ${member.name}`}
         onClick={() => {
           onRemove(member.id);
         }}
