@@ -203,7 +203,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Równolegle z:** —
 - **Blokery:** —
 - **Niewiadome:**
-  - Jak narysować wykres pajęczynowy bez dokładania ciężkiej zależności? — Właściciel: TBD (rozstrzyga `/10x-plan`). Blok: nie.
+  - Jak narysować wykres pajęczynowy bez dokładania ciężkiej zależności? — **Rozstrzygnięte
+    (2026-09-05, sesja planowania):** ręczny inline SVG z czystym helperem geometrii
+    `src/lib/radar-geometry.ts`, zero nowych zależności.
 - **Ryzyko:** To jedyny fragment, który czyni regułę domenową widoczną, i PRD nazywa go najdroższym
   elementem interfejsu w całym MVP — przy głównym ryzyku „czas" to on najłatwiej rozjedzie się
   z oknem czasowym. Sekwencjonowany zaraz po składzie, bo blokada przycisku z FR-018 jest warunkiem

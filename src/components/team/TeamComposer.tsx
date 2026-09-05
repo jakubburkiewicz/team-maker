@@ -3,13 +3,14 @@ import { useState } from "react";
 import { CompetencyRadar } from "@/components/team/CompetencyRadar";
 import { EmbarkGate } from "@/components/team/EmbarkGate";
 import { MemberPickerDialog } from "@/components/team/MemberPickerDialog";
-import { RosterSlot } from "@/components/team/RosterSlot";
+import { RosterSlot, type RosterMember } from "@/components/team/RosterSlot";
 import {
   COMPETENCY_THRESHOLD,
   MAX_TEAM_SIZE,
   addMember,
   evaluateTeam,
   removeMember,
+  togglePerk,
   type PoolCharacter,
   type TeamComposition,
 } from "@/lib/domain";
@@ -22,10 +23,10 @@ interface Props {
  * Wyspa kompletowania drużyny — jedyny właściciel stanu `composition` w całym fragmencie.
  *
  * Skład żyje wyłącznie w pamięci wyspy i nie przeżywa odświeżenia strony (rozstrzygnięcie
- * niewiadomej S-01). Skład rośnie i maleje tylko przez `addMember` / `removeMember` z domeny —
- * wyspa nie składa `MemberSelection` sama. Interfejs wyłącza ruchy prewencyjnie (postać już
- * w drużynie, brak „Recruit" przy 6/6), ale o legalności rozstrzyga `addMember`: odrzucony
- * wynik zostawia stan bez zmian.
+ * niewiadomej S-01). Skład zmienia się tylko przez `addMember` / `removeMember` / `togglePerk`
+ * z domeny — wyspa nie składa `MemberSelection` sama. Interfejs wyłącza ruchy prewencyjnie
+ * (postać już w drużynie, brak „Recruit" przy 6/6, trzeci perk przy 2/2), ale o legalności
+ * rozstrzyga domena: odrzucony wynik zostawia stan bez zmian.
  *
  * Wykres i bramka żyją w tej samej wyspie, bo dwie wyspy nie dzielą stanu. `evaluateTeam` jest
  * liczone przy każdym renderze, bez memoizacji — react-compiler robi to sam, a koszt to siedem
@@ -56,9 +57,20 @@ export default function TeamComposer({ pool }: Props) {
     setComposition((current) => removeMember(current, characterId));
   }
 
-  const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index) => {
+  function handleTogglePerk(characterId: string, perkId: string) {
+    // Przy odrzuceniu wraca `current` (ta sama referencja) — bez re-renderu, jak `removeMember`.
+    setComposition((current) => {
+      const result = togglePerk(current, characterId, perkId, pool);
+      return result.ok ? result.composition : current;
+    });
+  }
+
+  // Nieznany `characterId` → pusty slot, jak w S-01; co z nim robić rozstrzyga S-04.
+  const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index): RosterMember | null => {
     const selection = composition.at(index);
-    return selection === undefined ? null : (charactersById.get(selection.characterId) ?? null);
+    if (selection === undefined) return null;
+    const character = charactersById.get(selection.characterId);
+    return character === undefined ? null : { character, selection };
   });
 
   return (
@@ -72,8 +84,13 @@ export default function TeamComposer({ pool }: Props) {
         </div>
         <ul className="grid grid-cols-2 gap-4">
           {slots.map((member, index) => (
-            <li key={member?.id ?? `empty-${index}`}>
-              <RosterSlot member={member} onRecruit={handleRecruit} onRemove={handleRemove} />
+            <li key={member?.character.id ?? `empty-${index}`}>
+              <RosterSlot
+                member={member}
+                onRecruit={handleRecruit}
+                onRemove={handleRemove}
+                onTogglePerk={handleTogglePerk}
+              />
             </li>
           ))}
         </ul>

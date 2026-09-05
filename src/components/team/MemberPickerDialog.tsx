@@ -3,7 +3,13 @@ import { UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MAX_PERKS_PER_MEMBER, PERKS_PER_CHARACTER, type PoolCharacter } from "@/lib/domain";
+import {
+  MAX_PERKS_PER_MEMBER,
+  PERK_POINTS,
+  PERKS_PER_CHARACTER,
+  SPECIALIZATION_POINTS,
+  type PoolCharacter,
+} from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
 interface MemberPickerDialogProps {
@@ -98,12 +104,14 @@ function MemberPickerBody({ pool, memberIds, onAdd }: MemberPickerBodyProps) {
             <h3 className="text-xl font-semibold">{selected.name}</h3>
             <p className="mt-1 text-xs tracking-wide text-purple-300 uppercase">
               Specialization: {selected.specialization}
+              <span className="ml-2 text-blue-100/60">+{SPECIALIZATION_POINTS} points</span>
             </p>
             <p className="mt-3 text-sm text-blue-100/80">{selected.description}</p>
 
             <h4 className="mt-4 text-sm font-semibold text-white">
               Perks — up to {MAX_PERKS_PER_MEMBER} of {PERKS_PER_CHARACTER} can be chosen
             </h4>
+            <p className="mt-1 text-xs text-blue-100/60">Choose them on the roster card after recruiting.</p>
             <ul className="mt-2 space-y-1">
               {selected.perks.map((perk) => (
                 <li
@@ -111,7 +119,9 @@ function MemberPickerBody({ pool, memberIds, onAdd }: MemberPickerBodyProps) {
                   className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm"
                 >
                   <span>{perk.name}</span>
-                  <span className="text-xs tracking-wide text-blue-100/60 uppercase">{perk.competency}</span>
+                  <span className="text-xs tracking-wide text-blue-100/60 uppercase">
+                    {perk.competency} +{PERK_POINTS}
+                  </span>
                 </li>
               ))}
             </ul>

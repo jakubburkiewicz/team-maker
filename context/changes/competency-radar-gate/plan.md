@@ -595,34 +595,34 @@ pilnuje `package.json`/`package-lock.json`. Zmiana propsów `RosterSlot` (Faza 3
 
 #### Automatyczne
 
-- [x] 2.1 `npm test` przechodzi, w tym `src/lib/radar-geometry.test.ts`
-- [x] 2.2 `npx astro sync && npm run lint` przechodzi
-- [x] 2.3 `npm run build` przechodzi
-- [x] 2.4 `package.json` / `package-lock.json` bez zmian
-- [x] 2.5 Brak `bg-purple-600` w `SubmitButton.tsx` i `MemberPickerDialog.tsx`
+- [x] 2.1 `npm test` przechodzi, w tym `src/lib/radar-geometry.test.ts` — 870654a
+- [x] 2.2 `npx astro sync && npm run lint` przechodzi — 870654a
+- [x] 2.3 `npm run build` przechodzi — 870654a
+- [x] 2.4 `package.json` / `package-lock.json` bez zmian — 870654a
+- [x] 2.5 Brak `bg-purple-600` w `SubmitButton.tsx` i `MemberPickerDialog.tsx` — 870654a
 
 #### Ręczne
 
-- [x] 2.6 Dwie kolumny; pusty skład → siedem osi, pierścień progu, przycisk zablokowany z tekstem
-- [x] 2.7 Dodanie/usunięcie Vesper → `combat 2` / `combat 0` natychmiast
-- [x] 2.8 Sześć postaci z przepisu → sześć osi na progu, `navigation 0`, przycisk zablokowany
-- [x] 2.9 Vesper + Marlow → `combat 4` na końcu osi, bez obcięcia
-- [x] 2.10 „Add to team" i „Sign in"/„Sign up" wyglądają jak przed zmianą
+- [x] 2.6 Dwie kolumny; pusty skład → siedem osi, pierścień progu, przycisk zablokowany z tekstem — 870654a
+- [x] 2.7 Dodanie/usunięcie Vesper → `combat 2` / `combat 0` natychmiast — 870654a
+- [x] 2.8 Sześć postaci z przepisu → sześć osi na progu, `navigation 0`, przycisk zablokowany — 870654a
+- [x] 2.9 Vesper + Marlow → `combat 4` na końcu osi, bez obcięcia — 870654a
+- [x] 2.10 „Add to team" i „Sign in"/„Sign up" wyglądają jak przed zmianą — 870654a
 
 ### Faza 3: Perki na karcie slotu
 
 #### Automatyczne
 
-- [ ] 3.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 3.2 `npm test` przechodzi
-- [ ] 3.3 `npm run build` przechodzi
-- [ ] 3.4 `package.json` / `package-lock.json` bez zmian
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi
+- [x] 3.2 `npm test` przechodzi
+- [x] 3.3 `npm run build` przechodzi
+- [x] 3.4 `package.json` / `package-lock.json` bez zmian
 
 #### Ręczne
 
-- [ ] 3.5 Karta slotu: `+2 <specjalizacja>`, „Perks 0/2", trzy perki; zaznaczenie i odznaczenie działają, wykres reaguje od razu
-- [ ] 3.6 Przy 2/2 trzeci perk wyłączony; odznaczenie odblokowuje
-- [ ] 3.7 Przepis domyka próg → wszystkie osie na pierścieniu, przycisk odblokowany, tekst „All seven competencies are covered.", klik bez skutku
-- [ ] 3.8 Zdjęcie perka / usunięcie członka blokuje przycisk z powrotem; przywrócenie odblokowuje
-- [ ] 3.9 Okno wyboru: „+2 points", „+1" przy perkach, wskazówka o karcie, perki nieklikalne
-- [ ] 3.10 Odświeżenie strony zeruje skład i wykres
+- [x] 3.5 Karta slotu: `+2 <specjalizacja>`, „Perks 0/2", trzy perki; zaznaczenie i odznaczenie działają, wykres reaguje od razu
+- [x] 3.6 Przy 2/2 trzeci perk wyłączony; odznaczenie odblokowuje
+- [x] 3.7 Przepis domyka próg → wszystkie osie na pierścieniu, przycisk odblokowany, tekst „All seven competencies are covered.", klik bez skutku
+- [x] 3.8 Zdjęcie perka / usunięcie członka blokuje przycisk z powrotem; przywrócenie odblokowuje
+- [x] 3.9 Okno wyboru: „+2 points", „+1" przy perkach, wskazówka o karcie, perki nieklikalne
+- [x] 3.10 Odświeżenie strony zeruje skład i wykres
