@@ -62,6 +62,23 @@ describe("mapPoolRows", () => {
     expect(pool[0].perks[0]).not.toHaveProperty("sort_order");
   });
 
+  it("wiersze i perki w losowej kolejności wychodzą posortowane po sort_order", () => {
+    const [vesper, torque] = rows();
+    const shuffled: CharacterRow[] = [
+      torque,
+      { ...vesper, perks: [vesper.perks[2], vesper.perks[0], vesper.perks[1]] },
+    ];
+
+    const pool = mapPoolRows(shuffled);
+
+    expect(pool.map((character) => character.id)).toEqual(["vesper", "torque"]);
+    expect(pool[0].perks.map((perk) => perk.id)).toEqual([
+      "vesper-breach-protocols",
+      "vesper-extraction-routes",
+      "vesper-field-triage",
+    ]);
+  });
+
   it("wynik jest legalnym wejściem evaluateTeam — postacie i perki są rozpoznawane", () => {
     const pool = mapPoolRows(rows());
     const result = evaluateTeam(

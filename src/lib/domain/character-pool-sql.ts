@@ -26,9 +26,13 @@ export function renderCompetencyEnum(competencies: typeof COMPETENCIES): string 
 /**
  * Blok upsertów dla obu tabel: najpierw `characters`, potem `perks` (klucz obcy).
  *
- * `on conflict (id) do update` obsługuje pierwszy zasiew i każdą późniejszą korektę treści tym
+ * `on conflict (id) do update` obsługuje pierwszy zasiew, edycję treści i zmianę kolejności tym
  * samym tekstem, bez `delete` — po S-03 klucz obcy z `teams` do `characters(id)` nie ma
- * wtedy czego blokować.
+ * wtedy czego blokować. **Usunięcia** ten blok nie obsługuje: stary wiersz zostaje w bazie
+ * i jego `sort_order` zderza się przy `commit` z przenumerowanym sąsiadem (odroczona
+ * unikalność tylko przesuwa błąd na koniec transakcji). Nowa migracja zasiewowa usuwająca
+ * postać lub perk musi zacząć od jawnego `delete … where id not in (...)` dla obu tabel,
+ * PRZED tym blokiem — zgodnie z „Uwagi dotyczące migracji" w planie F-02.
  */
 export function renderCharacterPoolInserts(pool: readonly PoolCharacter[]): string {
   const characterRows = pool.map(

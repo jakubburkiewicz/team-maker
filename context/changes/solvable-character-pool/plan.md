@@ -232,6 +232,11 @@ wyrażone **literałami z PRD**, nie stałymi z modułu (ustalenie F2 przeglądu
 - Kalibracja: `countThresholdSolutions(CHARACTER_POOL)` przekracza ustalony **dolny próg**
   (rząd wielkości: dziesiątki rozwiązań). Asercja jest progiem, nie równością — edycja treści,
   która niczego nie łamie, nie czerwieni zestawu, a realny spadek rozwiązywalności tak.
+  > Korekta z przeglądu implementacji (2026-09-05, F3): rząd „dziesiątki" był błędny — licznik
+  > zlicza wszystkie pary (podzbiór, przypisanie perków) łącznie z nadzbiorami, więc wynik jest
+  > z natury milionowy (zmierzona baza: 16 329 329). Próg w teście to 10 000 000; zmiana
+  > kompetencji dowolnego pojedynczego perka zostawia ≥ 14,4 mln (zielone), utrata jedynej
+  > specjalizacji `negotiation` spada do 8,3 mln (czerwone) — intencja zachowana.
 
 ### Kryteria sukcesu:
 
@@ -293,6 +298,9 @@ z Fazy 1, pilnowane testem zgodności.
   na każdej z nich. Zero polityk `insert`/`update`/`delete` — pula jest zamknięta, a cała
   aplikacja stoi za logowaniem (FR-004), więc `anon` nie dostaje nic.
 - Indeks na `perks(character_id)`.
+  > Dodatek z implementacji (przegląd 2026-09-05, F9): obie unikalności `sort_order` są
+  > `deferrable initially deferred`, żeby upsert zmieniający kolejność nie wywrócił się na
+  > przejściowym duplikacie w obrębie jednego polecenia.
 
 #### 2. Renderer bloku INSERT
 
@@ -464,6 +472,10 @@ mailowe na localhost i psując potwierdzanie adresu (FR-001).
 Zlinkowanie projektu zmienia stan opisany w `context/deployment/deploy-plan.md:136` („projekt
 hostowany nie jest zlinkowany"). Po udanym `db push` zaktualizuj to zdanie wraz z notatką, że
 zakaz `config push` obowiązuje nadal — a teraz jest łatwiejszy do przypadkowego uruchomienia.
+
+> Dodatek z implementacji (przegląd 2026-09-05, F9): twarda reguła o `supabase config push`
+> w `AGENTS.md` została doprecyzowana o stan zlinkowania — po `link` CLI potrafi sugerować
+> `config push`, więc zakaz musiał zostać zapisany tam, gdzie agent czyta go pierwszy.
 
 Domknij też wpis F-02 w `context/foundation/roadmap.md` (linie ~135–159): zdanie „Fundament nie
 buduje warstwy danych" przestało być prawdą decyzją użytkownika z sesji planowania — warstwa danych
