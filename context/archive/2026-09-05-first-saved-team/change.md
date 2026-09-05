@@ -1,7 +1,8 @@
 ---
 change_id: first-saved-team
 title: Zapis domkniętej drużyny z potwierdzeniem
-status: impl_reviewed
+status: archived
+archived_at: 2026-09-05T18:06:28Z
 created: 2026-09-05
 updated: 2026-09-05
 ---
