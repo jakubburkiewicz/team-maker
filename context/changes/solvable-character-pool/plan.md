@@ -608,23 +608,23 @@ bez pomiaru.
 
 #### Automatyczne
 
-- [x] 3.1 Zestaw przechodzi: `npm test`
-- [x] 3.2 Lint przechodzi: `npm run lint`
-- [x] 3.3 Build przechodzi: `npx astro sync && npm run build`
-- [x] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src` bez dopasowań
+- [x] 3.1 Zestaw przechodzi: `npm test` — 04c8ce5
+- [x] 3.2 Lint przechodzi: `npm run lint` — 04c8ce5
+- [x] 3.3 Build przechodzi: `npx astro sync && npm run build` — 04c8ce5
+- [x] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src` bez dopasowań — 04c8ce5
 
 #### Ręczne
 
-- [x] 3.5 Zapytanie `getCharacterPool` w Studio zwraca 12 postaci z perkami w kolejności `sort_order`
-- [x] 3.6 Kształt odpowiedzi zgadza się z interfejsem wiersza w module
+- [x] 3.5 Zapytanie `getCharacterPool` w Studio zwraca 12 postaci z perkami w kolejności `sort_order` — 04c8ce5
+- [x] 3.6 Kształt odpowiedzi zgadza się z interfejsem wiersza w module — 04c8ce5
 
 ### Faza 4: Zastosowanie na projekcie hostowanym
 
 #### Ręczne
 
-- [ ] 4.1 `supabase db push` stosuje obie migracje na projekcie hostowanym bez błędu
-- [ ] 4.2 Tabele `characters` i `perks` istnieją w produkcji z 12 i 36 wierszami
-- [ ] 4.3 RLS włączone, wyłącznie po jednej polityce `SELECT` na tabelę
-- [ ] 4.4 `supabase config push` nie uruchomiony; potwierdzanie adresu w produkcji nadal działa
-- [ ] 4.5 `context/deployment/deploy-plan.md` odzwierciedla nowy stan zlinkowania
-- [ ] 4.6 Wpis F-02 w `roadmap.md` odzwierciedla decyzję o warstwie danych, Niewiadome rozstrzygnięte, S-03 odnotowuje istniejący warsztat Supabase
+- [x] 4.1 `supabase db push` stosuje obie migracje na projekcie hostowanym bez błędu
+- [x] 4.2 Tabele `characters` i `perks` istnieją w produkcji z 12 i 36 wierszami
+- [x] 4.3 RLS włączone, wyłącznie po jednej polityce `SELECT` na tabelę
+- [x] 4.4 `supabase config push` nie uruchomiony; potwierdzanie adresu w produkcji nadal działa
+- [x] 4.5 `context/deployment/deploy-plan.md` odzwierciedla nowy stan zlinkowania
+- [x] 4.6 Wpis F-02 w `roadmap.md` odzwierciedla decyzję o warstwie danych, Niewiadome rozstrzygnięte, S-03 odnotowuje istniejący warsztat Supabase

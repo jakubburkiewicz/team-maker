@@ -147,13 +147,20 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Równolegle z:** —
 - **Blokery:** —
 - **Niewiadome:**
-  - Czy pula ma być danymi w bazie, czy stałą w kodzie? — Właściciel: TBD (rozstrzyga `/10x-plan`). Blok: nie.
-  - Kto redaguje treść postaci — nazwy, opisy, przypisanie perków do kompetencji? — Właściciel: użytkownik. Blok: nie.
+  - Czy pula ma być danymi w bazie, czy stałą w kodzie? — **Rozstrzygnięte (2026-08-30, sesja
+    planowania):** w bazie, decyzją użytkownika wbrew rekomendacji planu. Autorskim źródłem prawdy
+    pozostaje stała `CHARACTER_POOL` w `src/lib/domain/character-pool.ts`, z której generowana jest
+    migracja zasiewowa; test zgodności pilnuje, żeby obie reprezentacje były identyczne.
+  - Kto redaguje treść postaci — nazwy, opisy, przypisanie perków do kompetencji? —
+    **Rozstrzygnięte (2026-09-05):** treść wygenerował agent, po angielsku (spójnie z językiem
+    interfejsu); użytkownik przeczytał i zaakceptował przed migracją.
 - **Ryzyko:** Sekwencjonowane przed jakąkolwiek pracą widoczną dla użytkownika, bo pula jest
   wejściem każdego kolejnego fragmentu, a jej dobór jest wiążącym warunkiem poprawności, nie
   kwestią smaku: sześć postaci wnosi najwyżej sześć specjalizacji przy siedmiu kompetencjach,
-  więc pula dobrana na oko może uczynić łamigłówkę nierozwiązywalną. Fundament nie buduje warstwy
-  danych — dostarcza jeden zbiór danych plus jego dowód poprawności.
+  więc pula dobrana na oko może uczynić łamigłówkę nierozwiązywalną. Pierwotne założenie
+  „fundament nie buduje warstwy danych" przestało obowiązywać decyzją użytkownika z sesji
+  planowania: F-02 dostarcza pierwszą migrację projektu (enum `competency`, tabele `characters`
+  i `perks`, RLS wyłącznie do odczytu) oraz odczyt `getCharacterPool` w `src/lib/character-pool-repo.ts`.
 - **Status:** in-progress
 
 ## Fragmenty
@@ -213,7 +220,11 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   drużyn na poziomie dostępu do danych, bo tabela bez tego odcięcia jest dziurą od pierwszej minuty
   jej istnienia. Główne ryzyko fragmentu: próg egzekwowany wyłącznie w przeglądarce łamie Guardrail
   „reguła obowiązuje także poza interfejsem" — weryfikacja z F-01 jest tu jedynym dowodem, że tak
-  nie jest.
+  nie jest. Warsztat bazy już istnieje po F-02: katalog `supabase/migrations/` z pierwszymi
+  migracjami, wzorzec RLS (`enable row level security` + wyłącznie polityki, których fragment
+  potrzebuje), lokalny obieg `supabase start` / `supabase db reset` oraz `supabase db push` na
+  zlinkowany projekt hostowany. Klucz obcy z `teams` do `characters(id)` jest przewidziany —
+  zasiew puli działa upsertem, bez `delete`.
 - **Status:** proposed
 
 ### S-04: Gracz widzi listę własnych drużyn i otwiera zapisaną drużynę

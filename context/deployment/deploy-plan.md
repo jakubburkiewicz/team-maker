@@ -133,11 +133,19 @@ i musi przejść przez `/auth/signin` (widać to w logach: 12:33:40 `/?code=` �
 Ścieżka działa, ale ma jeden krok więcej niż mogłaby.
 
 **Uwaga do konfiguracji:** `supabase/config.toml` ma `enable_confirmations = false` (linia 209) — to
-dotyczy wyłącznie lokalnego stacku `supabase start`, projekt hostowany nie jest zlinkowany. Plik
-i produkcja rozjeżdżają się w tym polu świadomie. **Nie uruchamiaj `supabase config push`** bez
-wcześniejszej poprawki: wypchnęłoby to `site_url = "http://127.0.0.1:3000"`,
-`additional_redirect_urls = ["https://127.0.0.1:3000"]` i limit `email_sent = 2` na produkcję,
-kierując produkcyjne linki mailowe na localhost.
+dotyczy wyłącznie lokalnego stacku `supabase start`. Plik i produkcja rozjeżdżają się w tym polu
+świadomie. **Nie uruchamiaj `supabase config push`** bez wcześniejszej poprawki: wypchnęłoby to
+`site_url = "http://127.0.0.1:3000"`, `additional_redirect_urls = ["https://127.0.0.1:3000"]`
+i limit `email_sent = 2` na produkcję, kierując produkcyjne linki mailowe na localhost.
+
+**Stan zlinkowania (zmiana 2026-09-05, F-02 `solvable-character-pool`):** projekt hostowany
+(`ifytodkdnzgsflptiyfx`) **jest zlinkowany** — `supabase link` wykonano, żeby `supabase db push`
+zastosował pierwsze migracje projektu (`supabase/migrations/20260905081500_character_pool_schema.sql`
+i `20260905081600_character_pool_seed.sql`). Zweryfikowano po push: `characters` = 12, `perks` = 36,
+RLS włączone z jedną polityką `SELECT` na tabelę, potwierdzanie adresu e-mail nadal działa.
+Zakaz `config push` obowiązuje bez zmian — a po zlinkowaniu jest o jedno polecenie bliżej
+i łatwiejszy do przypadkowego uruchomienia (CLI potrafi go sugerować po `link`). Jedyną ścieżką
+zmian w hostowanej bazie pozostaje `supabase db push` z plików w `supabase/migrations/`.
 
 ## Rozstrzygnięcia wobec rejestru ryzyk z `infrastructure.md`
 
