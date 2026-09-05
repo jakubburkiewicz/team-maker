@@ -81,9 +81,9 @@ do weryfikacji ręcznej; Node 22.14.0 (`nvm use`).
 - Założenie: `findThresholdSolution(CHARACTER_POOL)` zwraca skład, którego perki mieszczą się
   w limicie 2/członka (solver respektuje `MAX_PERKS_PER_MEMBER` — potwierdzone
   w `character-pool.test.ts`); test „próg osiągalny przez pisarzy" na tym polega.
-- Ryzyko: ręczne etykiety SVG mogą nachodzić na wielokąt przy długich nazwach
-  (`negotiation`, `engineering`) — `labelOffset` i `text-anchor` zależny od strony osi to
-  lokalna korekta, nie zmiana planu.
+- Ryzyko (domknięte w przeglądzie planu, F1): długie etykiety (`negotiation`, `engineering`)
+  mogłyby wyjść poza `viewBox` — umowa `radarLayout` daje `labelMargin` i `anchor` per oś,
+  a test geometrii pilnuje, że każda etykieta leży w `[0, size]`.
 - Ryzyko: zmiana propsów `RosterSlot` (Faza 3) jest łamiąca; jedyny konsument to `TeamComposer`.
 - Założenie: S-03 dołoży handler/formularz do `EmbarkGate` bez zmiany jego kontraktu wizualnego.
 

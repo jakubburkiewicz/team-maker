@@ -51,13 +51,14 @@ ręczny inline SVG — to rozstrzyga jedyną niewiadomą S-02 z roadmapy.
 - `src/components/ui/button.tsx:8` — bazowe klasy mają `disabled:pointer-events-none
   disabled:opacity-50`: stan zablokowany jest za darmo, ale tooltip na zablokowanym przycisku nie
   zadziała. Wariantów jest sześć, żaden nie pasuje do motywu cosmic — stąd kopie ciągu
-  `bg-purple-600 … hover:bg-purple-500` w `SubmitButton.tsx:18`, `MemberPickerDialog.tsx:125`
-  i `dashboard.astro:19` (dług F6 z przeglądu S-01, zaadresowany do S-02).
+  `bg-purple-600 … hover:bg-purple-500` w `SubmitButton.tsx:18`, `MemberPickerDialog.tsx:125`,
+  `dashboard.astro:19` i `Welcome.astro:43` (dług F6 z przeglądu S-01 liczył trzy kopie;
+  czwarta siedzi na publicznej stronie `/` — `index.astro` renderuje `Welcome.astro`).
 - Motyw: ręczny „cosmic" (`bg-cosmic`, `border-white/10`, `text-blue-100/70`, `purple-300/600`);
   jasne tokeny shadcn nieużywane, `.dark` nigdy nie włączone, tokeny `--chart-1..5` — pięć na
   siedem osi i w jasnej palecie. Wykres musi używać palety cosmic wprost.
-- Zero bibliotek wykresów i zero reużywalnego SVG w repo (jedyny SVG to dekoracja
-  w nieużywanym `Welcome.astro`).
+- Zero bibliotek wykresów i zero reużywalnego SVG w repo (jedyny SVG to trzy dekoracyjne ikony
+  w `Welcome.astro`).
 
 **Testy i lint:** `vitest run` nad `src/**/*.test.ts`, środowisko `node`, bez jsdom — testy
 komponentów React poza zasięgiem (i poza zakresem). `react-compiler/react-compiler: "error"`,
@@ -115,8 +116,8 @@ w `npm run dev`.
 - **Testy komponentów React** (jsdom, Testing Library) — strategia testowania to Moduł 3.
 - **Trwałość składu** — odświeżenie nadal zeruje skład (S-01).
 - **Responsywność / mobile** — układ dwukolumnowy zakłada szeroki ekran (Non-Goal PRD).
-- **Zmiana `dashboard.astro:19`** — to `<a>`, nie `Button`; wariant `cosmic` dotyczy tylko
-  komponentów React.
+- **Zmiana `dashboard.astro:19` i `Welcome.astro:43`** — to `<a>`, nie `Button`; wariant
+  `cosmic` dotyczy tylko komponentów React. Te dwie kopie zostają świadomie.
 
 ## Podejście do implementacji
 
@@ -199,7 +200,9 @@ export function togglePerk(
 ```
 
 Perk sprawdzany jest w `character.perks` postaci z puli — perk innej postaci lub nieistniejący
-to `unknown-perk` (odpowiednik naruszenia `unknown-perk` z `evaluateTeam`). Odznaczanie
+to `unknown-perk` (odpowiednik naruszenia `unknown-perk` z `evaluateTeam`). Członek składu,
+którego `characterId` nie ma w puli (możliwe tylko w składzie doklejonym na siłę), również daje
+`unknown-perk` — pula nie zna żadnego jego perka; bez nowego wariantu odrzucenia. Odznaczanie
 sprawdza się **przed** limitem, żeby członek z 2/2 mógł zdjąć perk. Zaktualizuj komentarz przy
 `addMember` („wybór perków przychodzi w S-02" → wskazanie na `togglePerk`).
 
@@ -228,6 +231,7 @@ nie literały (uwaga F3 z przeglądu S-01).
 - drugi perk wchodzi, trzeci jest odrzucony z `perk-limit` i `limit: 2`, a skład pozostaje ten sam;
 - po odznaczeniu jednego z dwóch trzeci może wejść;
 - perk innej postaci z puli → `unknown-perk`; nieistniejący identyfikator → `unknown-perk`;
+  członek doklejony na siłę z `characterId` spoza puli → `unknown-perk`;
 - postać spoza składu → `member-not-in-team` (także gdy jest w puli);
 - kolejność `perkIds` jest kolejnością wyboru;
 - **zgodność z `evaluateTeam`**: skład zbudowany wyłącznie przez `addMember` + `togglePerk`
@@ -282,7 +286,13 @@ w `src/lib/domain/`.
 
 ```ts
 export interface RadarPoint { x: number; y: number }
-export interface RadarAxis<K extends string> { key: K; end: RadarPoint; label: RadarPoint }
+export interface RadarAxis<K extends string> {
+  key: K;
+  end: RadarPoint;
+  label: RadarPoint;
+  /** `text-anchor` etykiety: `middle` dla osi pionowych (|cos| < ε), `start` po prawej, `end` po lewej. */
+  anchor: "start" | "middle" | "end";
+}
 export interface RadarLayout<K extends string> {
   size: number;
   center: RadarPoint;
@@ -300,13 +310,15 @@ export function radarScaleMax(values: readonly number[], threshold: number): num
 export function radarLayout<K extends string>(
   keys: readonly K[],
   values: Readonly<Record<K, number>>,
-  options: { size: number; threshold: number; labelOffset?: number },
+  options: { size: number; threshold: number; labelMargin?: number; labelOffset?: number },
 ): RadarLayout<K>;
 ```
 
-`radius` to `size / 2` pomniejszone o margines na etykiety; `label` leży na przedłużeniu osi
-o `labelOffset` za jej końcem. Punkt wartości `v` na osi leży w odległości `radius × v / max`
-od środka.
+`radius = size / 2 − labelMargin` (domyślnie `labelMargin` = 56, `labelOffset` = 12 — margines
+musi pomieścić najdłuższą etykietę „negotiation N" w `text-xs`); `label` leży na przedłużeniu
+osi o `labelOffset` za jej końcem, a `anchor` wynika ze znaku cosinusa kąta osi, żeby tekst rósł
+na zewnątrz wykresu, nie na wielokąt. Każdy punkt `label` leży w `[0, size]` — etykieta nigdy nie
+wychodzi poza `viewBox`. Punkt wartości `v` na osi leży w odległości `radius × v / max` od środka.
 
 #### 2. Testy geometrii
 
@@ -324,7 +336,10 @@ od środka.
   na pierścieniu progu (ta sama odległość od środka co odpowiedni punkt `thresholdRing`);
 - `radarScaleMax`: dla wartości ≤ 2 × próg zwraca 2 × próg (dla progu 2 → 4); gdy jakaś wartość
   przekracza, zwraca ją — wielokąt nigdy nie wychodzi poza koniec osi ani nie jest obcinany;
-- `polygon` ma po jednym punkcie na klucz w kolejności kluczy; wejściowe `values` nie są mutowane.
+- `polygon` ma po jednym punkcie na klucz w kolejności kluczy; wejściowe `values` nie są mutowane;
+- etykiety: każdy `label` leży w `[0, size]` na obu osiach (także dla `n = 7` i domyślnych
+  marginesów); oś w górę ma `anchor: "middle"`, osie po prawej stronie środka `"start"`, po lewej
+  `"end"` (dla `n = 4`: góra `middle`, prawo `start`, dół `middle`, lewo `end`).
 
 #### 3. Komponent wykresu
 
@@ -338,7 +353,8 @@ od środka.
 linie `stroke-white/15`; pierścień progu jako przerywany wielokąt `stroke-purple-300/70`
 z podpisem „threshold 2" (literał z `threshold`); wielokąt sum `fill-purple-500/30
 stroke-purple-300` z kropkami na wierzchołkach; etykiety osi `<text>` z nazwą kompetencji
-i sumą, w kolorze zależnym od progu (np. `fill-emerald-300` przy sumie ≥ próg,
+i sumą, `textAnchor={axis.anchor}` (pozycja i kotwica przychodzą z helpera — komponent nie liczy
+nic sam), w kolorze zależnym od progu (np. `fill-emerald-300` przy sumie ≥ próg,
 `fill-blue-100/60` poniżej). Paleta cosmic literałami klas Tailwind (`fill-*`/`stroke-*`),
 nie tokeny `--chart-*`. Bez animacji, bez tooltipów, bez stanu.
 
@@ -353,7 +369,8 @@ kopie w komponentach React przechodzą na wariant.
 **Umowa**: w `buttonVariants.variants.variant` nowy klucz
 `cosmic: "rounded-lg bg-purple-600 text-white hover:bg-purple-500"`; `SubmitButton.tsx:18`
 i `MemberPickerDialog.tsx:125` używają `variant="cosmic"` i zachowują tylko klasy układu
-(`w-full`, `mt-6`). `defaultVariants` bez zmian. `dashboard.astro` nietknięty (to `<a>`).
+(`w-full`, `mt-6`). `defaultVariants` bez zmian. `dashboard.astro` i `Welcome.astro` nietknięte
+(to `<a>`).
 
 #### 5. Bramka „Embark on the job"
 
