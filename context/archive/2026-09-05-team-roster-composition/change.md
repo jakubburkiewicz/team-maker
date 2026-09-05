@@ -1,9 +1,10 @@
 ---
 change_id: team-roster-composition
 title: Kompletowanie składu drużyny z okna wyboru członka
-status: impl_reviewed
+status: archived
 created: 2026-09-05
 updated: 2026-09-05
+archived_at: 2026-09-05T12:57:37Z
 ---
 
 ## Notes
