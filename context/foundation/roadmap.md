@@ -181,7 +181,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Równolegle z:** —
 - **Blokery:** —
 - **Niewiadome:**
-  - Czy kompletowana drużyna przeżywa odświeżenie strony, czy żyje wyłącznie w sesji przeglądarki? — Właściciel: użytkownik. Blok: nie.
+  - Czy kompletowana drużyna przeżywa odświeżenie strony, czy żyje wyłącznie w sesji przeglądarki? —
+    **Rozstrzygnięte (2026-09-05, sesja planowania):** tylko pamięć wyspy, bez trwałości —
+    odświeżenie zeruje skład; spójne z Non-Goalem „wersje robocze niedomkniętych drużyn".
 - **Ryzyko:** Pierwszy fragment widoczny dla użytkownika i najtańszy sposób, żeby pula z F-02
   spotkała się z prawdziwym interfejsem. Ryzyko: limity „maksimum sześciu członków" i „brak
   powtórzeń" są Guardrailem, więc muszą być egzekwowane, a nie tylko ukryte w interfejsie —

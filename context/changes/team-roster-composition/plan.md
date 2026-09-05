@@ -486,31 +486,31 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 
 #### Automatyczne
 
-- [x] 2.1 `npx astro sync && npm run lint` przechodzi
-- [x] 2.2 `npm test` przechodzi
-- [x] 2.3 `npm run build` przechodzi
+- [x] 2.1 `npx astro sync && npm run lint` przechodzi — 80f60cd
+- [x] 2.2 `npm test` przechodzi — 80f60cd
+- [x] 2.3 `npm run build` przechodzi — 80f60cd
 
 #### Ręczne
 
-- [x] 2.4 Niezalogowany na `/teams/new` → przekierowanie na `/auth/signin`
-- [x] 2.5 Zalogowany widzi `0/6` i sześć slotów; linki z dashboardu i Topbara działają
-- [x] 2.6 Przy zepsutym zapytaniu puli strona pokazuje kartę błędu, bez 500 (plik repo przywrócony)
+- [x] 2.4 Niezalogowany na `/teams/new` → przekierowanie na `/auth/signin` — 80f60cd
+- [x] 2.5 Zalogowany widzi `0/6` i sześć slotów; linki z dashboardu i Topbara działają — 80f60cd
+- [x] 2.6 Przy zepsutym zapytaniu puli strona pokazuje kartę błędu, bez 500 (plik repo przywrócony) — 80f60cd
 
 ### Faza 3: Okno wyboru członka
 
 #### Automatyczne
 
-- [ ] 3.1 `npx astro sync && npm run lint` przechodzi z wygenerowanym `dialog.tsx`
-- [ ] 3.2 `npm test` przechodzi
-- [ ] 3.3 `npm run build` przechodzi
-- [ ] 3.4 `@radix-ui/react-dialog` w `dependencies`
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi z wygenerowanym `dialog.tsx`
+- [x] 3.2 `npm test` przechodzi
+- [x] 3.3 `npm run build` przechodzi
+- [x] 3.4 `@radix-ui/react-dialog` w `dependencies`
 
 #### Ręczne
 
-- [ ] 3.5 Okno: dwanaście postaci w kolejności puli, podgląd szczegółów, Esc/klik w tło zamyka
-- [ ] 3.6 „Add to team" wypełnia slot, zamyka okno, licznik rośnie
-- [ ] 3.7 Postać w drużynie oznaczona „In team" i nie do dodania
-- [ ] 3.8 Przy 6/6 licznik `6/6`, brak „Recruit" i brak możliwości dodania
-- [ ] 3.9 „Remove" zwalnia slot, postać wraca do wyboru
-- [ ] 3.10 Odświeżenie strony zeruje skład
-- [ ] 3.11 Szczegóły pokazują trzy perki i nagłówek nazywający limit 2 z 3
+- [x] 3.5 Okno: dwanaście postaci w kolejności puli, podgląd szczegółów, Esc/klik w tło zamyka
+- [x] 3.6 „Add to team" wypełnia slot, zamyka okno, licznik rośnie
+- [x] 3.7 Postać w drużynie oznaczona „In team" i nie do dodania
+- [x] 3.8 Przy 6/6 licznik `6/6`, brak „Recruit" i brak możliwości dodania
+- [x] 3.9 „Remove" zwalnia slot, postać wraca do wyboru
+- [x] 3.10 Odświeżenie strony zeruje skład
+- [x] 3.11 Szczegóły pokazują trzy perki i nagłówek nazywający limit 2 z 3

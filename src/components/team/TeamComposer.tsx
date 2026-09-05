@@ -1,7 +1,8 @@
 import { useState } from "react";
 
+import { MemberPickerDialog } from "@/components/team/MemberPickerDialog";
 import { RosterSlot } from "@/components/team/RosterSlot";
-import { MAX_TEAM_SIZE, removeMember, type PoolCharacter, type TeamComposition } from "@/lib/domain";
+import { MAX_TEAM_SIZE, addMember, removeMember, type PoolCharacter, type TeamComposition } from "@/lib/domain";
 
 interface Props {
   pool: readonly PoolCharacter[];
@@ -12,15 +13,28 @@ interface Props {
  *
  * Skład żyje wyłącznie w pamięci wyspy i nie przeżywa odświeżenia strony (rozstrzygnięcie
  * niewiadomej S-01). Skład rośnie i maleje tylko przez `addMember` / `removeMember` z domeny —
- * wyspa nie składa `MemberSelection` sama.
+ * wyspa nie składa `MemberSelection` sama. Interfejs wyłącza ruchy prewencyjnie (postać już
+ * w drużynie, brak „Recruit" przy 6/6), ale o legalności rozstrzyga `addMember`: odrzucony
+ * wynik zostawia stan bez zmian.
  */
 export default function TeamComposer({ pool }: Props) {
   const [composition, setComposition] = useState<TeamComposition>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const charactersById = new Map(pool.map((character) => [character.id, character]));
+  const memberIds = new Set(composition.map((member) => member.characterId));
 
   function handleRecruit() {
-    // Okno wyboru członka przychodzi w Fazie 3.
+    setPickerOpen(true);
+  }
+
+  function handleAdd(characterId: string) {
+    const result = addMember(composition, characterId, pool);
+    if (!result.ok) {
+      return;
+    }
+    setComposition(result.composition);
+    setPickerOpen(false);
   }
 
   function handleRemove(characterId: string) {
@@ -47,6 +61,13 @@ export default function TeamComposer({ pool }: Props) {
           </li>
         ))}
       </ul>
+      <MemberPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        pool={pool}
+        memberIds={memberIds}
+        onAdd={handleAdd}
+      />
     </section>
   );
 }
