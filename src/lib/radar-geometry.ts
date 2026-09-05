@@ -38,7 +38,10 @@ export interface RadarLayoutOptions {
   threshold: number;
   /** Margines na etykiety między końcem osi a krawędzią `viewBox`; musi pomieścić najdłuższą etykietę. */
   labelMargin?: number;
-  /** Odstęp etykiety od końca osi, na jej przedłużeniu. */
+  /**
+   * Odstęp etykiety od końca osi, na jej przedłużeniu. Musi być ≤ `labelMargin` — inaczej punkt
+   * etykiety wychodzi poza `viewBox` (jej odległość od środka to `size / 2 − labelMargin + labelOffset`).
+   */
   labelOffset?: number;
 }
 

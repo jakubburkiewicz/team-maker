@@ -55,9 +55,7 @@ export function RosterSlot({ member, onRecruit, onRemove, onTogglePerk }: Roster
         <p className="font-semibold">{character.name}</p>
         <p className="mt-1 text-xs tracking-wide text-purple-300 uppercase">
           {character.specialization}
-          <span className="ml-2 text-blue-100/60">
-            +{SPECIALIZATION_POINTS} {character.specialization}
-          </span>
+          <span className="ml-2 text-blue-100/60">+{SPECIALIZATION_POINTS} points</span>
         </p>
       </div>
 
