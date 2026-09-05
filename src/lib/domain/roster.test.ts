@@ -1,16 +1,41 @@
 import { describe, expect, it } from "vitest";
 
-import { CHARACTER_POOL, addMember, evaluateTeam, removeMember, type TeamComposition } from "@/lib/domain";
+import {
+  CHARACTER_POOL,
+  COMPETENCIES,
+  addMember,
+  evaluateTeam,
+  removeMember,
+  togglePerk,
+  type Competency,
+  type TeamComposition,
+} from "@/lib/domain";
+import { findThresholdSolution } from "@/lib/domain/solvability";
 
 /**
- * Limity składu (PRD → FR-012) dowodzone niezależnie od interfejsu. Progi w asercjach są literałami
- * z PRD (`6`), nie stałą `MAX_TEAM_SIZE` — asercja przez pinowaną stałą podąża za jej mutacją
- * i przestaje cokolwiek wiązać (lekcja z F-01).
+ * Limity składu (PRD → FR-012, FR-014) dowodzone niezależnie od interfejsu. Progi w asercjach są
+ * literałami z PRD (`6`, `2`), nie stałymi `MAX_TEAM_SIZE` / `MAX_PERKS_PER_MEMBER` — asercja przez
+ * pinowaną stałą podąża za jej mutacją i przestaje cokolwiek wiązać (lekcja z F-01).
  *
- * Pula: `CHARACTER_POOL` — czysta stała, dwanaście postaci.
+ * Pula: `CHARACTER_POOL` — czysta stała, dwanaście postaci. Identyfikatory zawsze z `POOL_IDS` /
+ * `CHARACTER_POOL`, nie literały (uwaga F3 z przeglądu S-01).
  */
 
 const POOL_IDS = CHARACTER_POOL.map((character) => character.id);
+
+/** Identyfikatory trzech perków postaci o danym indeksie w puli. */
+function perkIdsOf(characterIndex: number): readonly string[] {
+  return CHARACTER_POOL[characterIndex].perks.map((perk) => perk.id);
+}
+
+/** `togglePerk`, które musi się udać — rzuca przy odrzuceniu, żeby test nie przechodził po cichu. */
+function mustToggle(composition: TeamComposition, characterId: string, perkId: string): TeamComposition {
+  const result = togglePerk(composition, characterId, perkId, CHARACTER_POOL);
+  if (!result.ok) {
+    throw new Error(`Unexpected rejection while toggling ${perkId} on ${characterId}: ${result.reason.kind}`);
+  }
+  return result.composition;
+}
 
 /** Skład z pierwszych `count` postaci puli, budowany wyłącznie przez `addMember`. */
 function buildTeam(count: number): TeamComposition {
@@ -114,6 +139,109 @@ describe("removeMember", () => {
   });
 });
 
+describe("togglePerk", () => {
+  it("zaznaczenie dokłada perk do właściwego członka, pozostali zachowują referencje, wejście nie jest mutowane", () => {
+    const three = buildTeam(3);
+    const [perkId] = perkIdsOf(1);
+
+    const result = togglePerk(three, POOL_IDS[1], perkId, CHARACTER_POOL);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.composition).toHaveLength(3);
+    expect(result.composition[1]).toEqual({ characterId: POOL_IDS[1], perkIds: [perkId] });
+    expect(result.composition[0]).toBe(three[0]);
+    expect(result.composition[2]).toBe(three[2]);
+    expect(three[1].perkIds).toEqual([]);
+  });
+
+  it("ponowne przełączenie tego samego perka odznacza go", () => {
+    const one = buildTeam(1);
+    const [perkId] = perkIdsOf(0);
+
+    const selected = mustToggle(one, POOL_IDS[0], perkId);
+    const deselected = mustToggle(selected, POOL_IDS[0], perkId);
+
+    expect(deselected).toEqual([{ characterId: POOL_IDS[0], perkIds: [] }]);
+    expect(selected[0].perkIds).toEqual([perkId]);
+  });
+
+  it("drugi perk wchodzi, trzeci jest odrzucony z perk-limit i limitem 2, a skład zostaje ten sam", () => {
+    const one = buildTeam(1);
+    const [first, second, third] = perkIdsOf(0);
+
+    const withTwo = mustToggle(mustToggle(one, POOL_IDS[0], first), POOL_IDS[0], second);
+    expect(withTwo[0].perkIds).toEqual([first, second]);
+
+    const rejected = togglePerk(withTwo, POOL_IDS[0], third, CHARACTER_POOL);
+
+    expect(rejected).toEqual({ ok: false, reason: { kind: "perk-limit", characterId: POOL_IDS[0], limit: 2 } });
+    expect(withTwo[0].perkIds).toEqual([first, second]);
+  });
+
+  it("po odznaczeniu jednego z dwóch trzeci może wejść", () => {
+    const one = buildTeam(1);
+    const [first, second, third] = perkIdsOf(0);
+
+    const withTwo = mustToggle(mustToggle(one, POOL_IDS[0], first), POOL_IDS[0], second);
+    const withOne = mustToggle(withTwo, POOL_IDS[0], first);
+    const swapped = mustToggle(withOne, POOL_IDS[0], third);
+
+    expect(swapped[0].perkIds).toEqual([second, third]);
+  });
+
+  it("perk innej postaci z puli jest odrzucony z unknown-perk", () => {
+    const one = buildTeam(1);
+    const [foreignPerk] = perkIdsOf(1);
+
+    expect(togglePerk(one, POOL_IDS[0], foreignPerk, CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "unknown-perk", characterId: POOL_IDS[0], perkId: foreignPerk },
+    });
+  });
+
+  it("nieistniejący identyfikator perka jest odrzucony z unknown-perk", () => {
+    const one = buildTeam(1);
+
+    expect(togglePerk(one, POOL_IDS[0], "ghost-perk", CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "unknown-perk", characterId: POOL_IDS[0], perkId: "ghost-perk" },
+    });
+  });
+
+  it("członek doklejony na siłę z characterId spoza puli daje unknown-perk", () => {
+    const forced: TeamComposition = [{ characterId: "ghost", perkIds: [] }];
+
+    expect(togglePerk(forced, "ghost", "ghost-perk", CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "unknown-perk", characterId: "ghost", perkId: "ghost-perk" },
+    });
+  });
+
+  it("postać spoza składu jest odrzucona z member-not-in-team, także gdy jest w puli", () => {
+    const one = buildTeam(1);
+    const [perkId] = perkIdsOf(1);
+
+    expect(togglePerk(one, POOL_IDS[1], perkId, CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "member-not-in-team", characterId: POOL_IDS[1] },
+    });
+    expect(togglePerk([], POOL_IDS[0], perkIdsOf(0)[0], CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "member-not-in-team", characterId: POOL_IDS[0] },
+    });
+  });
+
+  it("kolejność perkIds jest kolejnością wyboru, nie kolejnością w puli", () => {
+    const one = buildTeam(1);
+    const [first, , third] = perkIdsOf(0);
+
+    const composition = mustToggle(mustToggle(one, POOL_IDS[0], third), POOL_IDS[0], first);
+
+    expect(composition[0].perkIds).toEqual([third, first]);
+  });
+});
+
 describe("zgodność z evaluateTeam", () => {
   it("skład budowany wyłącznie przez addMember nigdy nie łamie limitów składu — dwanaście prób po kolei", () => {
     let composition: TeamComposition = [];
@@ -174,5 +302,98 @@ describe("zgodność z evaluateTeam", () => {
     const evaluation = evaluateTeam(forced, CHARACTER_POOL);
 
     expect(evaluation.violations).toContainEqual({ kind: "unknown-character", characterId: "ghost" });
+  });
+
+  it("skład budowany wyłącznie przez addMember + togglePerk ma zero naruszeń, a sumy to 2 × specjalizacje + 1 × perki", () => {
+    let composition = buildTeam(6);
+
+    // Każdemu z sześciu członków próbujemy zaznaczyć wszystkie trzy perki po kolei — trzeci odpada.
+    for (const [index, characterId] of POOL_IDS.slice(0, 6).entries()) {
+      for (const perkId of perkIdsOf(index)) {
+        const result = togglePerk(composition, characterId, perkId, CHARACTER_POOL);
+        if (result.ok) composition = result.composition;
+      }
+    }
+
+    for (const member of composition) {
+      expect(member.perkIds).toHaveLength(2);
+    }
+
+    const evaluation = evaluateTeam(composition, CHARACTER_POOL);
+    expect(evaluation.violations).toEqual([]);
+
+    const expected = Object.fromEntries(COMPETENCIES.map((competency) => [competency, 0])) as Record<
+      Competency,
+      number
+    >;
+    for (const member of composition) {
+      const character = CHARACTER_POOL.find((candidate) => candidate.id === member.characterId);
+      if (character === undefined) throw new Error(`Character ${member.characterId} missing from pool`);
+      expected[character.specialization] += 2;
+      for (const perkId of member.perkIds) {
+        const perk = character.perks.find((candidate) => candidate.id === perkId);
+        if (perk === undefined) throw new Error(`Perk ${perkId} missing on ${character.id}`);
+        expected[perk.competency] += 1;
+      }
+    }
+    expect(evaluation.scores).toEqual(expected);
+  });
+
+  it("odrzucenie perk-limit odpowiada naruszeniu too-many-perks po doklejeniu na siłę", () => {
+    const one = buildTeam(1);
+    const [first, second, third] = perkIdsOf(0);
+    const withTwo = mustToggle(mustToggle(one, POOL_IDS[0], first), POOL_IDS[0], second);
+
+    const rejected = togglePerk(withTwo, POOL_IDS[0], third, CHARACTER_POOL);
+    expect(rejected).toEqual({ ok: false, reason: { kind: "perk-limit", characterId: POOL_IDS[0], limit: 2 } });
+
+    const forced: TeamComposition = [{ characterId: POOL_IDS[0], perkIds: [first, second, third] }];
+    const evaluation = evaluateTeam(forced, CHARACTER_POOL);
+
+    expect(evaluation.violations).toContainEqual({ kind: "too-many-perks", characterId: POOL_IDS[0], count: 3 });
+    expect(evaluation.isValid).toBe(false);
+  });
+
+  it("odrzucenie unknown-perk odpowiada naruszeniu unknown-perk po doklejeniu na siłę", () => {
+    const one = buildTeam(1);
+    const [foreignPerk] = perkIdsOf(1);
+
+    const rejected = togglePerk(one, POOL_IDS[0], foreignPerk, CHARACTER_POOL);
+    expect(rejected).toEqual({
+      ok: false,
+      reason: { kind: "unknown-perk", characterId: POOL_IDS[0], perkId: foreignPerk },
+    });
+
+    const forced: TeamComposition = [{ characterId: POOL_IDS[0], perkIds: [foreignPerk] }];
+    const evaluation = evaluateTeam(forced, CHARACTER_POOL);
+
+    expect(evaluation.violations).toContainEqual({
+      kind: "unknown-perk",
+      characterId: POOL_IDS[0],
+      perkId: foreignPerk,
+    });
+    expect(evaluation.isValid).toBe(false);
+  });
+
+  it("próg jest osiągalny wyłącznie przez pisarzy: skład z solvera odtworzony przez addMember + togglePerk daje isValid", () => {
+    const solution = findThresholdSolution(CHARACTER_POOL);
+
+    expect(solution).not.toBeNull();
+    if (solution === null) return;
+
+    let composition: TeamComposition = [];
+    for (const member of solution) {
+      const added = addMember(composition, member.characterId, CHARACTER_POOL);
+      if (!added.ok) throw new Error(`Unexpected rejection adding ${member.characterId}: ${added.reason.kind}`);
+      composition = added.composition;
+      for (const perkId of member.perkIds) {
+        composition = mustToggle(composition, member.characterId, perkId);
+      }
+    }
+
+    const evaluation = evaluateTeam(composition, CHARACTER_POOL);
+
+    expect(evaluation.violations).toEqual([]);
+    expect(evaluation.isValid).toBe(true);
   });
 });

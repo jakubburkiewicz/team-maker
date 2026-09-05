@@ -25,6 +25,6 @@ export { evaluateTeam } from "@/lib/domain/evaluate-team";
 
 export type { RuleViolation, TeamEvaluation } from "@/lib/domain/evaluate-team";
 
-export { addMember, removeMember } from "@/lib/domain/roster";
+export { addMember, removeMember, togglePerk } from "@/lib/domain/roster";
 
-export type { AddMemberResult, RosterRejection } from "@/lib/domain/roster";
+export type { AddMemberResult, PerkRejection, RosterRejection, TogglePerkResult } from "@/lib/domain/roster";
