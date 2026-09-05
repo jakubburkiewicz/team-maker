@@ -706,36 +706,36 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Automatyczne
 
-- [x] 2.1 `npm test` przechodzi, w tym `team-submission.test.ts` i `team-repo.test.ts`
-- [x] 2.2 `npx astro sync && npm run lint` przechodzi
-- [x] 2.3 `npm run build` przechodzi
-- [x] 2.4 Testy i nowe moduły `src/lib/` bez `astro:*` / `@/lib/supabase`
-- [x] 2.5 `package.json` / `package-lock.json` bez zmian
+- [x] 2.1 `npm test` przechodzi, w tym `team-submission.test.ts` i `team-repo.test.ts` — 750cdb9
+- [x] 2.2 `npx astro sync && npm run lint` przechodzi — 750cdb9
+- [x] 2.3 `npm run build` przechodzi — 750cdb9
+- [x] 2.4 Testy i nowe moduły `src/lib/` bez `astro:*` / `@/lib/supabase` — 750cdb9
+- [x] 2.5 `package.json` / `package-lock.json` bez zmian — 750cdb9
 
 #### Ręczne
 
-- [x] 2.6 `curl` bez `Origin` → 403 (checkOrigin); z `Origin` bez sesji → 302 na `/auth/signin`; z `Origin` i sesją, `[]` → `?error=` o progu, tabela pusta
-- [x] 2.7 `curl` z przepisem → 302 na `/teams/<uuid>/embark`, wiersz z nazwą i identycznym składem
-- [x] 2.8 `composition=not-json` → `?error=Invalid team payload`, brak wiersza
-- [x] 2.9 Kontrola mutacyjna `isValid` → `violations.length === 0` czerwieni test (drzewo przywrócone)
+- [x] 2.6 `curl` bez `Origin` → 403 (checkOrigin); z `Origin` bez sesji → 302 na `/auth/signin`; z `Origin` i sesją, `[]` → `?error=` o progu, tabela pusta — 750cdb9
+- [x] 2.7 `curl` z przepisem → 302 na `/teams/<uuid>/embark`, wiersz z nazwą i identycznym składem — 750cdb9
+- [x] 2.8 `composition=not-json` → `?error=Invalid team payload`, brak wiersza — 750cdb9
+- [x] 2.9 Kontrola mutacyjna `isValid` → `violations.length === 0` czerwieni test (drzewo przywrócone) — 750cdb9
 
 ### Faza 3: Wyspa i strona potwierdzenia
 
 #### Automatyczne
 
-- [ ] 3.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 3.2 `npm test` przechodzi
-- [ ] 3.3 `npm run build` przechodzi
-- [ ] 3.4 `package.json` / `package-lock.json` bez zmian
-- [ ] 3.5 Brak `fetch(` w `EmbarkGate.tsx`
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi
+- [x] 3.2 `npm test` przechodzi
+- [x] 3.3 `npm run build` przechodzi
+- [x] 3.4 `package.json` / `package-lock.json` bez zmian
+- [x] 3.5 Brak `fetch(` w `EmbarkGate.tsx`
 
 #### Ręczne
 
-- [ ] 3.6 Pełna ścieżka na koncie A: zablokowany → przepis → „Embarking…" → strona potwierdzenia z nazwą z bazy; `composition` w Studio równa przepisowi
-- [ ] 3.7 Linki „Assemble another team" i „Back to dashboard" działają
-- [ ] 3.8 Konto B → 404 na cudzym `embark`; nie-UUID → 404; wylogowany → redirect na signin
-- [ ] 3.9 Awaria stosu → `/teams/new` z komunikatem błędu i pustym składem; po starcie zapis działa
-- [ ] 3.10 Odświeżenie `/teams/new` po zapisie zeruje skład bez `?error=`
+- [x] 3.6 Pełna ścieżka na koncie A: zablokowany → przepis → „Embarking…" → strona potwierdzenia z nazwą z bazy; `composition` w Studio równa przepisowi
+- [x] 3.7 Linki „Assemble another team" i „Back to dashboard" działają
+- [x] 3.8 Konto B → 404 na cudzym `embark`; nie-UUID → 404; wylogowany → redirect na signin
+- [x] 3.9 Awaria stosu → `/teams/new` z komunikatem błędu i pustym składem; po starcie zapis działa
+- [x] 3.10 Odświeżenie `/teams/new` po zapisie zeruje skład bez `?error=`
 
 ### Faza 4: Wdrożenie na projekt hostowany
 

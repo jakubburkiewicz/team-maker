@@ -1,9 +1,15 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import TeamComposer from "@/components/team/TeamComposer";
+// Komponent mieszka w `auth/`, bo tam powstał; przenosiny poza zakresem S-03. Renderowany
+// statycznie (bez `client:*`) — nie ma stanu.
+import { ServerError } from "@/components/auth/ServerError";
 import { getCharacterPool } from "@/lib/character-pool-repo";
 import { createClient } from "@/lib/supabase";
 import type { PoolCharacter } from "@/lib/domain";
+
+// `POST /api/teams` wraca tu z `?error=` przy odrzuceniu lub awarii zapisu (S-03).
+const error = Astro.url.searchParams.get("error");
 
 // Jedyne miejsce w S-01, które dotyka Supabase. Repo rzuca, strona łapie i mapuje na stan
 // strony (AGENTS.md → Conventions) — nieprzechwycony throw w Workerze to 500.
@@ -37,8 +43,11 @@ if (supabase) {
       </div>
       {
         pool ? (
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-            <TeamComposer pool={pool} client:load />
+          <div class="flex flex-col gap-4">
+            <ServerError message={error} />
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              <TeamComposer pool={pool} client:load />
+            </div>
           </div>
         ) : (
           <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">

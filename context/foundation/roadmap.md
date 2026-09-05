@@ -224,7 +224,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Równolegle z:** S-08
 - **Blokery:** —
 - **Niewiadome:**
-  - Z czego liczony jest hash nazwy i czy musi być unikalny w obrębie konta? — Właściciel: użytkownik. Blok: nie.
+  - Z czego liczony jest hash nazwy i czy musi być unikalny w obrębie konta? — **Rozstrzygnięte
+    (2026-09-05, sesja planowania):** nazwa losowa, generowana w bazie (`default` kolumny, 8 znaków
+    hex), unikalna per konto (`unique (user_id, name)`).
 - **Ryzyko:** Gwiazda przewodnia — dopiero tu powstaje trwały zapis, a wraz z nim odcięcie cudzych
   drużyn na poziomie dostępu do danych, bo tabela bez tego odcięcia jest dziurą od pierwszej minuty
   jej istnienia. Główne ryzyko fragmentu: próg egzekwowany wyłącznie w przeglądarce łamie Guardrail
@@ -232,8 +234,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   nie jest. Warsztat bazy już istnieje po F-02: katalog `supabase/migrations/` z pierwszymi
   migracjami, wzorzec RLS (`enable row level security` + wyłącznie polityki, których fragment
   potrzebuje), lokalny obieg `supabase start` / `supabase db reset` oraz `supabase db push` na
-  zlinkowany projekt hostowany. Klucz obcy z `teams` do `characters(id)` jest przewidziany —
-  zasiew puli działa upsertem, bez `delete`.
+  zlinkowany projekt hostowany. **Rozstrzygnięte (2026-09-05, sesja planowania):** skład trafia
+  do kolumny `jsonb`, bez klucza obcego do `characters` — pula jest zamknięta i zasiewana upsertem,
+  więc FK nie kupuje integralności, której schemat i tak nie ma.
   **Punkt kontrolny z przeglądu S-01 (2026-09-05):** `PROTECTED_ROUTES` w `src/middleware.ts`
   chroni prefiks `/teams`, który **nie** obejmuje `/api/teams/*` — trasy API zapisu muszą trafić
   do listy jawnie albo sprawdzać `locals.user` w handlerze; RLS pozostaje drugą warstwą.
@@ -311,6 +314,9 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   operacje, da się wykazać zero na wszystkich czterech, a nie tylko na odczycie. Wymaganie jest
   własnością binarną — jedna nieosłonięta trasa unieważnia cały fragment — więc jego dowodem jest
   weryfikacja na dwóch kontach z F-01, nie inspekcja kodu.
+  **Punkt kontrolny z S-03 (2026-09-05):** `/teams/[id]/embark` zwraca gołe 404 dla nieznanego
+  i cudzego id — prowizorycznie, bez rozróżnienia; S-07 rozstrzyga docelowo (404 vs redirect na
+  listę) i dokłada nawigację.
 - **Status:** proposed
 
 ### S-08: Gracz widzi listę brakujących punktów

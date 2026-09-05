@@ -107,7 +107,7 @@ export default function TeamComposer({ pool }: Props) {
         ) : (
           <p className="text-sm text-red-200">The roster breaks a team limit, so the chart cannot be shown.</p>
         )}
-        <EmbarkGate ready={evaluation.isValid} />
+        <EmbarkGate ready={evaluation.isValid} composition={composition} />
       </aside>
       <MemberPickerDialog
         open={pickerOpen}
