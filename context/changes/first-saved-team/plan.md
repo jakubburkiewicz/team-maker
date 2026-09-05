@@ -155,15 +155,18 @@ jest niezmienna, a gwiazda przewodnia jest „dowieziona" dopiero na produkcji:
 ## Krytyczne szczegóły implementacji
 
 - **Czas i cykl życia (migracja → worker):** w Fazie 4 najpierw `supabase db push`, potem
-  `npx wrangler deploy`. Odwrotna kolejność wystawia trasę zapisu bez tabeli. Migracja jest czysto
-  addytywna, więc wycofaniem jest wyłącznie wycofanie workera (`wrangler rollback`) — tabela zostaje,
-  co jest nieszkodliwe; wersję workera **sprzed** wdrożenia zapisz w `deploy-plan.md` przed pushem.
+  `npx wrangler deploy`. Odwrotna kolejność wystawia trasę zapisu bez tabeli. Wycofanie jest
+  **różne dla dwóch migracji w tym pushu** (patrz Uwagi dotyczące migracji): `teams` jest czysto
+  addytywna, więc wycofaniem jest wycofanie workera (`wrangler rollback`) — tabela zostaje, co jest
+  nieszkodliwe; `revoke_writes` z F-02 addytywna **nie jest** i `wrangler rollback` jej nie odwraca.
+  Wersję workera **sprzed** wdrożenia zapisz w `deploy-plan.md` przed pushem.
 - **Sekwencjonowanie polityk:** polityki `insert` i `select` w jednej migracji (patrz Kluczowe
   odkrycia — `returning` bez `select` daje udany zapis z błędem u klienta).
-- **Specyfikacja UX formularza:** przycisk `type="submit"`, `disabled={!ready || pending}`;
-  `onSubmit` dodatkowo woła `preventDefault()` przy `!ready` (obrona w głąb — `disabled` już
-  blokuje). Tekst pod przyciskiem bez zmian z S-02. Po wysłaniu przeglądarka nawiguje, więc
-  wyspa nie musi nic resetować.
+- **Specyfikacja UX formularza:** przycisk `type="submit"`, `disabled={!ready || pending}` — i to
+  jedyna bariera. Bez `onSubmit`: zablokowany przycisk nie wysyła formularza, a implicit submission
+  (Enter) wymaga pola tekstowego — ukryte pole go nie wyzwala, więc gałąź `preventDefault()` przy
+  `!ready` nie miałaby jak się wykonać. Tekst pod przyciskiem bez zmian z S-02. Po wysłaniu
+  przeglądarka nawiguje, więc wyspa nie musi nic resetować.
 - **Debugowanie:** `curl` na `/api/teams` bez `-H "Origin: <adres dev>"` dostaje 403 z
   `checkOrigin`, nie z naszej trasy — nie szukaj błędu w handlerze.
 
@@ -215,9 +218,16 @@ create policy "owner can read teams" on public.teams
   using (user_id = (select auth.uid()));
 
 revoke all on public.teams from anon;
+-- Obrona w głąb na poziomie GRANT, wzorzec `20260905090700_character_pool_revoke_writes.sql`:
+-- Supabase nadaje `authenticated` wszystkie przywileje na nowych tabelach w `public`. RLS domyka
+-- UPDATE/DELETE (brak polityk = zero wierszy), ale **nie dotyczy TRUNCATE** — ten filtruje wyłącznie
+-- przywilej. `insert`/`select` zostają, bo wymagają ich polityki powyżej.
+revoke update, delete, truncate on public.teams from authenticated;
 ```
 
-Bez polityk `update`/`delete` (S-05, S-06). Bez klucza obcego do `characters` (decyzja: jsonb).
+Bez polityk `update`/`delete` (S-05, S-06). **Konsekwencja dla S-05/S-06:** sama polityka nie
+wystarczy — ich migracje muszą dołożyć `grant update` / `grant delete on public.teams to
+authenticated` obok polityki, inaczej operacja da ciche zero wierszy. Bez klucza obcego do `characters` (decyzja: jsonb).
 `(select auth.uid())` zamiast gołego `auth.uid()` — zalecenie Supabase (funkcja liczona raz na
 zapytanie, nie na wiersz).
 
@@ -229,10 +239,18 @@ zapytanie, nie na wiersz).
 ani zyskać polityki dla `anon` bez czerwonego testu. Wzorzec czytania migracji przez `node:fs`
 z `character-pool-sql.test.ts` (lokalizacja po sufiksie `_teams_schema.sql`, najnowsza po nazwie).
 
+**Uwaga o ścieżce**: wzorzec liczy katalog migracji od `import.meta.url`, więc literał zależy od
+położenia pliku testu. `character-pool-sql.test.ts:19` leży w `src/lib/domain/` i używa
+`../../../supabase/migrations/`; ten wartownik leży w `src/lib/`, więc literał brzmi
+`fileURLToPath(new URL("../../supabase/migrations/", import.meta.url))`. Helper `latestMigration`
+(`character-pool-sql.test.ts:22-30`) jest **lokalny i nieeksportowany** — zduplikuj go w nowym pliku
+(~8 linii); nie wydzielaj wspólnego modułu dla dwóch konsumentów.
+
 **Umowa**: asercje na tekście pliku (bez parsera SQL, jak w F-02): zawiera
 `alter table public.teams enable row level security`; każde `create policy` na `public.teams`
 zawiera `to authenticated` i `auth.uid()`; nie zawiera `to anon`; zawiera
-`revoke all on public.teams from anon`; kolumna `name` ma `default`; jest `unique (user_id, name)`.
+`revoke all on public.teams from anon`; zawiera `revoke update, delete, truncate on public.teams
+from authenticated`; kolumna `name` ma `default`; jest `unique (user_id, name)`.
 
 ### Kryteria sukcesu:
 
@@ -342,17 +360,28 @@ export async function createTeam(
 ): Promise<TeamSummary>;
 
 /** `null`, gdy wiersza nie ma lub RLS go ukrywa, a także gdy `id` nie jest UUID. Rzuca przy błędzie. */
-export async function getTeamSummary(supabase: SupabaseClient, id: string): Promise<TeamSummary | null>;
+export async function getTeamSummary(
+  supabase: SupabaseClient,
+  id: string | undefined,
+): Promise<TeamSummary | null>;
 
-/** Czysta kontrola formatu UUID — eksportowana do testu. */
-export function isTeamId(value: string): boolean;
+/** Czysta kontrola formatu UUID — eksportowana do testu; zawęża typ dla wywołującego. */
+export function isTeamId(value: string | undefined): value is string;
 ```
 
 `createTeam`: `.insert({ user_id, composition }).select("id, name").single()` — `name` z `default`,
 nie podawana. `getTeamSummary`: `isTeamId` przed zapytaniem (bez tego Postgres rzuca `22P02`),
 potem `.select("id, name").eq("id", id).maybeSingle()`. Kształt wiersza opisany ręcznie
 (`TeamSummaryRow`), jak `CharacterRow`. `isTeamId` ma krótki test w `src/lib/team-repo.test.ts`
-(UUID v4 → true; `abc`, pusty, UUID bez myślników → false); nic więcej w repo nie jest czyste.
+(UUID v4 → true; `abc`, pusty, UUID bez myślników, `undefined` → false); nic więcej w repo nie jest
+czyste.
+
+**Dlaczego `string | undefined`**: `Astro.params` ma typ `Record<string, string | undefined>`, więc
+`getTeamSummary(supabase, Astro.params.id)` z parametrem `string` jest błędem ts(2345). Żadne
+kryterium automatyczne tego nie złapie — `npm run build` i `npm run lint` nie typechecują, a CI nie
+uruchamia `astro check` — a naprawa rzutowaniem `as string` przywróciłaby idiom, od którego trasa API
+świadomie odchodzi. Strażnik formatu jest więc jednym miejscem odcięcia obu złych wejść (`undefined`
+i nie-UUID), a `embark.astro` woła repo bez zawężania i bez rzutowania.
 
 #### 4. Trasa zapisu
 
@@ -397,10 +426,15 @@ w odpowiedziach.
 
 #### Ręczna weryfikacja:
 
-- `npm run dev` ze stosem lokalnym; `curl -i -X POST <dev>/api/teams -d "composition=[]"` bez
-  ciasteczka sesji → `302` na `/auth/signin` (middleware); z `-H "Origin: <dev>"` i ciasteczkiem
-  sesji konta A oraz `composition=[]` → `302` na `/teams/new?error=Every%20competency…`,
-  tabela pusta
+- `npm run dev` ze stosem lokalnym. **Każde żądanie `curl`, które ma cokolwiek dowieść o naszym
+  kodzie, musi nieść `-H "Origin: <dev>"`** — Astro wstawia kontrolę Origin na **początek** łańcucha
+  middleware (`base-pipeline.js:150`, `internalMiddlewares.unshift(...)`), więc żądanie bez tego
+  nagłówka dostaje 403 zanim dobiegnie do `PROTECTED_ROUTES` i nie dowodzi niczego o ochronie trasy.
+  Trzy sprawdzenia: (a) `checkOrigin` — `curl -i -X POST <dev>/api/teams -d "composition=[]"` **bez**
+  `Origin` → `403 Cross-site POST form submissions are forbidden`; (b) punkt kontrolny middleware —
+  ten sam `curl` z `-H "Origin: <dev>"` i **bez** ciasteczka sesji → `302` na `/auth/signin`;
+  (c) bramka progu — z `-H "Origin: <dev>"`, ciasteczkiem sesji konta A i `composition=[]` →
+  `302` na `/teams/new?error=Every%20competency…`, tabela pusta
 - Ten sam `curl` ze składem z przepisu (JSON z `characterId`/`perkIds` z `CHARACTER_POOL`) →
   `302` na `/teams/<uuid>/embark`; w Studio jeden wiersz z `user_id` konta A, ośmioznakową nazwą
   i składem identycznym z wysłanym
@@ -428,12 +462,13 @@ Po tej fazie gwiazda przewodnia działa lokalnie od końca do końca.
 **Cel**: FR-018 + FR-007 — odblokowany przycisk wysyła skład; zablokowany nadal nie robi nic.
 
 **Umowa**: props `{ ready: boolean; composition: TeamComposition }`. Renderuje
-`<form method="POST" action="/api/teams" onSubmit={…}>` z
+`<form method="POST" action="/api/teams">` z
 `<input type="hidden" name={COMPOSITION_FIELD} value={JSON.stringify(composition)} />`
 i wewnętrznym komponentem przycisku (w tym samym pliku), który bierze `pending` z `useFormStatus()`
 i renderuje `Button type="submit" variant="cosmic" disabled={!ready || pending}` z ikoną `Rocket`
-i etykietą „Embark on the job" (przy `pending`: „Embarking…"). `onSubmit` woła `preventDefault()`
-przy `!ready`. Tekst pod przyciskiem i `aria-describedby` bez zmian. Bez `fetch`, bez stanu.
+i etykietą „Embark on the job" (przy `pending`: „Embarking…"). **Bez `onSubmit`** — `disabled` jest
+jedyną i wystarczającą barierą (patrz Krytyczne szczegóły implementacji → Specyfikacja UX
+formularza). Tekst pod przyciskiem i `aria-describedby` bez zmian. Bez `fetch`, bez stanu.
 
 #### 2. Spięcie w wyspie
 
@@ -484,7 +519,13 @@ planowania):** nazwa losowa, generowana w bazie (`default` kolumny, 8 znaków he
 konto (`unique (user_id, name)`)". W bloku `### S-07` dopisać do Ryzyka: „**Punkt kontrolny z S-03
 (2026-09-05):** `/teams/[id]/embark` zwraca gołe 404 dla nieznanego i cudzego id — prowizorycznie,
 bez rozróżnienia; S-07 rozstrzyga docelowo (404 vs redirect na listę) i dokłada nawigację."
-Statusów nie zmieniać (robi to `/10x-implement` / `/10x-archive`).
+Trzecia edycja, w bloku `### S-03` → Ryzyko: zdanie „Klucz obcy z `teams` do `characters(id)` jest
+przewidziany — zasiew puli działa upsertem, bez `delete`." zastąpić rozstrzygnięciem
+„**Rozstrzygnięte (2026-09-05, sesja planowania):** skład trafia do kolumny `jsonb`, bez klucza
+obcego do `characters` — pula jest zamknięta i zasiewana upsertem, więc FK nie kupuje integralności,
+której schemat i tak nie ma." Bez tej edycji roadmapa zapowiada strukturę, której w bazie nie będzie
+— dokładnie klasa ustalenia F1 z przeglądu F-01. Statusów nie zmieniać (robi to `/10x-implement` /
+`/10x-archive`).
 
 ### Kryteria sukcesu:
 
@@ -533,13 +574,17 @@ ryzyk wymaga notatki o wersji workera zgodnej ze schematem.
 
 1. `npx wrangler deployments list` → zapisz identyfikator **bieżącej** wersji workera (zgodnej ze
    schematem sprzed `teams`) w `deploy-plan.md` (patrz pkt 2).
-2. `supabase db push` — CLI wypisze dwie migracje do zastosowania (`20260905090700_…revoke_writes`
+2. `supabase migration list` → kontrola stanu zdalnego **przed** pushem: zdalny projekt ma mieć
+   zastosowane `20260905081500` i `20260905081600`, a `20260905090700_…revoke_writes` oraz
+   `<ts>_teams_schema` mają być wyłącznie lokalne. Każdy inny obraz oznacza dryf schematu
+   i wstrzymuje push do wyjaśnienia.
+3. `supabase db push` — CLI wypisze dwie migracje do zastosowania (`20260905090700_…revoke_writes`
    oraz `<ts>_teams_schema`); potwierdź. **`supabase config push` nie zostaje uruchomione** —
    zakaz z `AGENTS.md` bez wyjątku.
-3. Dashboard Supabase: tabela `teams` istnieje, RLS włączone, dokładnie dwie polityki; na
+4. Dashboard Supabase: tabela `teams` istnieje, RLS włączone, dokładnie dwie polityki; na
    `characters`/`perks` przywileje zapisu dla `anon`/`authenticated` cofnięte.
-4. `npx astro sync && npm run lint && npm test && npm run build`, potem `npx wrangler deploy`.
-5. Test dymny na produkcji: konto testowe → przepis → „Embark" → strona potwierdzenia; wiersz
+5. `npx astro sync && npm run lint && npm test && npm run build`, potem `npx wrangler deploy`.
+6. Test dymny na produkcji: konto testowe → przepis → „Embark" → strona potwierdzenia; wiersz
    w dashboardzie; drugie konto → 404 na tym `embark`.
 
 #### 2. Dokumentacja wdrożenia
@@ -562,7 +607,8 @@ faktycznym rozstrzygnięciem.
 
 #### Ręczna weryfikacja:
 
-- `supabase db push` kończy się bez błędu i wypisuje obie migracje jako zastosowane
+- `supabase migration list` przed pushem pokazuje oczekiwany dryf (dwie migracje wyłącznie lokalne);
+  `supabase db push` kończy się bez błędu i wypisuje obie jako zastosowane
 - Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu dla `anon`/`authenticated`
 - `supabase config push` **nie** uruchomiony; rejestracja testowa nadal wysyła link na adres produkcyjny
 - Test dymny na produkcji przechodzi (zapis, potwierdzenie z nazwą, 404 z drugiego konta)
@@ -606,8 +652,13 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
   nowa migracja. Polityki `update`/`delete` dokładają S-05/S-06 własnymi migracjami.
 - Push S-03 zastosuje też `20260905090700_character_pool_revoke_writes.sql` z F-02 — `deploy-plan.md`
   ma to odnotować.
-- Kolejność na produkcji: migracja → worker. Wycofanie: `wrangler rollback` na zapisaną wersję;
-  tabela zostaje (nieszkodliwa bez trasy, która do niej pisze).
+- Kolejność na produkcji: migracja → worker. **Wycofanie rozpisane per migracja**, bo push zabiera
+  dwie. Dla `teams` — `wrangler rollback` na zapisaną wersję workera; tabela zostaje, nieszkodliwa
+  bez trasy, która do niej pisze. Dla `revoke_writes` — `wrangler rollback` **nic nie cofa**, bo to
+  zmiana przywilejów w bazie, nie kodu; jej wycofaniem byłaby wyłącznie nowa migracja przywracająca
+  granty. Ryzyko jest jednak zerowe: jedynym konsumentem `characters`/`perks` w aplikacji jest
+  `getCharacterPool` (`src/lib/character-pool-repo.ts:88`, wyłącznie odczyt), a zasiew biegnie
+  migracją jako `postgres`, którego revoke nie dotyczy.
 - Zmiana propsów `EmbarkGate` (Faza 3) łamie kontrakt wewnątrz fragmentu; jedyny konsument to
   `TeamComposer`.
 
@@ -663,7 +714,7 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Ręczne
 
-- [ ] 2.6 `curl` bez sesji → 302 na `/auth/signin`; z sesją i `[]` → `?error=` o progu, tabela pusta
+- [ ] 2.6 `curl` bez `Origin` → 403 (checkOrigin); z `Origin` bez sesji → 302 na `/auth/signin`; z `Origin` i sesją, `[]` → `?error=` o progu, tabela pusta
 - [ ] 2.7 `curl` z przepisem → 302 na `/teams/<uuid>/embark`, wiersz z nazwą i identycznym składem
 - [ ] 2.8 `composition=not-json` → `?error=Invalid team payload`, brak wiersza
 - [ ] 2.9 Kontrola mutacyjna `isValid` → `violations.length === 0` czerwieni test (drzewo przywrócone)
@@ -690,7 +741,7 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Ręczne
 
-- [ ] 4.1 `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu
+- [ ] 4.1 `supabase migration list` potwierdza stan zdalny; `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu
 - [ ] 4.2 Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu
 - [ ] 4.3 `supabase config push` nie uruchomiony; potwierdzanie adresu na produkcji działa
 - [ ] 4.4 Test dymny na produkcji: zapis, potwierdzenie z nazwą, 404 z drugiego konta
