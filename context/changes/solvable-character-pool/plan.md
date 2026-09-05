@@ -145,6 +145,15 @@ Istniejące `Perk`, `Character`, `CharacterPool` i `COMPETENCIES` pozostają nie
 Zawężenie `perks` jest legalne, bo pole jest `readonly` — dzięki temu `readonly PoolCharacter[]`
 jest przypisywalne do `CharacterPool` i wchodzi wprost do `evaluateTeam`.
 
+**Plik**: `src/lib/domain/index.ts`
+
+**Cel**: Utrzymać barrel jako jedyne publiczne wejście modułu — istniejący test i fixture importują
+z `@/lib/domain`, nie z głębokich ścieżek.
+
+**Umowa**: Dopisać `export type { PoolCharacter, PoolPerk }` oraz `export { CHARACTER_POOL }`
+(ten drugi po powstaniu pliku z pozycji 2). Solver z pozycji 3 **nie** wchodzi do barrela — tak jak
+`test-fixtures.ts` ma wyłącznie konsumentów testowych i nie ma trafić do bundla aplikacji.
+
 #### 2. Pula postaci
 
 **Plik**: `src/lib/domain/character-pool.ts` (nowy)
@@ -216,7 +225,10 @@ wyrażone **literałami z PRD**, nie stałymi z modułu (ustalenie F2 przeglądu
   zestawu.
 - Właściwość liczbowa z PRD: żaden skład sześciu postaci **bez perków** nie domyka progu —
   sześć specjalizacji nie pokrywa siedmiu kompetencji. Wzorzec przypadku istnieje już
-  w `src/lib/domain/evaluate-team.test.ts:88`.
+  w `src/lib/domain/evaluate-team.test.ts:88`. Przypadek jest prawdziwy dla **dowolnej** puli, więc
+  nie waliduje treści `CHARACTER_POOL` — dokumentuje zapis PRD „perki muszą zostać użyte w każdym
+  poprawnym rozwiązaniu" na danych docelowych. Komentarz w teście ma to mówić wprost, żeby nikt nie
+  czytał go jako kontroli puli.
 - Kalibracja: `countThresholdSolutions(CHARACTER_POOL)` przekracza ustalony **dolny próg**
   (rząd wielkości: dziesiątki rozwiązań). Asercja jest progiem, nie równością — edycja treści,
   która niczego nie łamie, nie czerwieni zestawu, a realny spadek rozwiązywalności tak.
@@ -228,8 +240,9 @@ wyrażone **literałami z PRD**, nie stałymi z modułu (ustalenie F2 przeglądu
 - Zestaw przechodzi: `npm test`
 - Lint przechodzi: `npm run lint`
 - Build przechodzi: `npx astro sync && npm run build`
-- Moduł domenowy pozostaje czysty: `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca
-  dopasowań
+- Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/`
+  nie zwraca dopasowań (sprawdzane są linie importu, nie komentarze — komentarz o tym, czego moduł
+  nie importuje, nie może zaczerwienić kryterium)
 - Zestaw kończy się poniżej pięciu sekund — dowód wyczerpujący nie jest kosztem czasu
 
 #### Ręczna weryfikacja:
@@ -288,11 +301,21 @@ z Fazy 1, pilnowane testem zgodności.
 **Cel**: Dać jedno deterministyczne odwzorowanie stałej `CHARACTER_POOL` na tekst SQL — używane
 raz przy pisaniu migracji i przy każdym uruchomieniu testu zgodności.
 
-**Umowa**: Czysta funkcja `renderCharacterPoolInserts(pool: readonly PoolCharacter[]): string`,
-bez zależności poza typami domenowymi. Wynik jest w pełni deterministyczny: kolejność postaci
-i perków z tablicy wejściowej, `sort_order` z indeksu, ustalony sposób cytowania łańcuchów
-(apostrof podwojony), ustalone wcięcia i separatory. Dwa wywołania na tych samych danych dają
-znak w znak ten sam tekst — na tym opiera się kontrola z pozycji 4.
+**Umowa**: Dwie czyste funkcje bez zależności poza typami domenowymi:
+
+- `renderCharacterPoolInserts(pool: readonly PoolCharacter[]): string` — blok `INSERT` dla obu
+  tabel w formie **upsertu**: `insert into … values … on conflict (id) do update set …` dla każdej
+  kolumny treściowej. Ten sam tekst obsługuje pierwszy zasiew i każdą późniejszą korektę treści,
+  bez `delete`, które po S-03 zderzyłoby się z kluczem obcym z `teams` do `characters(id)`.
+- `renderCompetencyEnum(competencies: typeof COMPETENCIES): string` — pełne polecenie
+  `create type public.competency as enum (...)` z wartościami w kolejności `COMPETENCIES`.
+  Migracja schematu zawiera dosłownie jego wynik, tak samo jak migracja zasiewowa zawiera wynik
+  pierwszej funkcji — jeden wzorzec zgodności dla obu plików, bez parsera SQL.
+
+Wynik obu jest w pełni deterministyczny: kolejność postaci i perków z tablicy wejściowej,
+`sort_order` z indeksu, ustalony sposób cytowania łańcuchów (apostrof podwojony), ustalone wcięcia
+i separatory. Dwa wywołania na tych samych danych dają znak w znak ten sam tekst — na tym opiera
+się kontrola z pozycji 4.
 
 #### 3. Migracja zasiewowa
 
@@ -302,7 +325,8 @@ znak w znak ten sam tekst — na tym opiera się kontrola z pozycji 4.
 mechanizm `[db.seed]` nigdy nie dociera.
 
 **Umowa**: Plik zawiera **dosłowny** wynik `renderCharacterPoolInserts(CHARACTER_POOL)` — dwa
-polecenia `insert into` (najpierw `characters`, potem `perks`, ze względu na klucz obcy).
+polecenia `insert into … on conflict (id) do update` (najpierw `characters`, potem `perks`,
+ze względu na klucz obcy).
 Migracja jest osobna od schematu, bo to ona będzie zastępowana przy każdej przyszłej zmianie
 treści puli, podczas gdy schemat zostaje.
 
@@ -318,8 +342,10 @@ ani `@/lib/supabase` — i sprawdza, że jej treść **zawiera dosłownie** wyni
 `_character_pool_seed.sql` w `supabase/migrations/`; gdy pasuje więcej niż jeden, brany jest
 najnowszy po nazwie — tak działa też sam Supabase. Test **nie zapisuje** pliku migracji.
 
-Dodatkowo jeden przypadek na kompletność enuma: liczba wartości `competency` wypisanych
-w migracji schematu równa się długości `COMPETENCIES`.
+Dodatkowo jeden przypadek na zgodność enuma: migracja schematu (lokalizowana po sufiksie
+`_character_pool_schema.sql`) **zawiera dosłownie** wynik `renderCompetencyEnum(COMPETENCIES)`.
+Sama liczba wartości nie wystarcza — siedem wartości o innych nazwach przeszłoby, a rozjazd nazw
+ujawniłby się dopiero jako ciche `NaN` w sumach `evaluateTeam`.
 
 ### Kryteria sukcesu:
 
@@ -328,8 +354,8 @@ w migracji schematu równa się długości `COMPETENCIES`.
 - Zestaw przechodzi, w tym kontrola zgodności: `npm test`
 - Lint przechodzi: `npm run lint`
 - Build przechodzi: `npx astro sync && npm run build`
-- Testy nadal nie sięgają po Supabase: `grep -rE "astro:|lib/supabase" src/lib/domain/` nie zwraca
-  dopasowań
+- Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/`
+  nie zwraca dopasowań
 
 #### Ręczna weryfikacja:
 
@@ -376,7 +402,11 @@ do czystej reguły.
 - Kształt wiersza opisany ręcznie napisanym interfejsem w tym pliku; `supabase gen types` nie
   wchodzi do projektu (patrz „Czego NIE robimy").
 - `mapPoolRows(rows): readonly PoolCharacter[]` — **eksportowana, czysta**, bez `async`
-  i bez zależności od Supabase. To ona jest przedmiotem testu.
+  i bez zależności od Supabase. To ona jest przedmiotem testu. Wartości `specialization`
+  i `competency` z wiersza są **sprawdzane przynależnością do `COMPETENCIES`**, nie rzutowane:
+  wartość spoza listy rzuca błąd z nazwą wiersza i wartością. Bez tego nieznana kompetencja
+  przechodzi do `evaluateTeam`, która dolicza `scores[x] += 2` pod kluczem, którego pętla progu
+  nie odwiedza — `NaN` bez naruszenia i bez błędu.
 - Błąd zapytania jest rzucany, nie połykany: pusta pula wygląda w interfejsie identycznie jak
   awaria bazy, a S-01 musi umieć je rozróżnić.
 
@@ -390,7 +420,8 @@ z `AGENTS.md`.
 **Umowa**: Testowane jest wyłącznie `mapPoolRows` na ręcznie zbudowanych wierszach. Przypadki:
 wiersze odwzorowują się na `PoolCharacter` z zachowaniem kolejności; wynik jest legalnym wejściem
 `evaluateTeam` (przepuszczony przez nią nie generuje `unknown-character` ani `unknown-perk`);
-postać bez perków nie wywraca mapowania. Plik testu **nie importuje** `@/lib/supabase`.
+postać bez perków nie wywraca mapowania; wiersz z kompetencją spoza `COMPETENCIES` rzuca błąd
+zamiast przejść dalej. Plik testu **nie importuje** `@/lib/supabase`.
 
 ### Kryteria sukcesu:
 
@@ -399,8 +430,9 @@ postać bez perków nie wywraca mapowania. Plik testu **nie importuje** `@/lib/s
 - Zestaw przechodzi: `npm test`
 - Lint przechodzi: `npm run lint`
 - Build przechodzi: `npx astro sync && npm run build`
-- Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" src/**/*.test.ts` nie zwraca
-  dopasowań
+- Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src`
+  nie zwraca dopasowań (forma niezależna od powłoki — glob `**` w bashu 3.2 bez `globstar` nie
+  schodzi do podkatalogów i pominąłby `src/lib/domain/`)
 
 #### Ręczna weryfikacja:
 
@@ -433,6 +465,14 @@ Zlinkowanie projektu zmienia stan opisany w `context/deployment/deploy-plan.md:1
 hostowany nie jest zlinkowany"). Po udanym `db push` zaktualizuj to zdanie wraz z notatką, że
 zakaz `config push` obowiązuje nadal — a teraz jest łatwiejszy do przypadkowego uruchomienia.
 
+Domknij też wpis F-02 w `context/foundation/roadmap.md` (linie ~135–159): zdanie „Fundament nie
+buduje warstwy danych" przestało być prawdą decyzją użytkownika z sesji planowania — warstwa danych
+(pierwsza migracja, RLS, odczyt) powstaje w tej zmianie; obie „Niewiadome" mają rozstrzygnięcia
+(pula w bazie z autorskim źródłem prawdy w repo; treść generuje agent po angielsku, użytkownik
+recenzuje). We wpisie S-03 odnotuj, że katalog `supabase/migrations/`, wzorzec RLS i warsztat
+`supabase start`/`db push` już istnieją. Niedomknięta mapa drogowa była ustaleniem F1 przeglądu
+implementacji F-01 — to samo przeoczenie nie może się powtórzyć.
+
 ### Kryteria sukcesu:
 
 #### Automatyczna weryfikacja:
@@ -449,6 +489,8 @@ zakaz `config push` obowiązuje nadal — a teraz jest łatwiejszy do przypadkow
   działa (rejestracja testowa kończy się mailem z linkiem prowadzącym na produkcyjny adres,
   nie na localhost)
 - `context/deployment/deploy-plan.md:136` odzwierciedla nowy stan zlinkowania
+- Wpis F-02 w `context/foundation/roadmap.md` odzwierciedla decyzję o warstwie danych, obie
+  Niewiadome są rozstrzygnięte, a wpis S-03 odnotowuje istniejący warsztat Supabase
 
 ---
 
@@ -464,8 +506,9 @@ zakaz `config push` obowiązuje nadal — a teraz jest łatwiejszy do przypadkow
 - Właściwość liczbowa PRD: brak rozwiązania bez użycia perków
 - Kalibracja: liczba rozwiązań powyżej dolnego progu
 - Zgodność stałej z migracją zasiewową: dosłowne zawieranie wyrenderowanego bloku `INSERT`
-- Kompletność enuma `competency` wobec `COMPETENCIES`
-- Mapowanie wiersz → `PoolCharacter`, w tym zgodność z wejściem `evaluateTeam`
+- Zgodność enuma `competency` z `COMPETENCIES`: dosłowne zawieranie wyrenderowanego `create type`
+- Mapowanie wiersz → `PoolCharacter`, w tym zgodność z wejściem `evaluateTeam` i odrzucenie
+  kompetencji spoza `COMPETENCIES`
 
 ### Testy integracyjne:
 
@@ -503,7 +546,9 @@ bez pomiaru.
 - Podział na migrację schematu i migrację zasiewową jest celowy: przy zmianie treści puli
   zastępowana jest wyłącznie ta druga, a schemat zostaje.
 - Migracja raz zastosowana na produkcji jest niezmienna. Zmiana treści puli po Fazie 4 oznacza
-  **nową** migrację (skasowanie i ponowne wstawienie wierszy), a nie edycję zastosowanego pliku.
+  **nową** migrację zasiewową z tym samym wyrenderowanym blokiem upsert (plus jawne `delete`
+  wyłącznie dla identyfikatorów usuniętych z puli — dopiero wtedy klucz obcy z `teams` po S-03
+  ma coś do powiedzenia), a nie edycję zastosowanego pliku ani „skasuj wszystko i wstaw od nowa".
   Kontrola zgodności z Fazy 2 lokalizuje najnowszą migrację zasiewową po nazwie, więc obsługuje
   ten obieg bez zmian.
 - `supabase/seed.sql` nie jest używany. Mechanizm `[db.seed]` z `config.toml` działa wyłącznie
@@ -533,7 +578,7 @@ bez pomiaru.
 - [ ] 1.1 Zestaw przechodzi: `npm test`
 - [ ] 1.2 Lint przechodzi: `npm run lint`
 - [ ] 1.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "astro:|lib/supabase" src/lib/domain/` bez dopasowań
+- [ ] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
 - [ ] 1.5 Zestaw kończy się poniżej pięciu sekund
 
 #### Ręczne
@@ -549,7 +594,7 @@ bez pomiaru.
 - [ ] 2.1 Zestaw przechodzi, w tym kontrola zgodności: `npm test`
 - [ ] 2.2 Lint przechodzi: `npm run lint`
 - [ ] 2.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "astro:|lib/supabase" src/lib/domain/` bez dopasowań
+- [ ] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
 
 #### Ręczne
 
@@ -566,7 +611,7 @@ bez pomiaru.
 - [ ] 3.1 Zestaw przechodzi: `npm test`
 - [ ] 3.2 Lint przechodzi: `npm run lint`
 - [ ] 3.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" src/**/*.test.ts` bez dopasowań
+- [ ] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src` bez dopasowań
 
 #### Ręczne
 
@@ -582,3 +627,4 @@ bez pomiaru.
 - [ ] 4.3 RLS włączone, wyłącznie po jednej polityce `SELECT` na tabelę
 - [ ] 4.4 `supabase config push` nie uruchomiony; potwierdzanie adresu w produkcji nadal działa
 - [ ] 4.5 `context/deployment/deploy-plan.md` odzwierciedla nowy stan zlinkowania
+- [ ] 4.6 Wpis F-02 w `roadmap.md` odzwierciedla decyzję o warstwie danych, Niewiadome rozstrzygnięte, S-03 odnotowuje istniejący warsztat Supabase
