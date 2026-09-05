@@ -622,9 +622,9 @@ bez pomiaru.
 
 #### Ręczne
 
-- [x] 4.1 `supabase db push` stosuje obie migracje na projekcie hostowanym bez błędu
-- [x] 4.2 Tabele `characters` i `perks` istnieją w produkcji z 12 i 36 wierszami
-- [x] 4.3 RLS włączone, wyłącznie po jednej polityce `SELECT` na tabelę
-- [x] 4.4 `supabase config push` nie uruchomiony; potwierdzanie adresu w produkcji nadal działa
-- [x] 4.5 `context/deployment/deploy-plan.md` odzwierciedla nowy stan zlinkowania
-- [x] 4.6 Wpis F-02 w `roadmap.md` odzwierciedla decyzję o warstwie danych, Niewiadome rozstrzygnięte, S-03 odnotowuje istniejący warsztat Supabase
+- [x] 4.1 `supabase db push` stosuje obie migracje na projekcie hostowanym bez błędu — 02e0ffb
+- [x] 4.2 Tabele `characters` i `perks` istnieją w produkcji z 12 i 36 wierszami — 02e0ffb
+- [x] 4.3 RLS włączone, wyłącznie po jednej polityce `SELECT` na tabelę — 02e0ffb
+- [x] 4.4 `supabase config push` nie uruchomiony; potwierdzanie adresu w produkcji nadal działa — 02e0ffb
+- [x] 4.5 `context/deployment/deploy-plan.md` odzwierciedla nowy stan zlinkowania — 02e0ffb
+- [x] 4.6 Wpis F-02 w `roadmap.md` odzwierciedla decyzję o warstwie danych, Niewiadome rozstrzygnięte, S-03 odnotowuje istniejący warsztat Supabase — 02e0ffb
