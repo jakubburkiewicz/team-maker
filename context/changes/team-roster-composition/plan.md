@@ -500,17 +500,17 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 
 #### Automatyczne
 
-- [x] 3.1 `npx astro sync && npm run lint` przechodzi z wygenerowanym `dialog.tsx`
-- [x] 3.2 `npm test` przechodzi
-- [x] 3.3 `npm run build` przechodzi
-- [x] 3.4 `@radix-ui/react-dialog` w `dependencies`
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi z wygenerowanym `dialog.tsx` — fafdd83
+- [x] 3.2 `npm test` przechodzi — fafdd83
+- [x] 3.3 `npm run build` przechodzi — fafdd83
+- [x] 3.4 `@radix-ui/react-dialog` w `dependencies` — fafdd83
 
 #### Ręczne
 
-- [x] 3.5 Okno: dwanaście postaci w kolejności puli, podgląd szczegółów, Esc/klik w tło zamyka
-- [x] 3.6 „Add to team" wypełnia slot, zamyka okno, licznik rośnie
-- [x] 3.7 Postać w drużynie oznaczona „In team" i nie do dodania
-- [x] 3.8 Przy 6/6 licznik `6/6`, brak „Recruit" i brak możliwości dodania
-- [x] 3.9 „Remove" zwalnia slot, postać wraca do wyboru
-- [x] 3.10 Odświeżenie strony zeruje skład
-- [x] 3.11 Szczegóły pokazują trzy perki i nagłówek nazywający limit 2 z 3
+- [x] 3.5 Okno: dwanaście postaci w kolejności puli, podgląd szczegółów, Esc/klik w tło zamyka — fafdd83
+- [x] 3.6 „Add to team" wypełnia slot, zamyka okno, licznik rośnie — fafdd83
+- [x] 3.7 Postać w drużynie oznaczona „In team" i nie do dodania — fafdd83
+- [x] 3.8 Przy 6/6 licznik `6/6`, brak „Recruit" i brak możliwości dodania — fafdd83
+- [x] 3.9 „Remove" zwalnia slot, postać wraca do wyboru — fafdd83
+- [x] 3.10 Odświeżenie strony zeruje skład — fafdd83
+- [x] 3.11 Szczegóły pokazują trzy perki i nagłówek nazywający limit 2 z 3 — fafdd83
