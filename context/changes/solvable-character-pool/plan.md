@@ -575,34 +575,34 @@ bez pomiaru.
 
 #### Automatyczne
 
-- [x] 1.1 Zestaw przechodzi: `npm test`
-- [x] 1.2 Lint przechodzi: `npm run lint`
-- [x] 1.3 Build przechodzi: `npx astro sync && npm run build`
-- [x] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
-- [x] 1.5 Zestaw kończy się poniżej pięciu sekund
+- [x] 1.1 Zestaw przechodzi: `npm test` — ae34a9d
+- [x] 1.2 Lint przechodzi: `npm run lint` — ae34a9d
+- [x] 1.3 Build przechodzi: `npx astro sync && npm run build` — ae34a9d
+- [x] 1.4 Moduł domenowy pozostaje czysty: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań — ae34a9d
+- [x] 1.5 Zestaw kończy się poniżej pięciu sekund — ae34a9d
 
 #### Ręczne
 
-- [x] 1.6 Mutacja: usunięty perk czerwieni przypadek kształtu; drzewo przywrócone
-- [x] 1.7 Mutacja: zniknięcie kompetencji z puli czerwieni przypadek rozwiązywalności; drzewo przywrócone
-- [x] 1.8 Treść dwunastu postaci przeczytana i zaakceptowana przez użytkownika
+- [x] 1.6 Mutacja: usunięty perk czerwieni przypadek kształtu; drzewo przywrócone — ae34a9d
+- [x] 1.7 Mutacja: zniknięcie kompetencji z puli czerwieni przypadek rozwiązywalności; drzewo przywrócone — ae34a9d
+- [x] 1.8 Treść dwunastu postaci przeczytana i zaakceptowana przez użytkownika — ae34a9d
 
 ### Faza 2: Schemat, RLS i zasiew w bazie
 
 #### Automatyczne
 
-- [ ] 2.1 Zestaw przechodzi, w tym kontrola zgodności: `npm test`
-- [ ] 2.2 Lint przechodzi: `npm run lint`
-- [ ] 2.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
+- [x] 2.1 Zestaw przechodzi, w tym kontrola zgodności: `npm test`
+- [x] 2.2 Lint przechodzi: `npm run lint`
+- [x] 2.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
 
 #### Ręczne
 
-- [ ] 2.5 `supabase start && supabase db reset` stosuje obie migracje bez błędu
-- [ ] 2.6 `characters` ma 12 wierszy, `perks` ma 36
-- [ ] 2.7 Odczyt jako `authenticated` zwraca 12 postaci, jako `anon` zero wierszy
-- [ ] 2.8 Próba `insert` jako `authenticated` odrzucona przez RLS
-- [ ] 2.9 Mutacja: zmiana znaku w treści puli czerwieni kontrolę zgodności; drzewo przywrócone
+- [x] 2.5 `supabase start && supabase db reset` stosuje obie migracje bez błędu
+- [x] 2.6 `characters` ma 12 wierszy, `perks` ma 36
+- [x] 2.7 Odczyt jako `authenticated` zwraca 12 postaci, jako `anon` zero wierszy
+- [x] 2.8 Próba `insert` jako `authenticated` odrzucona przez RLS
+- [x] 2.9 Mutacja: zmiana znaku w treści puli czerwieni kontrolę zgodności; drzewo przywrócone
 
 ### Faza 3: Odczyt puli z bazy
 
