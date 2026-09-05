@@ -583,31 +583,31 @@ pilnuje `package.json`/`package-lock.json`. Zmiana propsów `RosterSlot` (Faza 3
 
 #### Automatyczne
 
-- [x] 1.1 `npm test` przechodzi, w tym rozszerzony `src/lib/domain/roster.test.ts`
-- [x] 1.2 `npx astro sync && npm run lint` przechodzi
-- [x] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase`
+- [x] 1.1 `npm test` przechodzi, w tym rozszerzony `src/lib/domain/roster.test.ts` — ef831bb
+- [x] 1.2 `npx astro sync && npm run lint` przechodzi — ef831bb
+- [x] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase` — ef831bb
 
 #### Ręczne
 
-- [x] 1.4 Kontrola mutacyjna `MAX_PERKS_PER_MEMBER` → 3 wywala test (drzewo przywrócone)
+- [x] 1.4 Kontrola mutacyjna `MAX_PERKS_PER_MEMBER` → 3 wywala test (drzewo przywrócone) — ef831bb
 
 ### Faza 2: Wykres pajęczynowy i bramka
 
 #### Automatyczne
 
-- [ ] 2.1 `npm test` przechodzi, w tym `src/lib/radar-geometry.test.ts`
-- [ ] 2.2 `npx astro sync && npm run lint` przechodzi
-- [ ] 2.3 `npm run build` przechodzi
-- [ ] 2.4 `package.json` / `package-lock.json` bez zmian
-- [ ] 2.5 Brak `bg-purple-600` w `SubmitButton.tsx` i `MemberPickerDialog.tsx`
+- [x] 2.1 `npm test` przechodzi, w tym `src/lib/radar-geometry.test.ts`
+- [x] 2.2 `npx astro sync && npm run lint` przechodzi
+- [x] 2.3 `npm run build` przechodzi
+- [x] 2.4 `package.json` / `package-lock.json` bez zmian
+- [x] 2.5 Brak `bg-purple-600` w `SubmitButton.tsx` i `MemberPickerDialog.tsx`
 
 #### Ręczne
 
-- [ ] 2.6 Dwie kolumny; pusty skład → siedem osi, pierścień progu, przycisk zablokowany z tekstem
-- [ ] 2.7 Dodanie/usunięcie Vesper → `combat 2` / `combat 0` natychmiast
-- [ ] 2.8 Sześć postaci z przepisu → sześć osi na progu, `navigation 0`, przycisk zablokowany
-- [ ] 2.9 Vesper + Marlow → `combat 4` na końcu osi, bez obcięcia
-- [ ] 2.10 „Add to team" i „Sign in"/„Sign up" wyglądają jak przed zmianą
+- [x] 2.6 Dwie kolumny; pusty skład → siedem osi, pierścień progu, przycisk zablokowany z tekstem
+- [x] 2.7 Dodanie/usunięcie Vesper → `combat 2` / `combat 0` natychmiast
+- [x] 2.8 Sześć postaci z przepisu → sześć osi na progu, `navigation 0`, przycisk zablokowany
+- [x] 2.9 Vesper + Marlow → `combat 4` na końcu osi, bez obcięcia
+- [x] 2.10 „Add to team" i „Sign in"/„Sign up" wyglądają jak przed zmianą
 
 ### Faza 3: Perki na karcie slotu
 

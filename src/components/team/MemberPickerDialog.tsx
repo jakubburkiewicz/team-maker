@@ -118,11 +118,12 @@ function MemberPickerBody({ pool, memberIds, onAdd }: MemberPickerBodyProps) {
 
             <Button
               type="button"
+              variant="cosmic"
               disabled={memberIds.has(selected.id)}
               onClick={() => {
                 onAdd(selected.id);
               }}
-              className="mt-6 w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500"
+              className="mt-6 w-full"
             >
               <UserPlus className="size-4" />
               {memberIds.has(selected.id) ? "Already in team" : "Add to team"}
