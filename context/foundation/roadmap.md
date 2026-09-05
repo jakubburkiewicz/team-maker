@@ -61,7 +61,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | done |
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | done        |
 | S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | done        |
-| S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | planning |
+| S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | in-progress |
 | S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | proposed |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | proposed |
 | S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | proposed |
@@ -237,7 +237,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   **Punkt kontrolny z przeglądu S-01 (2026-09-05):** `PROTECTED_ROUTES` w `src/middleware.ts`
   chroni prefiks `/teams`, który **nie** obejmuje `/api/teams/*` — trasy API zapisu muszą trafić
   do listy jawnie albo sprawdzać `locals.user` w handlerze; RLS pozostaje drugą warstwą.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-04: Gracz widzi listę własnych drużyn i otwiera zapisaną drużynę
 

@@ -691,16 +691,16 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Automatyczne
 
-- [ ] 1.1 `npm test` przechodzi, w tym `src/lib/team-schema.test.ts`
-- [ ] 1.2 `npx astro sync && npm run lint` przechodzi
-- [ ] 1.3 Żaden test nie sięga po Supabase (`grep -rl "lib/supabase" --include='*.test.ts' src` pusty)
+- [x] 1.1 `npm test` przechodzi, w tym `src/lib/team-schema.test.ts`
+- [x] 1.2 `npx astro sync && npm run lint` przechodzi
+- [x] 1.3 Żaden test nie sięga po Supabase (`grep -rl "lib/supabase" --include='*.test.ts' src` pusty)
 
 #### Ręczne
 
-- [ ] 1.4 `supabase db reset` stosuje cztery migracje; `teams` z RLS i dokładnie dwiema politykami
-- [ ] 1.5 Dwa konta: `insert` jako A przechodzi z ośmioznakową nazwą, `user_id` B odrzucony, `select` jako B i `anon` puste
-- [ ] 1.6 `composition` jako obiekt odrzucony przez `check`
-- [ ] 1.7 Wiersz testowy usunięty
+- [x] 1.4 `supabase db reset` stosuje cztery migracje; `teams` z RLS i dokładnie dwiema politykami
+- [x] 1.5 Dwa konta: `insert` jako A przechodzi z ośmioznakową nazwą, `user_id` B odrzucony, `select` jako B i `anon` puste
+- [x] 1.6 `composition` jako obiekt odrzucony przez `check`
+- [x] 1.7 Wiersz testowy usunięty
 
 ### Faza 2: Bramka zapisu poza interfejsem
 

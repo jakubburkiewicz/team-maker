@@ -1,7 +1,7 @@
 ---
 change_id: first-saved-team
 title: Zapis domkniętej drużyny z potwierdzeniem
-status: plan_reviewed
+status: implementing
 created: 2026-09-05
 updated: 2026-09-05
 ---
