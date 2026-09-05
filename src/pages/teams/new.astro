@@ -1,0 +1,58 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import TeamComposer from "@/components/team/TeamComposer";
+import { getCharacterPool } from "@/lib/character-pool-repo";
+import { createClient } from "@/lib/supabase";
+import type { PoolCharacter } from "@/lib/domain";
+
+// Jedyne miejsce w S-01, które dotyka Supabase. Repo rzuca, strona łapie i mapuje na stan
+// strony (AGENTS.md → Conventions) — nieprzechwycony throw w Workerze to 500.
+let pool: readonly PoolCharacter[] | null = null;
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+// Gałąź `null` jest obroną w głąb: bez kluczy Supabase middleware przekierowuje `/teams/*`
+// na logowanie, zanim ten frontmatter się wykona.
+if (supabase) {
+  try {
+    pool = await getCharacterPool(supabase);
+  } catch (error) {
+    // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
+    // eslint-disable-next-line no-console
+    console.error("Failed to load character pool for /teams/new", error);
+  }
+}
+---
+
+<Layout title="New team">
+  <div class="bg-cosmic min-h-screen p-4 text-white">
+    <div class="mx-auto w-full max-w-4xl">
+      <div class="mb-6 flex items-center justify-between">
+        <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+          Assemble your team
+        </h1>
+        <a href="/dashboard" class="text-sm text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+          ← Back to dashboard
+        </a>
+      </div>
+      {
+        pool ? (
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <TeamComposer pool={pool} client:load />
+          </div>
+        ) : (
+          <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">
+            <h2 class="text-xl font-semibold text-red-200">Character pool is unavailable right now</h2>
+            <p class="mt-2 text-sm text-blue-100/70">Please try again in a moment.</p>
+            <a
+              href="/dashboard"
+              class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+            >
+              Back to dashboard
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</Layout>

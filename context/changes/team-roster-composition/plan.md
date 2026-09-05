@@ -473,28 +473,28 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 
 #### Automatyczne
 
-- [x] 1.1 `npm test` przechodzi, w tym `src/lib/domain/roster.test.ts`
-- [x] 1.2 `npm run lint` przechodzi
-- [x] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase`
-- [x] 1.4 Żaden test nie importuje `lib/supabase`
+- [x] 1.1 `npm test` przechodzi, w tym `src/lib/domain/roster.test.ts` — 75f6156
+- [x] 1.2 `npm run lint` przechodzi — 75f6156
+- [x] 1.3 `src/lib/domain/` bez importów `astro:*` / `@/lib/supabase` — 75f6156
+- [x] 1.4 Żaden test nie importuje `lib/supabase` — 75f6156
 
 #### Ręczne
 
-- [x] 1.5 Kontrola mutacyjna `MAX_TEAM_SIZE` → 7 wywala test (drzewo przywrócone)
+- [x] 1.5 Kontrola mutacyjna `MAX_TEAM_SIZE` → 7 wywala test (drzewo przywrócone) — 75f6156
 
 ### Faza 2: Strona `/teams/new` ze stanem błędu i szkieletem składu
 
 #### Automatyczne
 
-- [ ] 2.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 2.2 `npm test` przechodzi
-- [ ] 2.3 `npm run build` przechodzi
+- [x] 2.1 `npx astro sync && npm run lint` przechodzi
+- [x] 2.2 `npm test` przechodzi
+- [x] 2.3 `npm run build` przechodzi
 
 #### Ręczne
 
-- [ ] 2.4 Niezalogowany na `/teams/new` → przekierowanie na `/auth/signin`
-- [ ] 2.5 Zalogowany widzi `0/6` i sześć slotów; linki z dashboardu i Topbara działają
-- [ ] 2.6 Przy zepsutym zapytaniu puli strona pokazuje kartę błędu, bez 500 (plik repo przywrócony)
+- [x] 2.4 Niezalogowany na `/teams/new` → przekierowanie na `/auth/signin`
+- [x] 2.5 Zalogowany widzi `0/6` i sześć slotów; linki z dashboardu i Topbara działają
+- [x] 2.6 Przy zepsutym zapytaniu puli strona pokazuje kartę błędu, bez 500 (plik repo przywrócony)
 
 ### Faza 3: Okno wyboru członka
 
