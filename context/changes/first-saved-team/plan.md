@@ -691,33 +691,33 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Automatyczne
 
-- [x] 1.1 `npm test` przechodzi, w tym `src/lib/team-schema.test.ts`
-- [x] 1.2 `npx astro sync && npm run lint` przechodzi
-- [x] 1.3 Żaden test nie sięga po Supabase (`grep -rl "lib/supabase" --include='*.test.ts' src` pusty)
+- [x] 1.1 `npm test` przechodzi, w tym `src/lib/team-schema.test.ts` — 5260294
+- [x] 1.2 `npx astro sync && npm run lint` przechodzi — 5260294
+- [x] 1.3 Żaden test nie sięga po Supabase (`grep -rl "lib/supabase" --include='*.test.ts' src` pusty) — 5260294
 
 #### Ręczne
 
-- [x] 1.4 `supabase db reset` stosuje cztery migracje; `teams` z RLS i dokładnie dwiema politykami
-- [x] 1.5 Dwa konta: `insert` jako A przechodzi z ośmioznakową nazwą, `user_id` B odrzucony, `select` jako B i `anon` puste
-- [x] 1.6 `composition` jako obiekt odrzucony przez `check`
-- [x] 1.7 Wiersz testowy usunięty
+- [x] 1.4 `supabase db reset` stosuje cztery migracje; `teams` z RLS i dokładnie dwiema politykami — 5260294
+- [x] 1.5 Dwa konta: `insert` jako A przechodzi z ośmioznakową nazwą, `user_id` B odrzucony, `select` jako B i `anon` puste — 5260294
+- [x] 1.6 `composition` jako obiekt odrzucony przez `check` — 5260294
+- [x] 1.7 Wiersz testowy usunięty — 5260294
 
 ### Faza 2: Bramka zapisu poza interfejsem
 
 #### Automatyczne
 
-- [ ] 2.1 `npm test` przechodzi, w tym `team-submission.test.ts` i `team-repo.test.ts`
-- [ ] 2.2 `npx astro sync && npm run lint` przechodzi
-- [ ] 2.3 `npm run build` przechodzi
-- [ ] 2.4 Testy i nowe moduły `src/lib/` bez `astro:*` / `@/lib/supabase`
-- [ ] 2.5 `package.json` / `package-lock.json` bez zmian
+- [x] 2.1 `npm test` przechodzi, w tym `team-submission.test.ts` i `team-repo.test.ts`
+- [x] 2.2 `npx astro sync && npm run lint` przechodzi
+- [x] 2.3 `npm run build` przechodzi
+- [x] 2.4 Testy i nowe moduły `src/lib/` bez `astro:*` / `@/lib/supabase`
+- [x] 2.5 `package.json` / `package-lock.json` bez zmian
 
 #### Ręczne
 
-- [ ] 2.6 `curl` bez `Origin` → 403 (checkOrigin); z `Origin` bez sesji → 302 na `/auth/signin`; z `Origin` i sesją, `[]` → `?error=` o progu, tabela pusta
-- [ ] 2.7 `curl` z przepisem → 302 na `/teams/<uuid>/embark`, wiersz z nazwą i identycznym składem
-- [ ] 2.8 `composition=not-json` → `?error=Invalid team payload`, brak wiersza
-- [ ] 2.9 Kontrola mutacyjna `isValid` → `violations.length === 0` czerwieni test (drzewo przywrócone)
+- [x] 2.6 `curl` bez `Origin` → 403 (checkOrigin); z `Origin` bez sesji → 302 na `/auth/signin`; z `Origin` i sesją, `[]` → `?error=` o progu, tabela pusta
+- [x] 2.7 `curl` z przepisem → 302 na `/teams/<uuid>/embark`, wiersz z nazwą i identycznym składem
+- [x] 2.8 `composition=not-json` → `?error=Invalid team payload`, brak wiersza
+- [x] 2.9 Kontrola mutacyjna `isValid` → `violations.length === 0` czerwieni test (drzewo przywrócone)
 
 ### Faza 3: Wyspa i strona potwierdzenia
 
