@@ -64,7 +64,8 @@ Zalogowany gracz wchodzi z dashboardu na `/teams/new`, widzi sześć slotów (0/
 w oknie przegląda dwanaście postaci (lista po lewej, szczegóły po prawej: nazwa, opis,
 specjalizacja, trzy perki z nazwanym limitem 2 z 3), dodaje postać — slot się wypełnia, okno się
 zamyka. Postać już w drużynie jest w liście oznaczona i nie do dodania. Przy 6/6 wszystkie sloty
-są zajęte, w oknie nie da się dodać nikogo. Usunięcie członka zwalnia slot. Niezalogowany trafia
+są zajęte i nie ma żadnego „Recruit" — okna nie da się otworzyć, licznik pokazuje 6/6. Usunięcie
+członka zwalnia slot. Niezalogowany trafia
 na `/auth/signin`. Przy niedostępnej puli strona pokazuje kartę błędu zamiast wyspy — nigdy 500.
 
 Weryfikacja: `npm test` dowodzi limitów w `roster.ts` i ich zgodności z `evaluateTeam`;
@@ -120,13 +121,16 @@ i dialogu daje dwa niezależne punkty zatrzymania.
   w komponencie renderowanym **wewnątrz** `DialogContent`, nie w `TeamComposer`. Radix odmontowuje
   zawartość po zamknięciu, więc stan resetuje się sam przy każdym otwarciu; synchronizacja przez
   `useEffect` po `open` złamie `react-hooks/set-state-in-effect`. Domyślny wybór przy otwarciu:
-  pierwsza postać spoza drużyny (albo pierwsza w puli, gdy skład jest pełny) — liczony jako
-  wartość początkowa `useState`, nie w efekcie.
-- **Specyfikacja UX:** wyspa wyłącza „Add to team" prewencyjnie (postać w drużynie lub 6/6), ale
+  pierwsza postać spoza drużyny — liczony jako wartość początkowa `useState`, nie w efekcie.
+  Zawsze istnieje: okno otwiera wyłącznie pusty slot, więc przy otwartym oknie skład ma ≤ 5
+  członków z 12 postaci.
+- **Specyfikacja UX:** wyspa wyłącza „Add to team" prewencyjnie (postać w drużynie), ale
   o legalności ruchu decyduje `addMember` — odrzucony wynik zostawia stan bez zmian. Obie warstwy
-  mają być zgodne; UI nie może pozwolić na ruch, który moduł odrzuci. Limit ma być nazwany
-  wprost: licznik `N/6` nad slotami i komunikat „Team is full" w oknie przy 6/6 (PRD FR-014:
-  „interfejs ma nazywać limit wprost, nie tylko go egzekwować").
+  mają być zgodne; UI nie może pozwolić na ruch, który moduł odrzuci. Limit członków jest
+  nazwany licznikiem `N/6` nad slotami i tym, że przy 6/6 nie ma żadnego „Recruit" — okno nie
+  potrzebuje osobnego stanu „pełny skład", bo z pełnego składu nie da się go otworzyć
+  (jedyne wejście to pusty slot, a udane dodanie zamyka okno). Odrzucenie `team-full` pozostaje
+  w module domenowym jako dowód dla `npm test`, nie jako ekran.
 - **Motyw dialogu:** wygenerowany `dialog.tsx` używa `bg-background`/`text-foreground` (jasne
   tokeny). Nie edytuj prymitywu — nadpisz `className` w `DialogContent` z `MemberPickerDialog`
   klasami cosmic (np. `border-white/10 bg-[#0f1529] text-white`), tak jak `SubmitButton`
@@ -263,6 +267,12 @@ unavailable right now", link powrotu na `/dashboard`) i loguje szczegół przez 
 `<TeamComposer pool={pool} client:load />`. Layout jak `dashboard.astro`: `<Layout title="New team">`,
 wrapper `bg-cosmic min-h-screen`, nagłówek gradientowy, link powrotu. Bez `prerender`.
 
+Gałąź `createClient() === null` jest obroną w głąb wymaganą twardą regułą z `AGENTS.md`, ale za
+middleware jest **nieosiągalna**: bez kluczy Supabase middleware ustawia `locals.user = null`
+i przekierowuje `/teams/*` na `/auth/signin`, zanim frontmatter strony się wykona
+(`src/middleware.ts:14-21`). Jedyną realnie osiągalną ścieżką błędu jest throw
+z `getCharacterPool` — i to ją weryfikuje krok ręczny poniżej.
+
 #### 3. Wyspa składu
 
 **Plik**: `src/components/team/TeamComposer.tsx` (nowy, eksport `default`)
@@ -270,13 +280,14 @@ wrapper `bg-cosmic min-h-screen`, nagłówek gradientowy, link powrotu. Bez `pre
 **Cel**: Trzyma kompletowaną drużynę w pamięci i rysuje ją jako sześć slotów. Jedyny właściciel
 stanu `composition` w całym fragmencie.
 
-**Umowa**: props `{ pool: readonly PoolCharacter[] }`. Stan: `composition: TeamComposition`
-(`useState`, start `[]`), `pickerOpen: boolean`. Renderuje licznik `N/6` (literał z
+**Umowa**: props `{ pool: readonly PoolCharacter[] }`. Stan w tej fazie: wyłącznie
+`composition: TeamComposition` (`useState`, start `[]`). Renderuje licznik `N/6` (literał z
 `MAX_TEAM_SIZE`) i siatkę dokładnie `MAX_TEAM_SIZE` slotów: zajęty slot pokazuje nazwę,
 specjalizację i przycisk „Remove" (→ `removeMember`); pusty slot to przycisk „Recruit"
-(→ `pickerOpen = true`; w tej fazie okno jeszcze nie istnieje, więc przycisk może być podpięty
-do stanu bez skutku widocznego). Nazwę i specjalizację slot bierze z `pool` po `characterId`
-(mapa `id → PoolCharacter` policzona z propsa).
+z handlerem `onRecruit`, który w tej fazie jeszcze nic nie robi — **nie** wprowadzaj tu stanu
+`pickerOpen`: nieczytany stan wywali `@typescript-eslint/no-unused-vars` w 2.1, a stan
+przychodzi razem z oknem w Fazie 3 §3. Nazwę i specjalizację slot bierze z `pool` po
+`characterId` (mapa `id → PoolCharacter` policzona z propsa).
 
 #### 4. Slot składu
 
@@ -309,8 +320,11 @@ Topbar (wariant zalogowany) dostaje link „New team" obok „Dashboard".
 - `npm run dev`, niezalogowany: `/teams/new` przekierowuje na `/auth/signin`
 - Zalogowany: `/teams/new` pokazuje licznik `0/6` i sześć pustych slotów „Recruit"; link
   z dashboardu i z Topbara prowadzą na stronę
-- Stan błędu: z `.env` bez `SUPABASE_URL`/`SUPABASE_KEY` strona pokazuje kartę „Character pool is
-  unavailable" zamiast wyspy, bez 500 (`.env` przywrócone); w konsoli serwera jest `console.error`
+- Stan błędu: z poprawnym `.env` tymczasowo zepsuć zapytanie w `src/lib/character-pool-repo.ts`
+  (`.from("characters")` → `.from("characters_x")`); zalogowany na `/teams/new` widzi kartę
+  „Character pool is unavailable" zamiast wyspy, bez 500, a w konsoli serwera jest
+  `console.error`; plik przywrócony (`git checkout src/lib/character-pool-repo.ts`). Uwaga:
+  usunięcie kluczy z `.env` **nie** testuje tej ścieżki — middleware przekieruje na logowanie
 
 **Uwaga implementacyjna**: zatrzymaj się na potwierdzenie użytkownika przed Fazą 3.
 
@@ -346,16 +360,18 @@ ani `components.json` w sposób inny niż kosmetyczny.
 FR-012 — postać w drużynie widoczna, oznaczona, nie do dodania.
 
 **Umowa**: props
-`{ open: boolean; onOpenChange(open: boolean): void; pool: readonly PoolCharacter[]; memberIds: ReadonlySet<string>; isFull: boolean; onAdd(characterId: string): void }`.
+`{ open: boolean; onOpenChange(open: boolean): void; pool: readonly PoolCharacter[]; memberIds: ReadonlySet<string>; onAdd(characterId: string): void }`.
 `DialogContent` z nadpisanym `className` (motyw cosmic, szerokość ok. `max-w-3xl`, siatka dwóch
-kolumn). Zawartość to komponent wewnętrzny (np. `MemberPickerBody`) trzymający `selectedId`
-z wartością początkową „pierwsza postać spoza `memberIds`, inaczej pierwsza w puli" — patrz
-Krytyczne szczegóły. Lewa kolumna: przyciski-wiersze z nazwą i specjalizacją, wiersz w drużynie
+kolumn). W `DialogHeader`: `DialogTitle` „Recruit a member" i `DialogDescription` (np. „Pick
+a character to add to your team") — Radix loguje `console.error` i traci etykietę dla czytników,
+gdy `DialogContent` nie ma tytułu, a ostrzega przy braku opisu (alternatywa dla opisu:
+`aria-describedby={undefined}` na `DialogContent`). Zawartość to komponent wewnętrzny (np.
+`MemberPickerBody`) trzymający `selectedId`
+z wartością początkową „pierwsza postać spoza `memberIds`" — patrz Krytyczne szczegóły. Lewa kolumna: przyciski-wiersze z nazwą i specjalizacją, wiersz w drużynie
 ma etykietę „In team" i styl wyciszony, ale pozostaje klikalny do podglądu. Prawa kolumna:
 nazwa, opis, specjalizacja (z podpisem „+2 points" wolno pominąć — S-02), lista trzech perków
 z nazwą i kompetencją pod nagłówkiem nazywającym limit („Perks — up to 2 of 3 can be chosen";
-wybór przychodzi w S-02) oraz przycisk „Add to team" wyłączony, gdy postać jest w `memberIds`
-lub `isFull`; przy `isFull` widoczny komunikat „Team is full (6/6)".
+wybór przychodzi w S-02) oraz przycisk „Add to team" wyłączony, gdy postać jest w `memberIds`.
 
 #### 3. Spięcie z wyspą
 
@@ -363,9 +379,11 @@ lub `isFull`; przy `isFull` widoczny komunikat „Team is full (6/6)".
 
 **Cel**: Domknięcie pętli dodaj/usuń.
 
-**Umowa**: `onAdd(id)` → `const result = addMember(composition, id, pool)`; przy `ok`
+**Umowa**: dopiero tu wchodzi stan `pickerOpen: boolean` (`useState`, start `false`) —
+„Recruit" ustawia `true`, `onOpenChange` okna go zmienia, udane dodanie ustawia `false`.
+`onAdd(id)` → `const result = addMember(composition, id, pool)`; przy `ok`
 ustawia skład i zamyka okno; przy odrzuceniu zostawia stan bez zmian (UI i tak nie pozwala na
-ten ruch). `memberIds` liczone z `composition`, `isFull = composition.length >= MAX_TEAM_SIZE`.
+ten ruch). `memberIds` liczone z `composition`.
 
 #### 4. Domknięcie wpisu w roadmapie
 
@@ -393,8 +411,8 @@ sesja planowania):** tylko pamięć wyspy, bez trwałości". Status elementu zmi
   szczegóły po prawej; Esc i klik w tło zamykają okno
 - „Add to team" dodaje postać, okno się zamyka, slot pokazuje nazwę i specjalizację, licznik rośnie
 - Postać w drużynie ma w liście etykietę „In team", jej „Add to team" jest wyłączony
-- Przy 6/6 nie ma pustego slotu; po otwarciu okna z któregokolwiek miejsca (jeśli dostępne)
-  widać „Team is full (6/6)" i żadnej postaci nie da się dodać
+- Przy 6/6 licznik pokazuje `6/6`, nie ma żadnego pustego slotu ani przycisku „Recruit" — okna
+  nie da się otworzyć, więc nikogo nie da się dodać
 - „Remove" zwalnia slot, licznik maleje, postać wraca do wyboru w oknie
 - Odświeżenie strony zeruje skład (decyzja: brak trwałości)
 - Szczegóły pokazują trzy perki z kompetencjami i nagłówek nazywający limit 2 z 3
@@ -417,10 +435,11 @@ sesja planowania):** tylko pamięć wyspy, bez trwałości". Status elementu zmi
 
 1. Wylogowany → `/teams/new` → przekierowanie na logowanie.
 2. Zalogowany → dashboard → „Assemble a new team" → `0/6`, sześć slotów.
-3. Dodaj sześć różnych postaci przez okno; sprawdź „In team", `6/6`, „Team is full".
+3. Dodaj sześć różnych postaci przez okno; sprawdź „In team", `6/6` i brak „Recruit".
 4. Usuń jednego członka; dodaj tę samą postać ponownie.
 5. Odśwież stronę — `0/6`.
-6. Wyłącz konfigurację Supabase w `.env` → karta błędu, brak 500; przywróć `.env`.
+6. Tymczasowo zepsuj zapytanie w `character-pool-repo.ts` (`.from("characters_x")`) → karta
+   błędu, brak 500, `console.error` w konsoli serwera; przywróć plik.
 
 ## Uwagi dotyczące wydajności
 
@@ -475,7 +494,7 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 
 - [ ] 2.4 Niezalogowany na `/teams/new` → przekierowanie na `/auth/signin`
 - [ ] 2.5 Zalogowany widzi `0/6` i sześć slotów; linki z dashboardu i Topbara działają
-- [ ] 2.6 Bez konfiguracji Supabase strona pokazuje kartę błędu, bez 500 (`.env` przywrócone)
+- [ ] 2.6 Przy zepsutym zapytaniu puli strona pokazuje kartę błędu, bez 500 (plik repo przywrócony)
 
 ### Faza 3: Okno wyboru członka
 
@@ -491,7 +510,7 @@ zanim pojawi się interfejs czytający pulę z produkcji.
 - [ ] 3.5 Okno: dwanaście postaci w kolejności puli, podgląd szczegółów, Esc/klik w tło zamyka
 - [ ] 3.6 „Add to team" wypełnia slot, zamyka okno, licznik rośnie
 - [ ] 3.7 Postać w drużynie oznaczona „In team" i nie do dodania
-- [ ] 3.8 Przy 6/6 komunikat „Team is full" i brak możliwości dodania
+- [ ] 3.8 Przy 6/6 licznik `6/6`, brak „Recruit" i brak możliwości dodania
 - [ ] 3.9 „Remove" zwalnia slot, postać wraca do wyboru
 - [ ] 3.10 Odświeżenie strony zeruje skład
 - [ ] 3.11 Szczegóły pokazują trzy perki i nagłówek nazywający limit 2 z 3

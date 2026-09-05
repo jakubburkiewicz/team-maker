@@ -1,7 +1,7 @@
 ---
 change_id: team-roster-composition
 title: Kompletowanie składu drużyny z okna wyboru członka
-status: planned
+status: plan_reviewed
 created: 2026-09-05
 updated: 2026-09-05
 ---
