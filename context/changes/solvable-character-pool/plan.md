@@ -591,32 +591,32 @@ bez pomiaru.
 
 #### Automatyczne
 
-- [x] 2.1 Zestaw przechodzi, w tym kontrola zgodności: `npm test`
-- [x] 2.2 Lint przechodzi: `npm run lint`
-- [x] 2.3 Build przechodzi: `npx astro sync && npm run build`
-- [x] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań
+- [x] 2.1 Zestaw przechodzi, w tym kontrola zgodności: `npm test` — ac6a73f
+- [x] 2.2 Lint przechodzi: `npm run lint` — ac6a73f
+- [x] 2.3 Build przechodzi: `npx astro sync && npm run build` — ac6a73f
+- [x] 2.4 Testy nadal nie sięgają po Supabase: `grep -rE "from ['\"](astro:|@/lib/supabase)" src/lib/domain/` bez dopasowań — ac6a73f
 
 #### Ręczne
 
-- [x] 2.5 `supabase start && supabase db reset` stosuje obie migracje bez błędu
-- [x] 2.6 `characters` ma 12 wierszy, `perks` ma 36
-- [x] 2.7 Odczyt jako `authenticated` zwraca 12 postaci, jako `anon` zero wierszy
-- [x] 2.8 Próba `insert` jako `authenticated` odrzucona przez RLS
-- [x] 2.9 Mutacja: zmiana znaku w treści puli czerwieni kontrolę zgodności; drzewo przywrócone
+- [x] 2.5 `supabase start && supabase db reset` stosuje obie migracje bez błędu — ac6a73f
+- [x] 2.6 `characters` ma 12 wierszy, `perks` ma 36 — ac6a73f
+- [x] 2.7 Odczyt jako `authenticated` zwraca 12 postaci, jako `anon` zero wierszy — ac6a73f
+- [x] 2.8 Próba `insert` jako `authenticated` odrzucona przez RLS — ac6a73f
+- [x] 2.9 Mutacja: zmiana znaku w treści puli czerwieni kontrolę zgodności; drzewo przywrócone — ac6a73f
 
 ### Faza 3: Odczyt puli z bazy
 
 #### Automatyczne
 
-- [ ] 3.1 Zestaw przechodzi: `npm test`
-- [ ] 3.2 Lint przechodzi: `npm run lint`
-- [ ] 3.3 Build przechodzi: `npx astro sync && npm run build`
-- [ ] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src` bez dopasowań
+- [x] 3.1 Zestaw przechodzi: `npm test`
+- [x] 3.2 Lint przechodzi: `npm run lint`
+- [x] 3.3 Build przechodzi: `npx astro sync && npm run build`
+- [x] 3.4 Żaden plik testowy nie sięga po Supabase: `grep -rl "lib/supabase" --include='*.test.ts' src` bez dopasowań
 
 #### Ręczne
 
-- [ ] 3.5 Zapytanie `getCharacterPool` w Studio zwraca 12 postaci z perkami w kolejności `sort_order`
-- [ ] 3.6 Kształt odpowiedzi zgadza się z interfejsem wiersza w module
+- [x] 3.5 Zapytanie `getCharacterPool` w Studio zwraca 12 postaci z perkami w kolejności `sort_order`
+- [x] 3.6 Kształt odpowiedzi zgadza się z interfejsem wiersza w module
 
 ### Faza 4: Zastosowanie na projekcie hostowanym
 
