@@ -127,6 +127,15 @@ describe("evaluateTeam — limity składu", () => {
     expect(result.isValid).toBe(false);
   });
 
+  it("ten sam perk dwukrotnie domyka sumy, ale łamie limit — powtórzenie nie zastępuje drugiego perka", () => {
+    const [, ...rest] = onePointShortComposition();
+    const result = evaluateTeam([member("rook", "rook-nav", "rook-nav"), ...rest], TEST_POOL);
+
+    expect(everyCompetencyAtThreshold(result.scores)).toBe(true);
+    expect(result.violations).toContainEqual({ kind: "duplicate-perk", characterId: "rook", perkId: "rook-nav" });
+    expect(result.isValid).toBe(false);
+  });
+
   it("trzy perki u jednego członka łamią limit mimo domkniętych sum", () => {
     const [, ...rest] = thresholdClosingComposition();
     const result = evaluateTeam([member("rook", "rook-nav", "rook-med", "rook-hack"), ...rest], TEST_POOL);

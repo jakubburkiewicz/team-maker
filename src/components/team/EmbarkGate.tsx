@@ -1,5 +1,5 @@
 import { Rocket } from "lucide-react";
-import { useFormStatus } from "react-dom";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { COMPETENCY_THRESHOLD, type TeamComposition } from "@/lib/domain";
@@ -16,33 +16,41 @@ interface EmbarkGateProps {
 const HINT_ID = "embark-hint";
 
 /**
- * Przycisk wysyłki — osobny komponent, bo `useFormStatus()` czyta status najbliższego
- * formularza-przodka, więc musi być **dzieckiem** `<form>` (wzorzec `SubmitButton`).
- */
-function EmbarkButton({ ready }: { ready: boolean }) {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" variant="cosmic" disabled={!ready || pending} aria-describedby={HINT_ID} className="w-full">
-      <Rocket className="size-4" />
-      {pending ? "Embarking…" : "Embark on the job"}
-    </Button>
-  );
-}
-
-/**
  * Bramka „Embark on the job" (FR-018 + FR-007): natywny formularz `POST /api/teams` z ukrytym
- * polem JSON — konwencja repo (`SignInForm`, `?error=`), `useFormStatus` za darmo. `disabled` jest
- * jedyną i wystarczającą barierą: zablokowany przycisk nie wysyła formularza, a implicit submission
- * (Enter) wymaga pola tekstowego, którego tu nie ma — stąd brak `onSubmit`. Po wysłaniu
- * przeglądarka nawiguje, więc wyspa nie musi nic resetować. Komunikat jest statycznym tekstem pod
- * przyciskiem, nie tooltipem — `Button` ma `disabled:pointer-events-none`.
+ * polem JSON — konwencja repo (`SignInForm`, `?error=`). `disabled` jest jedyną i wystarczającą
+ * barierą progu: zablokowany przycisk nie wysyła formularza, a implicit submission (Enter) wymaga
+ * pola tekstowego, którego tu nie ma — `onSubmit` nie jest więc bramką `!ready`, tylko zapisem
+ * „już wysłano", żeby dwuklik na wolnym łączu nie zapisał dwóch drużyn. Nie woła
+ * `preventDefault`: przeglądarka nawiguje, więc wyspa nie musi nic resetować.
+ *
+ * Nie `useFormStatus` — React ustawia `pending` wyłącznie dla `action` będącego funkcją
+ * (`startHostTransition`); przy `action="/api/teams"` zostaje `false` na stałe (przegląd S-03, F2).
+ * Komunikat jest statycznym tekstem pod przyciskiem, nie tooltipem — `Button` ma
+ * `disabled:pointer-events-none`.
  */
 export function EmbarkGate({ ready, composition }: EmbarkGateProps) {
+  const [submitting, setSubmitting] = useState(false);
+
   return (
-    <form method="POST" action="/api/teams" className="flex flex-col items-stretch gap-2">
+    <form
+      method="POST"
+      action="/api/teams"
+      onSubmit={() => {
+        setSubmitting(true);
+      }}
+      className="flex flex-col items-stretch gap-2"
+    >
       <input type="hidden" name={COMPOSITION_FIELD} value={JSON.stringify(composition)} />
-      <EmbarkButton ready={ready} />
+      <Button
+        type="submit"
+        variant="cosmic"
+        disabled={!ready || submitting}
+        aria-describedby={HINT_ID}
+        className="w-full"
+      >
+        <Rocket className="size-4" />
+        {submitting ? "Embarking…" : "Embark on the job"}
+      </Button>
       <p id={HINT_ID} className={cn("text-center text-sm", ready ? "text-emerald-300" : "text-blue-100/60")}>
         {ready
           ? "All seven competencies are covered."

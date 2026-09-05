@@ -19,3 +19,21 @@
   wprost zamiast pisać „nie edytować".
 - **Applies to**: `/10x-plan` i `/10x-implement` dla każdej fazy dodającej prymityw shadcn;
   `/10x-impl-review` przy sprawdzaniu `src/components/ui/*`.
+
+## W `.astro` nie planuj top-level `return` — 404 przez `Astro.response.status`, redirect przez middleware
+
+- **Context**: `src/pages/teams/[id]/embark.astro:9-12, 32-40` (S-03, commit 7df2b32); plan
+  `context/changes/first-saved-team/plan.md` §Faza 3 pkt 4 zapisał umowę jako
+  `return new Response(null, { status: 404 })`.
+- **Problem**: Top-level `return` we frontmatterze `.astro` jest legalny dla Astro, ale typowana reguła
+  `@typescript-eslint/no-misused-promises` (`strictTypeChecked` + `astro-eslint-parser`) crashuje na nim
+  („Non-null Assertion Failed: Expected node to have a parent" — w zwykłym TS `return` poza funkcją
+  to błąd składni, więc reguła zakłada funkcję-przodka) i wywraca `npm run lint`, czyli CI. Dotyczy tak
+  samo `return new Response(...)` jak `return Astro.redirect(...)` (zweryfikowane sondą 2026-09-05).
+  Plan był niewykonalny w literze; implementacja musiała rozstrzygnąć to sama.
+- **Rule**: Wczesne wyjście ze strony `.astro` (404, 403, pusta odpowiedź) zapisuj jako
+  `Astro.response.status = <kod>` plus gałąź szablonu renderująca `null`. Redirect ze strony `.astro`
+  rób w `src/middleware.ts` (`PROTECTED_ROUTES`) albo w trasie API pod `src/pages/api/` — nigdy jako
+  top-level `return Astro.redirect(...)`. Plan fazy ma nazywać ten mechanizm wprost, nie „zwróć 404".
+- **Applies to**: `/10x-plan` przy każdej stronie `.astro` z gałęzią 404/403 lub redirectem (S-04 lista
+  i szczegóły, S-07 izolacja); `/10x-implement` i `/10x-impl-review` przy `src/pages/**/*.astro`.

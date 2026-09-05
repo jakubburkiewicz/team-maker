@@ -15,6 +15,7 @@ import {
 export type RuleViolation =
   | { kind: "too-many-members"; count: number }
   | { kind: "duplicate-character"; characterId: string }
+  | { kind: "duplicate-perk"; characterId: string; perkId: string }
   | { kind: "too-many-perks"; characterId: string; count: number }
   | { kind: "unknown-character"; characterId: string }
   | { kind: "unknown-perk"; characterId: string; perkId: string };
@@ -84,7 +85,16 @@ export function evaluateTeam(composition: TeamComposition, pool: CharacterPool):
 
     scores[character.specialization] += SPECIALIZATION_POINTS;
 
+    // Ten sam perk dwukrotnie to +2 przy `perkIds.length <= 2` — bez tego zbioru skład poniżej
+    // progu domknąłby go powtórzeniem, a `roster.ts` nie jest jedynym pisarzem (S-03: `/api/teams`).
+    const seenPerkIds = new Set<string>();
+
     for (const perkId of perkIds) {
+      if (seenPerkIds.has(perkId)) {
+        violations.push({ kind: "duplicate-perk", characterId, perkId });
+      }
+      seenPerkIds.add(perkId);
+
       const perk = character.perks.find((candidate) => candidate.id === perkId);
 
       if (perk === undefined) {

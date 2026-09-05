@@ -32,8 +32,14 @@ export const POST: APIRoute = async (context) => {
     return rejectToComposer(context, "Supabase is not configured");
   }
 
-  const form = await context.request.formData();
-  const raw = form.get(COMPOSITION_FIELD);
+  // `formData()` rzuca `TypeError` przy ciele innym niż form-urlencoded/multipart — spreparowane
+  // żądanie nie może wyjść z handlera jako 500.
+  let raw: FormDataEntryValue | null;
+  try {
+    raw = (await context.request.formData()).get(COMPOSITION_FIELD);
+  } catch {
+    return rejectToComposer(context, "Invalid team payload");
+  }
   if (typeof raw !== "string") {
     return rejectToComposer(context, "Invalid team payload");
   }

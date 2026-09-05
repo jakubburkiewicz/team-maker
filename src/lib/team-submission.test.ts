@@ -137,6 +137,18 @@ describe("gateTeamSubmission", () => {
     });
   });
 
+  it("ten sam perk dwukrotnie u jednego członka → below-threshold (nie liczy się podwójnie)", () => {
+    const [first, ...rest] = solvedComposition();
+    const [perkId] = perkIdsOf(first.characterId);
+    const forced: TeamComposition = [{ characterId: first.characterId, perkIds: [perkId, perkId] }, ...rest];
+
+    expect(forced[0].perkIds).toHaveLength(2);
+    expect(gateTeamSubmission(JSON.stringify(forced), CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "below-threshold" },
+    });
+  });
+
   it("characterId spoza puli → below-threshold", () => {
     const [first, ...rest] = solvedComposition();
     const forced: TeamComposition = [{ characterId: "ghost", perkIds: first.perkIds }, ...rest];

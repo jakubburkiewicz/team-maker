@@ -21,9 +21,9 @@ Plan zatwierdzony przez człowieka w Plan Mode przed wykonaniem; wyniki dopisane
 
 ## Stan zastany przed wdrożeniem
 
-| Krok z `infrastructure.md` → Getting Started | Stan                                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 1. Nazwa workera `team-maker`                | Już poprawiona w `wrangler.jsonc` (nie `10x-astro-starter`)                                    |
+| Krok z `infrastructure.md` → Getting Started | Stan                                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1. Nazwa workera `team-maker`                | Już poprawiona w `wrangler.jsonc` (nie `10x-astro-starter`)                                     |
 | 2. `wrangler login` + sekrety produkcyjne    | Zalogowany jako `jakub@burkiewicz.eu`; `SUPABASE_URL` i `SUPABASE_KEY` obecne w Workers Secrets |
 | 3. Sekrety lokalne                           | W `.env` (gitignored). Wrangler 4.90 czyta `.env` równolegle z `.dev.vars` — patrz Odchylenia   |
 | 4. Build i deploy                            | Wykonane w tej sesji                                                                            |
@@ -59,12 +59,12 @@ npx wrangler versions upload
 
 ### 3. Smoke test na preview — wynik: 4/4
 
-| Test                                       | Oczekiwane                       | Wynik                                              |
-| ------------------------------------------ | -------------------------------- | -------------------------------------------------- |
-| `GET /`                                    | 200                              | ✅ 200                                              |
-| `GET /dashboard` bez sesji                 | 302 → `/auth/signin`             | ✅ 302 → `/auth/signin`                             |
-| `POST /api/auth/signin` (fałszywe dane)    | `?error=Invalid login credentials` | ✅ `?error=Invalid%20login%20credentials`          |
-| `GET /_worker.js/index.js`                 | 404                              | ✅ 404                                              |
+| Test                                    | Oczekiwane                         | Wynik                                     |
+| --------------------------------------- | ---------------------------------- | ----------------------------------------- |
+| `GET /`                                 | 200                                | ✅ 200                                    |
+| `GET /dashboard` bez sesji              | 302 → `/auth/signin`               | ✅ 302 → `/auth/signin`                   |
+| `POST /api/auth/signin` (fałszywe dane) | `?error=Invalid login credentials` | ✅ `?error=Invalid%20login%20credentials` |
+| `GET /_worker.js/index.js`              | 404                                | ✅ 404                                    |
 
 ### 4. Promocja na produkcję
 
@@ -79,13 +79,13 @@ Wynik: `SUCCESS  Deployed team-maker version aed419ac-… at 100% (3.22 sec)`.
 
 URL produkcyjny: **https://team-maker.jakub-e9b.workers.dev**
 
-| Test                                    | Wynik                                                          |
-| --------------------------------------- | --------------------------------------------------------------- |
-| `GET /`                                 | 200                                                             |
-| `GET /auth/signin`                      | 200                                                             |
-| `GET /dashboard` bez sesji              | 302 → `/auth/signin`                                            |
-| `POST /api/auth/signin` (fałszywe dane) | 302 → `/auth/signin?error=Invalid%20login%20credentials`        |
-| `GET /_worker.js/index.js`              | 404                                                             |
+| Test                                    | Wynik                                                             |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `GET /`                                 | 200                                                               |
+| `GET /auth/signin`                      | 200                                                               |
+| `GET /dashboard` bez sesji              | 302 → `/auth/signin`                                              |
+| `POST /api/auth/signin` (fałszywe dane) | 302 → `/auth/signin?error=Invalid%20login%20credentials`          |
+| `GET /_worker.js/index.js`              | 404                                                               |
 | Nagłówki na trasie SSR `/`              | brak `Cache-Control`, brak `cf-cache-status` — żadna reguła cache |
 
 `npx wrangler deployments list` potwierdza `(100%) aed419ac-4095-4fae-860c-781a1c7bf024`
@@ -154,6 +154,10 @@ zmian w hostowanej bazie pozostaje `supabase db push` z plików w `supabase/migr
   **poza zapisem w tym dokumencie** — `supabase migration list` w Fazie 4 S-03 pokazał ją już po
   stronie zdalnej, choć ten akapit wciąż mówił „oczekuje na `db push`". Skutek potwierdzony sondą:
   `POST /rest/v1/characters` i `DELETE /rest/v1/perks` jako `anon` → `42501 permission denied`.
+  **Przyczyna dryfu nieustalona** (przegląd S-03, F7): push musiał nastąpić między `3ff6521`
+  (2026-09-05 09:15, powstanie migracji i akapitu „oczekuje") a Fazą 4 S-03 (19:40) — ręcznie, bez
+  aktualizacji tego dokumentu. Reguła na przyszłość: wynik `supabase migration list` trafia tu
+  natychmiast po każdym `db push`, w tym samym commicie.
 - `20260905185700_teams_schema.sql` — tabela `teams` (skład w `jsonb`, nazwa-hash z `default`),
   RLS `insert`/`select` dla właściciela, `revoke all` dla `anon`, `revoke update, delete, truncate`
   dla `authenticated`. Wypchnięta `supabase db push` 2026-09-05 (S-03, Faza 4); potwierdzone
@@ -172,19 +176,19 @@ odczyt `getCharacterPool`.
 
 ## Rozstrzygnięcia wobec rejestru ryzyk z `infrastructure.md`
 
-| Wpis w rejestrze                                        | Rozstrzygnięcie                                                                                                                                                                                                    |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wdrożenie pod nazwą `10x-astro-starter`                 | **Nie wystąpiło.** Nazwa poprawiona przed uploadem; worker to `team-maker`.                                                                                                                                        |
-| Cichy brak sekretów → auth martwy przy zielonym deployu | **Wykluczone testem.** `POST /api/auth/signin` zwraca `Invalid login credentials` (odpowiedź Supabase), a nie `Supabase is not configured` (ścieżka `supabase === null` w `src/pages/api/auth/signin.ts`).          |
-| Serwowanie `_worker.js` jako pliku statycznego          | **Nie wystąpi z konstrukcji.** Build tworzy `dist/.wrangler/deploy/config.json`, który przekierowuje wrangler na `dist/server/wrangler.json` z `assets.directory: "../client"`. `dist/client/` zawiera wyłącznie `_astro/`, `favicon.png`, `template.png`. Potwierdzone testem: 404. |
-| Nieoczekiwany binding KV `SESSION`                      | **Zmaterializowane wcześniej, nieszkodliwe.** Namespace `SESSION` (`79681b67cdd64767acadb8d9d1e9af15`) powstał przy deployu 08-29; obecny upload go dziedziczy. Adapter dokłada też binding `IMAGES`.                |
-| Cache odpowiedzi z `Set-Cookie`                         | **Brak ekspozycji.** Żadna Cache Rule nie została dodana; trasa SSR nie zwraca `Cache-Control` ani `cf-cache-status`.                                                                                              |
-| Agent użyje `wrangler pages deploy`                     | **Nie wystąpiło.** Użyto `versions upload` + `versions deploy`. Reguła jest już zapisana w `AGENTS.md`.                                                                                                             |
-| CI nie uruchamia się (trigger `master`)                 | **Nieaktualne.** `.github/workflows/ci.yml` triggeruje na `main` dla push i PR.                                                                                                                                     |
-| Publiczne preview URL na produkcyjnej bazie Supabase    | **Otwarte, świadomie zaakceptowane.** `https://aed419ac-team-maker.jakub-e9b.workers.dev` jest publiczny i wskazuje na tę samą bazę. Cloudflare Access nie skonfigurowany.                                          |
-| Przekroczenie 10 ms CPU → losowe 5xx (`1102`)           | **Otwarte, niezweryfikowane.** Wymaga realnego ruchu przez `wrangler tail`. Startup 23 ms; middleware woła `supabase.auth.getUser()` przy każdym żądaniu.                                                          |
+| Wpis w rejestrze                                        | Rozstrzygnięcie                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wdrożenie pod nazwą `10x-astro-starter`                 | **Nie wystąpiło.** Nazwa poprawiona przed uploadem; worker to `team-maker`.                                                                                                                                                                                                                                                                                |
+| Cichy brak sekretów → auth martwy przy zielonym deployu | **Wykluczone testem.** `POST /api/auth/signin` zwraca `Invalid login credentials` (odpowiedź Supabase), a nie `Supabase is not configured` (ścieżka `supabase === null` w `src/pages/api/auth/signin.ts`).                                                                                                                                                 |
+| Serwowanie `_worker.js` jako pliku statycznego          | **Nie wystąpi z konstrukcji.** Build tworzy `dist/.wrangler/deploy/config.json`, który przekierowuje wrangler na `dist/server/wrangler.json` z `assets.directory: "../client"`. `dist/client/` zawiera wyłącznie `_astro/`, `favicon.png`, `template.png`. Potwierdzone testem: 404.                                                                       |
+| Nieoczekiwany binding KV `SESSION`                      | **Zmaterializowane wcześniej, nieszkodliwe.** Namespace `SESSION` (`79681b67cdd64767acadb8d9d1e9af15`) powstał przy deployu 08-29; obecny upload go dziedziczy. Adapter dokłada też binding `IMAGES`.                                                                                                                                                      |
+| Cache odpowiedzi z `Set-Cookie`                         | **Brak ekspozycji.** Żadna Cache Rule nie została dodana; trasa SSR nie zwraca `Cache-Control` ani `cf-cache-status`.                                                                                                                                                                                                                                      |
+| Agent użyje `wrangler pages deploy`                     | **Nie wystąpiło.** Użyto `versions upload` + `versions deploy`. Reguła jest już zapisana w `AGENTS.md`.                                                                                                                                                                                                                                                    |
+| CI nie uruchamia się (trigger `master`)                 | **Nieaktualne.** `.github/workflows/ci.yml` triggeruje na `main` dla push i PR.                                                                                                                                                                                                                                                                            |
+| Publiczne preview URL na produkcyjnej bazie Supabase    | **Otwarte, świadomie zaakceptowane.** `https://aed419ac-team-maker.jakub-e9b.workers.dev` jest publiczny i wskazuje na tę samą bazę. Cloudflare Access nie skonfigurowany.                                                                                                                                                                                 |
+| Przekroczenie 10 ms CPU → losowe 5xx (`1102`)           | **Otwarte, niezweryfikowane.** Wymaga realnego ruchu przez `wrangler tail`. Startup 23 ms; middleware woła `supabase.auth.getUser()` przy każdym żądaniu.                                                                                                                                                                                                  |
 | Rollback kodu bez rollbacku schematu Supabase           | **Zmaterializowane 2026-09-05 (S-03), obsłużone.** Pierwsza zmiana schematu po wdrożeniu: migracja `teams` jest addytywna, więc rollback workera do `aed419ac-…` przywraca stan sprzed zmiany bez cofania schematu (tabela zostaje, nieszkodliwa). Wersja workera zgodna ze schematem zapisana w akapicie „Pierwsza zmiana schematu po wdrożeniu" powyżej. |
-| Podbicie `compatibility_date`                           | **Nie dotknięte.** Pozostaje `2026-05-08`.                                                                                                                                                                          |
+| Podbicie `compatibility_date`                           | **Nie dotknięte.** Pozostaje `2026-05-08`.                                                                                                                                                                                                                                                                                                                 |
 
 ## Odchylenia od `infrastructure.md`
 

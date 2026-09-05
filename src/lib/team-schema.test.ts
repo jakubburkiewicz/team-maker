@@ -37,28 +37,43 @@ function statementsOf(sql: string): string[] {
     .filter((statement) => statement.length > 0);
 }
 
+/** Polecenia ze **wszystkich** migracji — polityki `update`/`delete` z S-05/S-06 wjadą osobnymi plikami. */
+function allStatements(): string[] {
+  return readdirSync(MIGRATIONS_DIR)
+    .filter((name) => name.endsWith(".sql"))
+    .sort()
+    .flatMap((name) => statementsOf(readFileSync(join(MIGRATIONS_DIR, name), "utf8")));
+}
+
+/** Lista ról z `to …` w `create policy`; `null`, gdy polecenie nie ma tej klauzuli (= `public`). */
+function policyRoles(policy: string): string | null {
+  return /\bto (.+?) (?:using|with check)\b/.exec(policy)?.[1] ?? null;
+}
+
 const migration = latestMigration("_teams_schema.sql");
 const statements = statementsOf(migration);
-const policies = statements.filter((statement) => statement.startsWith("create policy"));
+const everyStatement = allStatements();
+const teamsStatements = everyStatement.filter((statement) => statement.includes("public.teams"));
+const teamsPolicies = teamsStatements.filter((statement) => statement.startsWith("create policy"));
 
 describe("migracja teams — odcięcie na właściciela", () => {
   it("włącza RLS na public.teams", () => {
     expect(statements).toContain("alter table public.teams enable row level security");
   });
 
-  it("każda polityka na public.teams jest dla authenticated i wiąże wiersz z auth.uid()", () => {
-    expect(policies.length).toBeGreaterThan(0);
+  it("każda polityka na public.teams (w dowolnej migracji) jest wyłącznie dla authenticated i wiąże wiersz z auth.uid()", () => {
+    expect(teamsPolicies.length).toBeGreaterThan(0);
 
-    for (const policy of policies) {
-      expect(policy).toContain("on public.teams");
-      expect(policy).toContain("to authenticated");
+    for (const policy of teamsPolicies) {
+      // Dokładna lista ról, nie `toContain` — `to authenticated, anon` też zawiera `to authenticated`.
+      expect(policyRoles(policy), policy).toBe("authenticated");
       expect(policy).toContain("auth.uid()");
     }
   });
 
-  it("nie ma żadnej polityki ani przywileju dla anon", () => {
-    for (const statement of statements) {
-      expect(statement).not.toContain("to anon");
+  it("żadna migracja nie daje anon polityki ani przywileju na public.teams", () => {
+    for (const statement of teamsStatements) {
+      expect(statement, statement).not.toMatch(/\bto\b[^;]*\banon\b/);
     }
     expect(statements).toContain("revoke all on public.teams from anon");
   });
