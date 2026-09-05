@@ -723,26 +723,26 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Automatyczne
 
-- [x] 3.1 `npx astro sync && npm run lint` przechodzi
-- [x] 3.2 `npm test` przechodzi
-- [x] 3.3 `npm run build` przechodzi
-- [x] 3.4 `package.json` / `package-lock.json` bez zmian
-- [x] 3.5 Brak `fetch(` w `EmbarkGate.tsx`
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi — 7df2b32
+- [x] 3.2 `npm test` przechodzi — 7df2b32
+- [x] 3.3 `npm run build` przechodzi — 7df2b32
+- [x] 3.4 `package.json` / `package-lock.json` bez zmian — 7df2b32
+- [x] 3.5 Brak `fetch(` w `EmbarkGate.tsx` — 7df2b32
 
 #### Ręczne
 
-- [x] 3.6 Pełna ścieżka na koncie A: zablokowany → przepis → „Embarking…" → strona potwierdzenia z nazwą z bazy; `composition` w Studio równa przepisowi
-- [x] 3.7 Linki „Assemble another team" i „Back to dashboard" działają
-- [x] 3.8 Konto B → 404 na cudzym `embark`; nie-UUID → 404; wylogowany → redirect na signin
-- [x] 3.9 Awaria stosu → `/teams/new` z komunikatem błędu i pustym składem; po starcie zapis działa
-- [x] 3.10 Odświeżenie `/teams/new` po zapisie zeruje skład bez `?error=`
+- [x] 3.6 Pełna ścieżka na koncie A: zablokowany → przepis → „Embarking…" → strona potwierdzenia z nazwą z bazy; `composition` w Studio równa przepisowi — 7df2b32
+- [x] 3.7 Linki „Assemble another team" i „Back to dashboard" działają — 7df2b32
+- [x] 3.8 Konto B → 404 na cudzym `embark`; nie-UUID → 404; wylogowany → redirect na signin — 7df2b32
+- [x] 3.9 Awaria stosu → `/teams/new` z komunikatem błędu i pustym składem; po starcie zapis działa — 7df2b32
+- [x] 3.10 Odświeżenie `/teams/new` po zapisie zeruje skład bez `?error=` — 7df2b32
 
 ### Faza 4: Wdrożenie na projekt hostowany
 
 #### Ręczne
 
-- [ ] 4.1 `supabase migration list` potwierdza stan zdalny; `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu
-- [ ] 4.2 Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu
-- [ ] 4.3 `supabase config push` nie uruchomiony; potwierdzanie adresu na produkcji działa
-- [ ] 4.4 Test dymny na produkcji: zapis, potwierdzenie z nazwą, 404 z drugiego konta
-- [ ] 4.5 `deploy-plan.md` odzwierciedla listę migracji, wersje workera i rozstrzygnięcie ryzyka
+- [x] 4.1 `supabase migration list` potwierdza stan zdalny; `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu
+- [x] 4.2 Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu
+- [x] 4.3 `supabase config push` nie uruchomiony; potwierdzanie adresu na produkcji działa
+- [x] 4.4 Test dymny na produkcji: zapis, potwierdzenie z nazwą, 404 z drugiego konta
+- [x] 4.5 `deploy-plan.md` odzwierciedla listę migracji, wersje workera i rozstrzygnięcie ryzyka

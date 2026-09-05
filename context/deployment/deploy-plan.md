@@ -4,9 +4,9 @@ platform: Cloudflare Workers (static assets)
 worker_name: team-maker
 account_id: e9b0684b22298d5579d36a56e148c764
 production_url: https://team-maker.jakub-e9b.workers.dev
-deployed_at: 2026-08-30
-deployed_version: aed419ac-4095-4fae-860c-781a1c7bf024
-previous_version: 9112a31c-c0df-44ef-9acf-3e99cfd46ea1
+deployed_at: 2026-09-05
+deployed_version: a8bbb88b-2d78-4e33-b388-882b50512493
+previous_version: aed419ac-4095-4fae-860c-781a1c7bf024
 status: deployed-and-verified
 context_type: mvp
 ---
@@ -147,11 +147,28 @@ Zakaz `config push` obowiązuje bez zmian — a po zlinkowaniu jest o jedno pole
 i łatwiejszy do przypadkowego uruchomienia (CLI potrafi go sugerować po `link`). Jedyną ścieżką
 zmian w hostowanej bazie pozostaje `supabase db push` z plików w `supabase/migrations/`.
 
-**Oczekuje na `db push` (przegląd implementacji F-02, 2026-09-05):** trzecia migracja
-`20260905090700_character_pool_revoke_writes.sql` — `revoke insert, update, delete, truncate`
-na `characters` i `perks` dla `anon`/`authenticated` (obrona w głąb obok RLS). Istnieje tylko
-w repozytorium; na produkcję trafi przy następnym `supabase db push`. Po zastosowaniu usuń ten
-akapit i dopisz ją do listy powyżej.
+**Migracje zastosowane na produkcji po pierwszym pushu (stan na 2026-09-05, Faza 4 S-03):**
+
+- `20260905090700_character_pool_revoke_writes.sql` — `revoke insert, update, delete, truncate`
+  na `characters` i `perks` dla `anon`/`authenticated` (obrona w głąb obok RLS). Zastosowana
+  **poza zapisem w tym dokumencie** — `supabase migration list` w Fazie 4 S-03 pokazał ją już po
+  stronie zdalnej, choć ten akapit wciąż mówił „oczekuje na `db push`". Skutek potwierdzony sondą:
+  `POST /rest/v1/characters` i `DELETE /rest/v1/perks` jako `anon` → `42501 permission denied`.
+- `20260905185700_teams_schema.sql` — tabela `teams` (skład w `jsonb`, nazwa-hash z `default`),
+  RLS `insert`/`select` dla właściciela, `revoke all` dla `anon`, `revoke update, delete, truncate`
+  dla `authenticated`. Wypchnięta `supabase db push` 2026-09-05 (S-03, Faza 4); potwierdzone
+  `migration list` (lokalnie = zdalnie) i sondą `GET/POST /rest/v1/teams` jako `anon` → `42501`.
+
+**Pierwsza zmiana schematu po wdrożeniu (S-03, 2026-09-05).** Kolejność wiążąca: najpierw
+`supabase db push`, potem `npx wrangler deploy` — worker z trasą `POST /api/teams` bez tabeli
+dawałby 500. Wersja workera **sprzed** zmiany schematu (zgodna ze schematem bez `teams`):
+`aed419ac-4095-4fae-860c-781a1c7bf024`; **po**: `a8bbb88b-2d78-4e33-b388-882b50512493`
+(`wrangler deploy` z commita `7df2b32`, 100% ruchu od razu). Zasada: migracje są wyłącznie
+addytywne, więc wycofaniem zmiany jest `npx wrangler rollback aed419ac-…` — tabela `teams`
+zostaje w bazie i jest nieszkodliwa bez trasy, która do niej pisze. `revoke_writes` (zmiana
+przywilejów, nie kodu) rollback workera nie cofa; jej wycofaniem byłaby wyłącznie nowa migracja
+przywracająca granty — ryzyko zerowe, bo jedynym konsumentem `characters`/`perks` w aplikacji jest
+odczyt `getCharacterPool`.
 
 ## Rozstrzygnięcia wobec rejestru ryzyk z `infrastructure.md`
 
@@ -166,7 +183,7 @@ akapit i dopisz ją do listy powyżej.
 | CI nie uruchamia się (trigger `master`)                 | **Nieaktualne.** `.github/workflows/ci.yml` triggeruje na `main` dla push i PR.                                                                                                                                     |
 | Publiczne preview URL na produkcyjnej bazie Supabase    | **Otwarte, świadomie zaakceptowane.** `https://aed419ac-team-maker.jakub-e9b.workers.dev` jest publiczny i wskazuje na tę samą bazę. Cloudflare Access nie skonfigurowany.                                          |
 | Przekroczenie 10 ms CPU → losowe 5xx (`1102`)           | **Otwarte, niezweryfikowane.** Wymaga realnego ruchu przez `wrangler tail`. Startup 23 ms; middleware woła `supabase.auth.getUser()` przy każdym żądaniu.                                                          |
-| Rollback kodu bez rollbacku schematu Supabase           | **Nie dotyczy tego wdrożenia** — nie zmieniano schematu ani polityk RLS.                                                                                                                                            |
+| Rollback kodu bez rollbacku schematu Supabase           | **Zmaterializowane 2026-09-05 (S-03), obsłużone.** Pierwsza zmiana schematu po wdrożeniu: migracja `teams` jest addytywna, więc rollback workera do `aed419ac-…` przywraca stan sprzed zmiany bez cofania schematu (tabela zostaje, nieszkodliwa). Wersja workera zgodna ze schematem zapisana w akapicie „Pierwsza zmiana schematu po wdrożeniu" powyżej. |
 | Podbicie `compatibility_date`                           | **Nie dotknięte.** Pozostaje `2026-05-08`.                                                                                                                                                                          |
 
 ## Odchylenia od `infrastructure.md`
@@ -198,7 +215,7 @@ export PATH="$HOME/.nvm/versions/node/v22.14.0/bin:$PATH"   # wymagane, patrz Od
 npx wrangler versions upload                    # preview, bez ruchu produkcyjnego
 npx wrangler versions deploy <ID>@100% --yes    # promocja
 npx wrangler deployments list                   # historia
-npx wrangler rollback 9112a31c-c0df-44ef-9acf-3e99cfd46ea1   # odwrót do wersji sprzed tego wdrożenia
+npx wrangler rollback aed419ac-4095-4fae-860c-781a1c7bf024   # odwrót do wersji sprzed S-03 (schemat bez `teams`)
 npx wrangler tail                               # logi runtime na żywo
 npx wrangler secret put <NAZWA>                 # rotacja sekretu (tworzy nową wersję → wymaga deployu)
 ```
