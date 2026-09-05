@@ -58,7 +58,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | ID   | Change ID                        | Wynik (użytkownik może …)                                                | Wymagania wstępne | Odnośniki PRD                                    | Status   |
 | ---- | -------------------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------------------ | -------- |
 | F-01 | `domain-rule-verification-harness` | (fundament) reguła domenowa da się wykonać i sprawdzić poza przeglądarką | —                 | Business Logic, Guardrails                       | done |
-| F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | proposed |
+| F-02 | `solvable-character-pool`          | (fundament) zamknięta pula postaci i perków istnieje i jest rozwiązywalna | F-01              | Business Logic, FR-012, FR-013, FR-014           | planning |
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | proposed |
 | S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | proposed |
 | S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | proposed |
@@ -154,7 +154,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   kwestią smaku: sześć postaci wnosi najwyżej sześć specjalizacji przy siedmiu kompetencjach,
   więc pula dobrana na oko może uczynić łamigłówkę nierozwiązywalną. Fundament nie buduje warstwy
   danych — dostarcza jeden zbiór danych plus jego dowód poprawności.
-- **Status:** proposed
+- **Status:** planning
 
 ## Fragmenty
 
