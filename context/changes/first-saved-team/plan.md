@@ -741,8 +741,8 @@ i bramki, które S-03 nie zmienia — formularz nie dokłada stanu ani efektów 
 
 #### Ręczne
 
-- [x] 4.1 `supabase migration list` potwierdza stan zdalny; `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu
-- [x] 4.2 Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu
-- [x] 4.3 `supabase config push` nie uruchomiony; potwierdzanie adresu na produkcji działa
-- [x] 4.4 Test dymny na produkcji: zapis, potwierdzenie z nazwą, 404 z drugiego konta
-- [x] 4.5 `deploy-plan.md` odzwierciedla listę migracji, wersje workera i rozstrzygnięcie ryzyka
+- [x] 4.1 `supabase migration list` potwierdza stan zdalny; `supabase db push` stosuje `revoke_writes` i `teams_schema` bez błędu — ab13402
+- [x] 4.2 Dashboard: `teams` z RLS i dwiema politykami; `characters`/`perks` bez przywilejów zapisu — ab13402
+- [x] 4.3 `supabase config push` nie uruchomiony; potwierdzanie adresu na produkcji działa — ab13402
+- [x] 4.4 Test dymny na produkcji: zapis, potwierdzenie z nazwą, 404 z drugiego konta — ab13402
+- [x] 4.5 `deploy-plan.md` odzwierciedla listę migracji, wersje workera i rozstrzygnięcie ryzyka — ab13402
