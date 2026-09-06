@@ -41,6 +41,10 @@ interface DeleteTeamDialogProps {
  */
 export default function DeleteTeamDialog({ teamId, teamName }: DeleteTeamDialogProps) {
   const [open, setOpen] = useState(false);
+  // Jak `CompositionGate`: po pierwszym kliknięciu oba przyciski gasną, bo drugi POST na już
+  // skasowany wiersz dostałby `null` z repo i odesłał na goły 404 zamiast na baner „Team deleted."
+  // Nie `useFormStatus` — przy `action` będącym stringiem React trzyma `pending === false` na stałe.
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <>
@@ -68,16 +72,23 @@ export default function DeleteTeamDialog({ teamId, teamName }: DeleteTeamDialogP
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/20 bg-white/10 text-white hover:bg-white/20">
+            <AlertDialogCancel
+              disabled={submitting}
+              className="border-white/20 bg-white/10 text-white hover:bg-white/20"
+            >
               Cancel
             </AlertDialogCancel>
             <form method="post" action={`/api/teams/${teamId}/delete`}>
               <Button
                 type="submit"
                 variant="destructive"
+                disabled={submitting}
+                onClick={() => {
+                  setSubmitting(true);
+                }}
                 className="w-full border border-red-400/40 bg-red-500/80 text-white hover:bg-red-500"
               >
-                Delete team
+                {submitting ? "Deleting…" : "Delete team"}
               </Button>
             </form>
           </AlertDialogFooter>

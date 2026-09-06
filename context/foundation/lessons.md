@@ -57,3 +57,28 @@
 - **Applies to**: `/10x-plan` przy każdej fazie dokładającej lub zdejmującej interaktywność
   istniejącej wyspy (S-05 `edit-saved-team` w pierwszej kolejności); `/10x-implement`
   i `/10x-impl-review` przy `src/pages/**/*.astro` renderujących `src/components/**` bez `client:*`.
+
+## Kryteria grepowe kotwicz na składni, nie na słowach — komentarze też są w pliku
+
+- **Context**: `context/changes/delete-team-confirmed/plan.md` §Progress 1.7, 1.9, 3.11 (S-06,
+  commity 97f14d3 i 335a80a); wcześniej ta sama klasa w `src/lib/teams-policy-sql.test.ts`
+  (S-05), gdzie test musiał dostać helper `allMigrationsWithoutComments()`.
+- **Problem**: Trzy kryteria automatyczne planu — `! grep -nE 'from "astro|@/lib/supabase'
+  src/lib/team-repo.ts`, `! grep -rn "grant all\|grant.*truncate" supabase/migrations/`,
+  `! grep -n "client:" src/pages/teams/index.astro` — uruchomione dosłownie **nie przechodzą**:
+  trafiają w docstring `team-repo.ts:8` („bez importu `@/lib/supabase`"), w komentarz
+  `20260905090700_character_pool_revoke_writes.sql:4` („grant all on tables") i w komentarz
+  `index.astro:29` („zero `client:*`"). Wszystkie trzy linie istniały przed zmianą, więc intencja
+  była spełniona, a mimo to Progress podpisał je `[x]` z hashem commitu. Plan sam ostrzegał przy
+  1.9, że „grep biegnie po surowych plikach" — i wybrał wzorzec trafiający w cudzy komentarz.
+  Im lepiej udokumentowany kod, tym częściej proza opisuje dokładnie to, czego grep ma nie znaleźć.
+- **Rule**: Kryterium grepowe w planie ma być zakotwiczone na składni, nie na słowie:
+  `^import .* from "@/lib/supabase"` zamiast `@/lib/supabase`, `^\s*grant\s` zamiast `grant`,
+  `client:load` / `client:[a-z]+=` zamiast `client:`. Gdy kotwica nie istnieje, kryterium ma
+  strzyc komentarze przed dopasowaniem (`grep -v '^\s*\(//\|--\|\*\)'` lub helper w teście).
+  Przed odhaczeniem `[x]` komenda musi zostać **uruchomiona i przejść dosłownie** — `[x]` nie znaczy
+  „intencja spełniona", tylko „komenda zielona"; jeśli komenda jest wadliwa, poprawia się komendę
+  w planie, nie odhacza na ślepo.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna weryfikacja"
+  opartym na `grep`; `/10x-implement` przy odhaczaniu Progress; `/10x-impl-review` — uruchamiaj
+  komendy dosłownie i zgłaszaj rozjazd litery z intencją.

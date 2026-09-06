@@ -245,13 +245,17 @@ Zaktualizuj tytuł `describe` i nagłówkowy docstring pliku, bo przedmiotem tes
 - Polityka delete nie ma `with check`:
   `! grep -n "with check" supabase/migrations/20260906120000_teams_delete_policy.sql`
 - Repo nadal nie filtruje po `user_id`: `! grep -n 'eq("user_id"' src/lib/team-repo.ts`
-- Repo nadal nie importuje warstwy Astro/Supabase: `! grep -nE 'from "astro|@/lib/supabase' src/lib/team-repo.ts`
+- Repo nadal nie importuje warstwy Astro/Supabase: `! grep -nE '^import .*(from "astro|@/lib/supabase)' src/lib/team-repo.ts`
+  (kotwica `^import` — docstring modułu `:8` nazywa `@/lib/supabase` w prozie; poprawione po przeglądzie
+  implementacji, lekcja „Kryteria grepowe kotwicz na składni")
 - Nieaktualna granica zakresu zniknęła: `! grep -n "to S-06" src/lib/teams-policy-sql.test.ts`
 - Żaden przywilej usuwania nie wyciekł poza tabelowy `delete`:
-  `! grep -rn "grant all\|grant.*truncate" supabase/migrations/`
-  (kotwica na `grant`, nie na samym `truncate`: `grep` biegnie po **surowych** plikach, a nagłówek
-  nowej migracji ma w prozie wyjaśnić, że `truncate` zostaje cofnięty — wzorzec na samym słowie
-  trafiłby we własny komentarz i w `revoke … truncate` ze `20260905185700:46`)
+  `! grep -rnE '^\s*grant\s+(all|.*truncate)' supabase/migrations/`
+  (kotwica na `grant` **na początku linii**, nie na samym `truncate`: `grep` biegnie po **surowych**
+  plikach, a nagłówek nowej migracji ma w prozie wyjaśnić, że `truncate` zostaje cofnięty — wzorzec
+  na samym słowie trafiłby we własny komentarz i w `revoke … truncate` ze `20260905185700:46`;
+  kotwica `^\s*` dołożona po przeglądzie implementacji, bo goły `grant all` trafiał w komentarz
+  `20260905090700_character_pool_revoke_writes.sql:4`)
 - Żadna trasa ani komponent nie woła jeszcze `deleteTeam`:
   `! grep -rn "deleteTeam" src/pages/ src/components/`
 
@@ -432,7 +436,9 @@ warunkowym, nie w gałęzi `teams === null`. Strona zostaje czystym SSR: żadnej
   `! grep -nE "delete|Delete" src/components/team/TeamComposer.tsx`
 - Strona szczegółów ma dokładnie dwie wyspy:
   `test "$(grep -c 'client:load' 'src/pages/teams/[id].astro')" = "2"`
-- Lista zostaje czystym SSR: `! grep -n "client:" src/pages/teams/index.astro`
+- Lista zostaje czystym SSR: `! grep -nE 'client:[a-z]+[ />=]' src/pages/teams/index.astro`
+  (dopasowuje dyrektywę, nie prozę — komentarz `index.astro:29` pisze „zero `client:*`"; poprawione
+  po przeglądzie implementacji)
 - Cała faza jednym commitem: `git show --stat HEAD` wymienia razem
   `src/components/ui/alert-dialog.tsx`, `src/components/team/DeleteTeamDialog.tsx`,
   `src/pages/teams/[id].astro`, `src/pages/teams/index.astro`, `package.json`, `package-lock.json`

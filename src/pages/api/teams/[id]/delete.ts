@@ -15,7 +15,10 @@ import { deleteTeam } from "@/lib/team-repo";
  * ciała żądania, bo formularz potwierdzenia nie niesie ładunku, i nie zna reguły domenowej.
  * Brak ciała nie osłabia też ochrony przed obcym POST-em: `@supabase/ssr` ustawia ciasteczka
  * `sameSite: "lax"`, więc takie żądanie przychodzi nieuwierzytelnione i kończy się na gałęzi
- * pierwszej (ustalenie z przeglądu S-05).
+ * pierwszej (ustalenie z przeglądu S-05). Drugą, niezależną warstwą jest domyślne
+ * `security.checkOrigin: true` Astro — 403 dla każdego nie-GET z formularzowym `Content-Type`
+ * i obcym `Origin`; to ona trzyma, gdyby aplikacja stanęła na domenie z subdomenami, gdzie
+ * „same-site" Lax nie wystarcza. Nie wyłączaj jej w `astro.config.mjs` bez tokena CSRF w zamian.
  *
  * Własność wiersza egzekwuje wyłącznie RLS — polityka `owner can delete teams`
  * (`20260906120000_teams_delete_policy.sql`). Trasa niczego tu nie dubluje.
@@ -36,8 +39,11 @@ const DELETE_FAILED_MESSAGE = "Could not delete the team";
 
 export const POST: APIRoute = async (context) => {
   // `params.id` idzie do repo **bez zawężania** — formatu pilnuje `isTeamId`, więc nie-UUID kończy
-  // się odesłaniem, a nie błędem Postgresa `22P02`. Do budowy adresu `?? ""`, jak w `[id].ts:37`.
-  const id = context.params.id ?? "";
+  // się odesłaniem, a nie błędem Postgresa `22P02`. Do adresu i logów idzie wersja zakodowana: Astro
+  // dekoduje ścieżkę przed dopasowaniem trasy, więc `/api/teams/%0A/delete` daje `params.id === "\n"`,
+  // a surowa nowa linia w nagłówku `Location` wywraca `new Response` — nieprzechwycony throw to 500.
+  // Dla poprawnego UUID kodowanie jest identycznością.
+  const id = encodeURIComponent(context.params.id ?? "");
   const reject = (message: string) => `/teams/${id}?error=${encodeURIComponent(message)}`;
 
   // Obrona w głąb: prefiks `/api/teams` jest w PROTECTED_ROUTES, więc middleware już przekierował.

@@ -97,7 +97,7 @@ describe("polityki zapisu na teams — bariery, których pilnuje wyłącznie baz
     expect(migration).toContain("grant delete on public.teams to authenticated");
   });
 
-  it("żadna migracja nie nadaje truncate na teams ani niczego roli anon", () => {
+  it("żadna migracja nie nadaje truncate ani `all` na teams, ani niczego roli anon", () => {
     // Druga strona grantu z poprzedniego testu. `revoke` ze schematu chroni tylko dopóki nikt nie
     // dopisze grantu obok — Postgres sumuje przywileje. TRUNCATE jest tu groźniejszy niż DELETE:
     // RLS go **nie filtruje** (`20260905185700_teams_schema.sql:42-45`), więc jeden taki wiersz
@@ -108,11 +108,15 @@ describe("polityki zapisu na teams — bariery, których pilnuje wyłącznie baz
     // public.teams from authenticated;` i `revoke all on public.teams from anon;`. Bez kotwicy
     // asercje szłyby na czerwono na zdaniach, które robią dokładnie to, czego pilnują.
     const grantsTruncateOnTeams = /grant\s[^;]*\btruncate\b[^;]*on\s+(?:table\s+)?public\.teams/i;
+    // `grant all` nadałby truncate (i tabelowy update) bez literalnego słowa `truncate` — dwa
+    // wzorce obok by go nie zobaczyły.
+    const grantsAllOnTeams = /grant\s+all\b[^;]*on\s+(?:table\s+)?public\.teams/i;
     const grantsAnythingToAnonOnTeams = /grant\s[^;]*on\s+(?:table\s+)?public\.teams\b[^;]*\banon\b/i;
 
     const sql = allMigrationsWithoutComments();
 
     expect(sql).not.toMatch(grantsTruncateOnTeams);
+    expect(sql).not.toMatch(grantsAllOnTeams);
     expect(sql).not.toMatch(grantsAnythingToAnonOnTeams);
   });
 });

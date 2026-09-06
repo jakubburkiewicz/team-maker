@@ -115,11 +115,6 @@ if (notFound) {
               <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
                 <TeamComposer pool={pool} initialComposition={composition} teamId={team.id} client:load />
               </div>
-              {/*
-                Usuwanie żyje **wyłącznie** w tej gałęzi: na ekranie 404 i na „drużyna niedostępna"
-                nie ma czego usuwać, a sam przycisk zdradziłby, że wiersz istnieje (US-04).
-              */}
-              <DeleteTeamDialog teamId={team.id} teamName={team.name} client:load />
             </div>
           ) : (
             <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">
@@ -137,6 +132,18 @@ if (notFound) {
               >
                 Back to your teams
               </a>
+            </div>
+          )}
+          {/*
+            Usuwanie żyje przy **każdym** istniejącym własnym wierszu — także gdy skład nie składa się
+            z dzisiejszej puli (`inconsistent`) albo pula chwilowo nie doszła: usunięcie nie potrzebuje
+            puli, a nagłówek wyżej i tak już nazywa drużynę. Przycisku nie ma tylko przy `notFound`
+            (cała strona to `null`) i `teamFailed` (`team === null`) — tam nie ma czego usuwać, a sam
+            przycisk zdradziłby, że wiersz istnieje (US-04).
+          */}
+          {team !== null && (
+            <div class="mt-4 flex flex-col">
+              <DeleteTeamDialog teamId={team.id} teamName={team.name} client:load />
             </div>
           )}
         </div>
