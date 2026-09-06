@@ -513,12 +513,12 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 #### Automatyczne
 
-- [ ] 1.1 Testy przechodzą: `npm test`
-- [ ] 1.2 Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts`
-- [ ] 1.3 Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts`
-- [ ] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'`
-- [ ] 1.5 Linting przechodzi: `npm run lint`
-- [ ] 1.6 Build przechodzi: `npm run build`
+- [x] 1.1 Testy przechodzą: `npm test`
+- [x] 1.2 Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts`
+- [x] 1.3 Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts`
+- [x] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'`
+- [x] 1.5 Linting przechodzi: `npm run lint`
+- [x] 1.6 Build przechodzi: `npm run build`
 
 ### Faza 2: Przenosiny listy na stronę główną
 
