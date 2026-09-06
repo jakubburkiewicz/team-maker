@@ -5,11 +5,15 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Kontrola dwóch barier, które **istnieją wyłącznie w SQL** i których nie widzi ani lint, ani typy,
- * ani żaden inny test: `with check` w polityce `update` (US-04 — nie da się przepisać wiersza na
- * cudze konto) oraz kolumnowy `grant update (composition)` (FR-011 — nazwy-hasha nie da się
- * zmienić). Kod aplikacji wysyła wyłącznie `{ composition }`, ale to jest pierwsza bariera;
- * te dwie są drugą, niezależną — i to one obowiązują poza interfejsem.
+ * Kontrola barier, które **istnieją wyłącznie w SQL** i których nie widzi ani lint, ani typy, ani
+ * żaden inny test. Dla podmiany składu (S-05): `with check` w polityce `update` (US-04 — nie da się
+ * przepisać wiersza na cudze konto) oraz kolumnowy `grant update (composition)` (FR-011 — nazwy-hasha
+ * nie da się zmienić). Dla usuwania (S-06): polityka `for delete` z `using` i tabelowy
+ * `grant delete` (FR-010 — bez nich usunięcie przechodzi bez błędu i kasuje zero wierszy), a obok
+ * nich strażnik tego, czego nadać **nie** wolno — `truncate` i cokolwiek dla roli `anon`.
+ *
+ * Kod aplikacji wysyła wyłącznie to, co powinien, ale to jest pierwsza bariera; te są drugą,
+ * niezależną — i to one obowiązują poza interfejsem.
  *
  * Test czyta pliki migracji przez `node:fs` — to nie jest stos Supabase ani runtime Astro, więc
  * mieści się w twardej regule czystości testów (wzorzec: `src/lib/domain/character-pool-sql.test.ts`).
@@ -47,7 +51,7 @@ function allMigrationsWithoutComments(): string {
     .replace(/--[^\n]*/g, "");
 }
 
-describe("polityka update na teams — bariery, których pilnuje wyłącznie baza", () => {
+describe("polityki zapisu na teams — bariery, których pilnuje wyłącznie baza", () => {
   it("polityka update ma `with check`, nie sam `using`", () => {
     // Sam `using` wybiera wiersze do zmiany, ale nie blokuje przepisania `user_id` na cudze konto.
     // Bez `with check` Guardrail US-04 dla zapisu opierałby się wyłącznie na tym, że aplikacja
@@ -74,10 +78,41 @@ describe("polityka update na teams — bariery, których pilnuje wyłącznie baz
     expect(allMigrationsWithoutComments()).not.toMatch(grantsUpdateOnWholeTable);
   });
 
-  it("żadna migracja nie nadaje jeszcze przywileju delete na teams (to S-06)", () => {
-    // Granica zakresu S-05 zapisana jako test: usuwanie wchodzi własną migracją, nie tą.
-    const grantsDelete = /grant[^;]*\bdelete\b[^;]*on\s+(?:table\s+)?public\.teams/i;
+  it("polityka delete wybiera wyłącznie własne wiersze przez `using`", () => {
+    // `for delete` nie przyjmuje `with check` — przy usuwaniu nie powstaje nowy wiersz do
+    // sprawdzenia — więc cała bariera US-04 dla tej operacji stoi w `using`. To jedyne miejsce:
+    // przywilej niżej jest z konieczności tabelowy, bo `delete` nie ma granulacji kolumnowej.
+    const migration = latestMigration("_teams_delete_policy.sql");
 
-    expect(allMigrationsWithoutComments()).not.toMatch(grantsDelete);
+    expect(migration).toContain("for delete to authenticated");
+    expect(migration).toContain("using (user_id = (select auth.uid()))");
+  });
+
+  it("przywilej delete jest nadany na public.teams roli authenticated", () => {
+    // `20260905185700_teams_schema.sql:46` cofnął ten przywilej i przekazał go S-06. Sama polityka
+    // nie wystarcza: bez grantu usunięcie przechodzi bez błędu i kasuje zero wierszy — awaria
+    // cicha, nie do odróżnienia od „to cudza drużyna".
+    const migration = latestMigration("_teams_delete_policy.sql");
+
+    expect(migration).toContain("grant delete on public.teams to authenticated");
+  });
+
+  it("żadna migracja nie nadaje truncate na teams ani niczego roli anon", () => {
+    // Druga strona grantu z poprzedniego testu. `revoke` ze schematu chroni tylko dopóki nikt nie
+    // dopisze grantu obok — Postgres sumuje przywileje. TRUNCATE jest tu groźniejszy niż DELETE:
+    // RLS go **nie filtruje** (`20260905185700_teams_schema.sql:42-45`), więc jeden taki wiersz
+    // kasowałby drużyny wszystkich kont naraz, mimo poprawnej polityki.
+    //
+    // Oba wzorce kotwiczą się na `grant\s`, jak `grantsUpdateOnWholeTable` wyżej: helper strzyże
+    // wyłącznie komentarze, więc w korpusie zostają `revoke update, delete, truncate on
+    // public.teams from authenticated;` i `revoke all on public.teams from anon;`. Bez kotwicy
+    // asercje szłyby na czerwono na zdaniach, które robią dokładnie to, czego pilnują.
+    const grantsTruncateOnTeams = /grant\s[^;]*\btruncate\b[^;]*on\s+(?:table\s+)?public\.teams/i;
+    const grantsAnythingToAnonOnTeams = /grant\s[^;]*on\s+(?:table\s+)?public\.teams\b[^;]*\banon\b/i;
+
+    const sql = allMigrationsWithoutComments();
+
+    expect(sql).not.toMatch(grantsTruncateOnTeams);
+    expect(sql).not.toMatch(grantsAnythingToAnonOnTeams);
   });
 });

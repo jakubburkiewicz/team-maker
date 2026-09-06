@@ -9,8 +9,9 @@ import { toTeamComposition } from "@/lib/team-submission";
  * wciąga `astro:env/server`, a jego czysta część (`isTeamId`) jest testowalna bez Astro i Supabase.
  *
  * Własność wierszy egzekwuje RLS (`20260905185700_teams_schema.sql`): `insert` przechodzi tylko
- * z `user_id = auth.uid()`, `select` widzi tylko własne wiersze, a `update` — dołożone przez
- * `20260906090000_teams_update_policy.sql` — zmienia wyłącznie własne. Repo niczego tu nie dubluje:
+ * z `user_id = auth.uid()`, `select` widzi tylko własne wiersze, `update` — dołożone przez
+ * `20260906090000_teams_update_policy.sql` — zmienia wyłącznie własne, a `delete` — dołożone przez
+ * `20260906120000_teams_delete_policy.sql` — kasuje wyłącznie własne. Repo niczego tu nie dubluje:
  * żadna funkcja nie filtruje po `user_id`, bo drugi warunek sugerowałby, że RLS sam nie wystarcza.
  */
 
@@ -133,6 +134,37 @@ export async function updateTeam(
     // `error.message` musi przejść dalej w całości: komunikat kolumnowego grantu z Postgresa jest
     // mało czytelny, a log jest jedyną diagnostyką w Workerze.
     throw new Error(`Failed to update team ${input.id}: ${error.message}`, { cause: error });
+  }
+
+  const row: TeamSummaryRow | null = data;
+
+  return row === null ? null : { id: row.id, name: row.name };
+}
+
+/**
+ * Kasuje drużynę (FR-010) i zwraca jej nagłówek, albo `null`, gdy nie ma czego skasować. Rzuca
+ * wyłącznie przy błędzie zapytania. Usunięcie jest nieodwracalne — Non-Goal PRD „kosz
+ * i przywracanie" — a jedyną ochroną jest okno potwierdzenia w interfejsie, nie ta funkcja.
+ *
+ * Trzy wyniki, których wywołujący nie może pomylić, te same co w `updateTeam`: rekord (wiersz
+ * zniknął), `null` (`id` nie jest UUID **albo** wiersz nie wrócił — nieznane id i cudza drużyna
+ * odcięta przez RLS, nierozróżnialnie), `throw` (awaria zapytania). Zero skasowanych wierszy
+ * **nie jest awarią**: RLS ukrywa cudzy wiersz, więc `delete … returning` zwraca wtedy `null`
+ * bez `error`.
+ *
+ * To, że skasowany wiersz w ogóle wraca, zawdzięczamy polityce `select` — `returning` przechodzi
+ * przez nią tak samo jak przy `insert` i `update` (`20260906120000_teams_delete_policy.sql`).
+ * Żadnego filtra po `user_id`: własność zostaje przy polityce `delete`.
+ */
+export async function deleteTeam(supabase: SupabaseClient, id: string | undefined): Promise<TeamSummary | null> {
+  if (!isTeamId(id)) {
+    return null;
+  }
+
+  const { data, error } = await supabase.from("teams").delete().eq("id", id).select(SUMMARY_SELECT).maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to delete team ${id}: ${error.message}`, { cause: error });
   }
 
   const row: TeamSummaryRow | null = data;

@@ -64,7 +64,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | done        |
 | S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | done        |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | done        |
-| S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | planning |
+| S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | in-progress |
 | S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | proposed |
 | S-08 | `missing-points-counter`           | zobaczyć, ilu punktów brakuje w każdej kompetencji poniżej progu          | S-02              | FR-017                                           | proposed |
 
@@ -295,7 +295,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Ryzyko:** Operacja nieodwracalna, której jedyną ochroną jest okno potwierdzenia — pominięcie
   tego okna nie ma ścieżki naprawczej. Domyka ostatnią z czterech operacji CRUD, więc to on
   decyduje, czy pierwsze Kryterium sukcesu jest spełnione w całości.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-07: Cudza drużyna jest niedostępna każdą ścieżką
 

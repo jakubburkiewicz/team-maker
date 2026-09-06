@@ -536,22 +536,22 @@ produkcji gracze mogą trwale kasować własne rekordy.
 
 #### Automatyczne
 
-- [ ] 1.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 1.2 `npm test` przechodzi (w tym przepisany `teams-policy-sql.test.ts`)
-- [ ] 1.3 `npm run build` przechodzi
-- [ ] 1.4 Migracja nadaje politykę `for delete` oraz `grant delete on public.teams to authenticated`
-- [ ] 1.5 Polityka delete nie ma `with check`
-- [ ] 1.6 Repo nadal nie filtruje po `user_id`
-- [ ] 1.7 Repo nadal nie importuje `astro:*` ani `@/lib/supabase`
-- [ ] 1.8 Nieaktualna granica zakresu „to S-06" zniknęła z testu SQL
-- [ ] 1.9 Żaden przywilej usuwania nie wyciekł poza tabelowy `delete` (brak `grant all`, brak `truncate`)
-- [ ] 1.10 Żadna trasa ani komponent nie woła jeszcze `deleteTeam`
+- [x] 1.1 `npx astro sync && npm run lint` przechodzi
+- [x] 1.2 `npm test` przechodzi (w tym przepisany `teams-policy-sql.test.ts`)
+- [x] 1.3 `npm run build` przechodzi
+- [x] 1.4 Migracja nadaje politykę `for delete` oraz `grant delete on public.teams to authenticated`
+- [x] 1.5 Polityka delete nie ma `with check`
+- [x] 1.6 Repo nadal nie filtruje po `user_id`
+- [x] 1.7 Repo nadal nie importuje `astro:*` ani `@/lib/supabase`
+- [x] 1.8 Nieaktualna granica zakresu „to S-06" zniknęła z testu SQL
+- [x] 1.9 Żaden przywilej usuwania nie wyciekł poza tabelowy `delete` (brak `grant all`, brak `truncate`)
+- [x] 1.10 Żadna trasa ani komponent nie woła jeszcze `deleteTeam`
 
 #### Ręczne
 
-- [ ] 1.11 `supabase db push` stosuje migrację bez błędu
-- [ ] 1.12 Panel Supabase pokazuje na `public.teams` dokładnie cztery polityki
-- [ ] 1.13 Warunek stały przed Fazą 2: produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`
+- [x] 1.11 `supabase db push` stosuje migrację bez błędu
+- [x] 1.12 Panel Supabase pokazuje na `public.teams` dokładnie cztery polityki
+- [x] 1.13 Warunek stały przed Fazą 2: produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`
 
 ### Faza 2: Trasa usuwania
 
