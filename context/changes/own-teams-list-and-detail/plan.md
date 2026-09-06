@@ -470,14 +470,14 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 
 #### Automatyczne
 
-- [x] 3.1 Linting przechodzi, w tym reguły typowane na nowych stronach `.astro`: `npm run lint`
-- [x] 3.2 Testy przechodzą: `npm test`
-- [x] 3.3 Build przechodzi: `npm run build`
+- [x] 3.1 Linting przechodzi, w tym reguły typowane na nowych stronach `.astro`: `npm run lint` — 94fee01
+- [x] 3.2 Testy przechodzą: `npm test` — 94fee01
+- [x] 3.3 Build przechodzi: `npm run build` — 94fee01
 
 #### Ręczne
 
-- [x] 3.4 `/teams/<własne-id>` pokazuje dokładnie zapisany skład i zgodny wykres
-- [x] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash, brak `client:*`
-- [x] 3.6 Cudze id, losowy UUID i nie-UUID dają 404 nierozróżnialnie
-- [x] 3.7 `/teams/new` nadal kompletuje i zapisuje drużynę bez regresji
-- [x] 3.8 Strona potwierdzenia prowadzi do widoku drużyny i do listy
+- [x] 3.4 `/teams/<własne-id>` pokazuje dokładnie zapisany skład i zgodny wykres — 94fee01
+- [x] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash, brak `client:*` — 94fee01
+- [x] 3.6 Cudze id, losowy UUID i nie-UUID dają 404 nierozróżnialnie — 94fee01
+- [x] 3.7 `/teams/new` nadal kompletuje i zapisuje drużynę bez regresji — 94fee01
+- [x] 3.8 Strona potwierdzenia prowadzi do widoku drużyny i do listy — 94fee01
