@@ -12,10 +12,19 @@ import { getTeamSummary, type TeamSummary } from "@/lib/team-repo";
 // top-level `return` (w zwykłym TS to błąd składni, więc reguła zakłada funkcję-przodka) i wywraca
 // `npm run lint`. Mechanizm zostaje; S-07 zmienił wyłącznie ciało tej gałęzi — z pustego na
 // `<TeamNotFound />`, ten sam komponent co `/teams/[id]`.
+// Do logów idzie wersja zakodowana, nigdy surowa: `Astro.params.id` jest po dekodowaniu ścieżki,
+// więc `/teams/%0A%0AERROR%20fake/embark` wstrzyknąłby sfabrykowane linie do logów Workera.
+// Do repo idzie dalej wartość surowa — formatu pilnuje `isTeamId`. Bliźniaczy kształt ma
+// `src/pages/teams/[id].astro` i obie trasy zapisu pod `src/pages/api/teams/`.
+const loggedId = encodeURIComponent(Astro.params.id ?? "");
+
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 let team: TeamSummary | null = null;
-let failed = false;
+// Brak klienta liczy się jako awaria odczytu, nie jako brak wiersza — inaczej `notFound` wyszłoby
+// `true` i **własna** drużyna dostałaby ekran „nie istnieje, albo nie jest twoja". Tak samo
+// w `src/pages/teams/[id].astro`.
+let failed = supabase === null;
 
 // Gałąź `!supabase` jest nieosiągalna — bez kluczy Supabase middleware przekierował na logowanie.
 if (supabase) {
@@ -28,7 +37,7 @@ if (supabase) {
   } catch (error) {
     // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
     // eslint-disable-next-line no-console
-    console.error(`Failed to load team for /teams/${Astro.params.id ?? ""}/embark`, error);
+    console.error(`Failed to load team for /teams/${loggedId}/embark`, error);
     failed = true;
   }
 }

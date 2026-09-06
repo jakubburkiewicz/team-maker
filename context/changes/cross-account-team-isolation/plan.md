@@ -330,8 +330,12 @@ pierwsza uzasadniona korekta polityki zobaczy czerwony test i osłabi strażnika
 #### Automatyczna weryfikacja:
 
 - Wszystkie testy przechodzą, w tym pięć nowych: `npm test`
-- Plik testu ma pięć nowych przypadków (11 zamiast 6):
-  `test $(grep -cE '^  it\(' src/lib/teams-policy-sql.test.ts) -eq 11`
+- Plik testu ma sześć nowych przypadków (12 zamiast 6):
+  `test $(grep -cE '^  it\(' src/lib/teams-policy-sql.test.ts) -eq 12`
+  > Triaż przeglądu 2026-09-06 (F1): szósty przypadek — strażnik `alter policy` — dołożony po
+  > przeglądzie. Furtka `alter policy` z umowy strażnika `drop policy` przepuszczała
+  > `using (true)` na polityce `select`, czyli rozbrojenie jedynej bariery odczytu, przez cały
+  > pakiet testów na zielono.
 - Typy i lint przechodzą: `npx astro sync && npm run lint`
 - Zero zmian w `supabase/`: `test -z "$(git status --porcelain supabase/)"`
 - Test nie wciąga stosu Astro ani Supabase (twarda reguła czystości testów):
@@ -349,6 +353,11 @@ pierwsza uzasadniona korekta polityki zobaczy czerwony test i osłabi strażnika
   migracji i tak nie odzwierciedla zagrożenia: dla bazy jest no-op — realną klasą jest przyszła
   migracja z `disable row level security`, pilnowana przez strażnika negatywnego. Test, który po
   usunięciu linii zostaje zielony, nie jest kotwicą i wymaga poprawienia wzorca.
+  > Triaż przeglądu 2026-09-06 (F8): `latestMigration()` strzyże teraz komentarze tak samo jak
+  > `allMigrationsWithoutComments()`, więc **zakomentowanie też czerwieni** — powód „zakomentowana
+  > linia dalej trafia w `toContain`" już nie obowiązuje. Wybór „usunięcie, nie zakomentowanie"
+  > zostaje z drugiego, mocniejszego powodu zapisanego wyżej: zakomentowanie zastosowanej migracji
+  > jest dla bazy no-op i nie odzwierciedla zagrożenia.
 - Ta sama kontrola dla polityki `owner can read teams` — usunąć ją lokalnie, potwierdzić czerwień, cofnąć
 - `git status` po obu kontrolach jest czysty w `supabase/`
 
@@ -522,7 +531,7 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 #### Automatyczne
 
 - [x] 2.1 Wszystkie testy przechodzą, w tym pięć nowych (`npm test`) — 5941a5b
-- [x] 2.2 Plik testu ma 11 przypadków `it(` — 5941a5b
+- [x] 2.2 Plik testu ma 12 przypadków `it(` — 5941a5b, korekta F1 z przeglądu
 - [x] 2.3 Typy i lint przechodzą (`npx astro sync && npm run lint`) — 5941a5b
 - [x] 2.4 Zero zmian w `supabase/` — 5941a5b
 - [x] 2.5 Test nie importuje `astro:*` ani `@/lib/supabase` — 5941a5b
@@ -540,6 +549,15 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 - [x] 3.1 CI zielone przed wdrożeniem (`astro sync && lint && test && build`) — b2c5d37
 
 #### Ręczne
+
+> **Siła dowodowa kroków 3.3-3.11 (triaż przeglądu 2026-09-06, F3).** Umowa kroku 2 tej fazy
+> wymagała odnotowania przy odhaczeniu **kodu odpowiedzi HTTP**, a przy 3.7 i 3.8 także komunikatu
+> z nagłówka `Location`. Kody nie zostały przechwycone — odhaczenia niosą wyłącznie SHA, a liczby
+> w tytułach kroków pochodzą z planu sprzed przebiegu, nie z obserwacji. Kroki wykonał operator na
+> dwóch kontach na produkcji i to jego potwierdzenie jest tu dowodem; pochodzenie opisuje
+> `change.md` §Notes („Pochodzenie dowodu Fazy 3"). **Ryzyko przyjęte świadomie**: dwa zabezpieczenia
+> przed fałszywie zielonym wynikiem, które ta faza sama nazwała (403 z `checkOrigin`; komunikat inny
+> niż `Could not save the team`), nie mają w repozytorium weryfikowalnego śladu.
 
 - [x] 3.2 Wdrożenie (`npx wrangler deploy`) zakończone, aplikacja odpowiada — b2c5d37
 - [x] 3.3 Konta A i B założone i potwierdzone, każde z zapisaną drużyną — b2c5d37

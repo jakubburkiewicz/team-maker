@@ -1,7 +1,7 @@
 ---
 change_id: cross-account-team-isolation
 title: Cudza drużyna jest niedostępna każdą ścieżką
-status: implemented
+status: impl_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---

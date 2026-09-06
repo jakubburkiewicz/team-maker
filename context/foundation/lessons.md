@@ -82,3 +82,36 @@
 - **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna weryfikacja"
   opartym na `grep`; `/10x-implement` przy odhaczaniu Progress; `/10x-impl-review` — uruchamiaj
   komendy dosłownie i zgłaszaj rozjazd litery z intencją.
+
+## Strażnik grepowy nad SQL-em ma pokrywać legalne warianty zapisu, nie jeden zapis
+
+- **Context**: `src/lib/teams-policy-sql.test.ts` (S-07, triaż przeglądu implementacji 2026-09-06,
+  ustalenia F1 i F2). Rozwinięcie §„Kryteria grepowe kotwicz na składni, nie na słowach" o kierunek,
+  którego tamta lekcja nie obejmowała.
+- **Problem**: Sześć strażników negatywnych pilnujących RLS na `teams` kotwiczyło się na literalnym
+  `public.teams`, a strażnik tabelowego update — na `grant\s+update\s+on`. Sonda na kopii
+  repozytorium (dopisana migracja, `npm test`) pokazała, że **przechodzą na zielono**:
+  `alter table teams disable row level security;`, `drop policy … on teams;`, `grant all on teams …`,
+  `alter table "public"."teams" …`, `grant update, delete on public.teams` oraz
+  `grant all on all tables in schema public`. Każda z nich jest dokładnie tak samo skuteczna jak
+  wariant, którego strażnik pilnował — `search_path` migracji Supabase obejmuje `public`, a Postgres
+  sumuje przywileje. Strażnik pilnował **jednego zapisu**, nie **operacji**, i milczałby przy
+  rozbrojeniu bariery. Osobno ta sama klasa od strony furtki: `alter policy`, świadomie wyłączone
+  z zasięgu strażnika `drop policy`, przepuszczało `alter policy "owner can read teams" on
+  public.teams using (true);` — czyli rozbrojenie jedynej bariery odczytu, i to dokładnie tę mutację,
+  którą komentarz obok sam nazywał najgroźniejszą.
+- **Rule**: Zanim napiszesz strażnika negatywnego nad SQL-em, wypisz **legalne warianty zapisu tej
+  samej operacji**: nazwa bez schematu, nazwa w cudzysłowach (`public."teams"`, `"public"."teams"`),
+  `alter table only`, lista przywilejów zamiast jednego (`grant update, delete on …`), forma
+  schematowa (`grant all on all tables in schema public`), rola nadrzędna (`public` obejmuje `anon`).
+  Pokryj je **jednym wspólnym fragmentem wzorca** (stała w rodzaju `TEAMS_TABLE`), zamiast powtarzać
+  literał w każdym regexie — inaczej wzorce rozjadą się przy pierwszej korekcie. Każdą furtkę
+  zostawioną świadomie domknij warunkiem **pozytywnym** („wolno, o ile polecenie dalej zawiera
+  `auth.uid()`"), nigdy nie zostawiaj jej otwartej. I przesonduj strażnika, zanim go odhaczysz:
+  kopia migracji poza repozytorium, dopisana migracja z każdym wariantem, potwierdzenie, że każdy
+  wariant rozbrajający czerwieni, a każdy legalny przechodzi. Strażnik nieprzesondowany jest
+  dekoracją — tak samo jak asercja pozytywna bez kontroli mutacyjnej.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdej umowie strażnika nad
+  `supabase/migrations/` (umowa ma wymieniać warianty, nie jeden wzorzec); `/10x-implement` przy
+  pisaniu asercji negatywnych; `/10x-impl-review` — sonduj wzorce wariantami, nie czytaj samego
+  regexu.

@@ -309,14 +309,17 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 - **Równolegle z:** S-08
 - **Blokery:** —
 - **Niewiadome:**
-  - Czy odgadnięty identyfikator ma zwracać odpowiedź „nie znaleziono", czy przekierowanie na listę? — Właściciel: użytkownik. Blok: nie.
+  - ~~Czy odgadnięty identyfikator ma zwracać odpowiedź „nie znaleziono", czy przekierowanie na listę?~~ — **Rozstrzygnięte 2026-09-06:** 404 z pełną stroną, bez przekierowania.
 - **Ryzyko:** Sekwencjonowany na końcu pętli CRUD celowo: dopiero gdy istnieją wszystkie cztery
   operacje, da się wykazać zero na wszystkich czterech, a nie tylko na odczycie. Wymaganie jest
   własnością binarną — jedna nieosłonięta trasa unieważnia cały fragment — więc jego dowodem jest
   weryfikacja na dwóch kontach z F-01, nie inspekcja kodu.
-  **Punkt kontrolny z S-03 (2026-09-05):** `/teams/[id]/embark` zwraca gołe 404 dla nieznanego
-  i cudzego id — prowizorycznie, bez rozróżnienia; S-07 rozstrzyga docelowo (404 vs redirect na
-  listę) i dokłada nawigację.
+  **Punkt kontrolny z S-03 (2026-09-05) — domknięty 2026-09-06:** `/teams/[id]/embark` zwracał gołe
+  404 dla nieznanego i cudzego id, prowizorycznie i bez nawigacji. S-07 rozstrzygnął na **404
+  z pełną stroną** (nie przekierowanie na listę): obie trasy dynamiczne renderują wspólny
+  `src/components/team/TeamNotFound.astro` z komunikatem „This team does not exist, or it is not
+  yours." i linkami do `/teams` i `/dashboard`. Jedno źródło treści jest tu warunkiem, nie wygodą —
+  dwie różne odpowiedzi na to samo cudze id ujawniałyby istnienie wiersza.
 - **Status:** in-progress
 
 ### S-08: Gracz widzi listę brakujących punktów

@@ -35,27 +35,46 @@ function migrationNames(): readonly string[] {
     .sort();
 }
 
-/** Najnowsza po nazwie migracja o danym sufiksie — tak samo porządkuje je sam Supabase. */
+/**
+ * Komentarze muszą odpaść, zanim cokolwiek szukamy — w **obie** strony. Te migracje opisują w prozie
+ * przywileje, których nie nadają (np. „razem z `grant update` / `grant delete`" w
+ * `20260905185700_teams_schema.sql:12-14`), więc asercja negatywna po surowym tekście trafiałaby
+ * w zdanie o DDL zamiast w DDL — a asercja **pozytywna** po surowym tekście zieleniałaby od
+ * komentarza opisującego konstrukcję, której migracja nie wykonuje. To jest lekcja z S-06
+ * („kryteria grepowe kotwicz na składni, nie na słowach") zastosowana do obu kierunków.
+ */
+function stripComments(sql: string): string {
+  return sql.replace(/--[^\n]*/g, "");
+}
+
+/** Najnowsza po nazwie migracja o danym sufiksie, bez komentarzy — tak samo porządkuje je Supabase. */
 function latestMigration(suffix: string): string {
   const matching = migrationNames().filter((name) => name.endsWith(suffix));
 
   expect(matching.length, `brak migracji z sufiksem ${suffix}`).toBeGreaterThan(0);
 
-  return readFileSync(join(MIGRATIONS_DIR, matching[matching.length - 1]), "utf8");
+  return stripComments(readFileSync(join(MIGRATIONS_DIR, matching[matching.length - 1]), "utf8"));
+}
+
+/** Wszystkie migracje sklejone i pozbawione komentarzy — do asercji „nigdzie w katalogu nie ma X". */
+function allMigrationsWithoutComments(): string {
+  return migrationNames()
+    .map((name) => stripComments(readFileSync(join(MIGRATIONS_DIR, name), "utf8")))
+    .join("\n");
 }
 
 /**
- * Wszystkie migracje sklejone i **pozbawione komentarzy** — do asercji „nigdzie w katalogu nie ma X".
- * Komentarze muszą odpaść, zanim cokolwiek szukamy: te migracje opisują w prozie przywileje, których
- * nie nadają (np. „razem z `grant update` / `grant delete`" w `20260905185700_teams_schema.sql:12-14`),
- * więc szukanie DDL w surowym tekście dawałoby trafienia na zdaniach o DDL.
+ * Tabela `teams` we **wszystkich** legalnych zapisach, do wklejenia w każdy strażnik niżej.
+ * Kotwiczenie na literalnym `public.teams` przepuszczało trzy warianty, którymi migracja jest
+ * dokładnie tak samo skuteczna: `on teams` (schemat domyślny — `search_path` migracji Supabase
+ * obejmuje `public`), `on public."teams"` i `on "public"."teams"`. To jest lekcja „kotwicz na
+ * składni, nie na słowach" o krok dalej: kotwica na składni musi pokrywać **legalne warianty tej
+ * składni**, bo inaczej strażnik pilnuje jednego zapisu, a nie operacji.
+ *
+ * `\b` na końcu trzyma poza zasięgiem `teams_*` — hipotetyczna przyszła tabela nie zapala tych
+ * asercji przez samą nazwę.
  */
-function allMigrationsWithoutComments(): string {
-  return migrationNames()
-    .map((name) => readFileSync(join(MIGRATIONS_DIR, name), "utf8"))
-    .join("\n")
-    .replace(/--[^\n]*/g, "");
-}
+const TEAMS_TABLE = String.raw`(?:"?public"?\s*\.\s*)?"?teams"?\b`;
 
 describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza", () => {
   it("RLS jest włączone na teams", () => {
@@ -121,7 +140,14 @@ describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza",
     // i `created_at` tylko dopóki nikt nie dopisze obok grantu tabelowego. Postgres sumuje
     // przywileje, więc jeden taki wiersz w dowolnej przyszłej migracji (np. przy S-06) rozbroiłby
     // FR-011 po cichu — bez błędu lintera, typów i bez zmiany w kodzie aplikacji.
-    const grantsUpdateOnWholeTable = /grant\s+update\s+on\s+(?:table\s+)?public\.teams/i;
+    // `[^;(]*` przed `update` nie przechodzi przez nawias, a `(?!\s*\()` wyklucza formę kolumnową,
+    // więc `grant update (composition) on public.teams` zostaje poza zasięgiem, a
+    // `grant update, delete on public.teams` — nie. Lista przywilejów jest kształtem, który autor
+    // przyszłej migracji odbije z `revoke update, delete, truncate` w `_teams_schema.sql:46`.
+    const grantsUpdateOnWholeTable = new RegExp(
+      String.raw`grant\s[^;(]*\bupdate\b(?!\s*\()[^;]*?on\s+(?:table\s+)?` + TEAMS_TABLE,
+      "i",
+    );
 
     expect(allMigrationsWithoutComments()).not.toMatch(grantsUpdateOnWholeTable);
   });
@@ -155,16 +181,27 @@ describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza",
     // wyłącznie komentarze, więc w korpusie zostają `revoke update, delete, truncate on
     // public.teams from authenticated;` i `revoke all on public.teams from anon;`. Bez kotwicy
     // asercje szłyby na czerwono na zdaniach, które robią dokładnie to, czego pilnują.
-    const grantsTruncateOnTeams = /grant\s[^;]*\btruncate\b[^;]*on\s+(?:table\s+)?public\.teams/i;
+    const grantsTruncateOnTeams = new RegExp(
+      String.raw`grant\s[^;]*\btruncate\b[^;]*on\s+(?:table\s+)?` + TEAMS_TABLE,
+      "i",
+    );
     // `grant all` nadałby truncate (i tabelowy update) bez literalnego słowa `truncate` — dwa
     // wzorce obok by go nie zobaczyły.
-    const grantsAllOnTeams = /grant\s+all\b[^;]*on\s+(?:table\s+)?public\.teams/i;
-    const grantsAnythingToAnonOnTeams = /grant\s[^;]*on\s+(?:table\s+)?public\.teams\b[^;]*\banon\b/i;
+    const grantsAllOnTeams = new RegExp(String.raw`grant\s+all\b[^;]*on\s+(?:table\s+)?` + TEAMS_TABLE, "i");
+    // `grant all on all tables in schema public` nadaje to samo, nie wymieniając tabeli — obejmuje
+    // `teams` razem z resztą schematu, więc wzorzec wyżej by go nie zobaczył.
+    const grantsAllInSchemaPublic = /grant\s+all\b[^;]*on\s+all\s+tables\s+in\s+schema\s+"?public"?/i;
+    // Rola `public` obejmuje `anon`, więc nadanie „wszystkim" jest tym samym co nadanie anonowi.
+    const grantsAnythingToAnonOnTeams = new RegExp(
+      String.raw`grant\s[^;]*on\s+(?:table\s+)?` + TEAMS_TABLE + String.raw`[^;]*\b(?:anon|public)\b`,
+      "i",
+    );
 
     const sql = allMigrationsWithoutComments();
 
     expect(sql).not.toMatch(grantsTruncateOnTeams);
     expect(sql).not.toMatch(grantsAllOnTeams);
+    expect(sql).not.toMatch(grantsAllInSchemaPublic);
     expect(sql).not.toMatch(grantsAnythingToAnonOnTeams);
   });
 
@@ -172,7 +209,10 @@ describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza",
     // Strażnicy wyżej pilnują, żeby nikt nie **dodał** przywileju. Ten i następny pilnują drugiej,
     // groźniejszej strony: żeby nikt nie **odjął** bariery. Jedna linia w przyszłej migracji
     // rozbraja wszystkie cztery polityki naraz i nie zostawia śladu nigdzie poza `supabase/`.
-    const disablesRlsOnTeams = /alter\s+table\b[^;]*\bpublic\.teams\b[^;]*disable\s+row\s+level\s+security/i;
+    const disablesRlsOnTeams = new RegExp(
+      String.raw`alter\s+table\b[^;]*\b` + TEAMS_TABLE + String.raw`[^;]*disable\s+row\s+level\s+security`,
+      "i",
+    );
 
     expect(allMigrationsWithoutComments()).not.toMatch(disablesRlsOnTeams);
   });
@@ -186,8 +226,29 @@ describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza",
     // `drop policy` zostaje zarezerwowane na **świadome zdjęcie bariery**. Taka zmiana wymaga
     // zdjęcia tego strażnika w tym samym commicie, z uzasadnieniem tutaj. Czerwony test jest wtedy
     // pytaniem „czy na pewno", nie przeszkodą do obejścia — nie osłabiaj wzorca, żeby przeszedł.
-    const dropsPolicyOnTeams = /drop\s+policy\b[^;]*\bon\s+(?:table\s+)?public\.teams\b/i;
+    const dropsPolicyOnTeams = new RegExp(String.raw`drop\s+policy\b[^;]*\bon\s+(?:table\s+)?` + TEAMS_TABLE, "i");
 
     expect(allMigrationsWithoutComments()).not.toMatch(dropsPolicyOnTeams);
+  });
+
+  it("żadna migracja nie rozluźnia polityki na teams przez `alter policy`", () => {
+    // Cena furtki ze strażnika wyżej. `alter policy "owner can read teams" on public.teams
+    // using (true);` rozbraja **jedyną** barierę odczytu, jaka istnieje, i nie zostawia śladu
+    // nigdzie indziej: nie rusza `_teams_schema.sql`, którego pilnują asercje pozytywne, ani
+    // żadnego `create policy`, po których iteruje `src/lib/team-schema.test.ts`. Bez tej asercji
+    // przechodziła przez cały pakiet na zielono — a komentarz przy asercji `select` wyżej nazywa
+    // ją najgroźniejszą z możliwych mutacji.
+    //
+    // Warunek jest **pozytywny, nie zakazujący**: `alter policy` na `teams` wolno, dopóki nowa
+    // treść dalej wiąże wiersz z `auth.uid()`. Zmiana samych ról ma powtórzyć klauzulę `using`
+    // w tym samym poleceniu (Postgres na to pozwala) — nie osłabiaj tego wzorca, żeby przeszedł.
+    const altersPolicyOnTeams = new RegExp(
+      String.raw`alter\s+policy\b[^;]*\bon\s+(?:table\s+)?` + TEAMS_TABLE + String.raw`[^;]*`,
+      "gi",
+    );
+
+    for (const statement of allMigrationsWithoutComments().match(altersPolicyOnTeams) ?? []) {
+      expect(statement, statement).toContain("auth.uid()");
+    }
   });
 });

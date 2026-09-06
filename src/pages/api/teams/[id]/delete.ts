@@ -31,9 +31,11 @@ import { deleteTeam } from "@/lib/team-repo";
  * cudzego rekordu (US-04).
  *
  * Do oczu gracza ten tekst dociera zresztą tylko w gałęzi awarii zapytania: `/teams/<id>` renderuje
- * slot błędu wyłącznie w gałęzi sukcesu, więc `null` z repo kończy się gołym 404 bez komunikatu.
- * To jest zamierzone — dokładnie to samo daje dziś GET na cudze id, a rozstrzygnięcie
- * „404 vs przekierowanie" należy do S-07.
+ * slot błędu wyłącznie w gałęzi sukcesu, więc `null` z repo kończy się ekranem 404
+ * (`src/components/team/TeamNotFound.astro`), który komunikatu z `?error=` nie pokazuje.
+ * To jest zamierzone — dokładnie to samo daje GET na cudze id. S-07 rozstrzygnął tamto pytanie
+ * na **404 z pełną stroną**, wspólną dla `/teams/[id]` i `/teams/[id]/embark`; przekierowanie
+ * na listę zostało odrzucone.
  */
 const DELETE_FAILED_MESSAGE = "Could not delete the team";
 

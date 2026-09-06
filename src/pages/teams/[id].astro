@@ -23,13 +23,24 @@ import { resolveSavedTeam } from "@/lib/team-view";
 const saved = Astro.url.searchParams.has("saved");
 const error = Astro.url.searchParams.get("error");
 
+// Do logów idzie wersja zakodowana, nigdy surowa: `Astro.params.id` jest po dekodowaniu ścieżki,
+// więc `/teams/%0A%0AERROR%20fake` wstrzyknąłby sfabrykowane linie do logów Workera. Do repo idzie
+// dalej wartość surowa — formatu pilnuje `isTeamId`. Ten sam kształt mają obie trasy zapisu
+// (`src/pages/api/teams/[id].ts`, `src/pages/api/teams/[id]/delete.ts`).
+const loggedId = encodeURIComponent(Astro.params.id ?? "");
+
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 let team: TeamDetail | null = null;
 let pool: readonly PoolCharacter[] | null = null;
 // Flaga dotyczy **wyłącznie** odczytu drużyny: 404 nie może zależeć od zapytania niezwiązanego
 // z istnieniem wiersza. Awarię puli niesie już `pool === null`, więc nie ma tu drugiej flagi.
-let teamFailed = false;
+//
+// Brak klienta liczy się jako awaria odczytu, nie jako brak wiersza: gdyby flaga startowała
+// z `false`, `notFound` wyszłoby `true` i **własna** drużyna dostałaby ekran „nie istnieje, albo
+// nie jest twoja" — nieprawdę o danych gracza, powiedzianą przez gałąź, której sensem jest
+// zachować się poprawnie, gdy pierwsza bariera padnie.
+let teamFailed = supabase === null;
 
 // Gałąź `!supabase` jest obroną w głąb: bez kluczy Supabase middleware przekierował na logowanie.
 if (supabase) {
@@ -45,7 +56,7 @@ if (supabase) {
   } else {
     // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
     // eslint-disable-next-line no-console
-    console.error(`Failed to load team for /teams/${Astro.params.id ?? ""}`, teamResult.reason);
+    console.error(`Failed to load team for /teams/${loggedId}`, teamResult.reason);
     teamFailed = true;
   }
 
