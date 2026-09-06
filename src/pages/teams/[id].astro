@@ -1,4 +1,5 @@
 ---
+import { ServerError } from "@/components/auth/ServerError";
 import TeamComposer from "@/components/team/TeamComposer";
 import Layout from "@/layouts/Layout.astro";
 import { getCharacterPool } from "@/lib/character-pool-repo";
@@ -7,11 +8,17 @@ import { createClient } from "@/lib/supabase";
 import { getTeamDetail, type TeamDetail } from "@/lib/team-repo";
 import { resolveSavedTeam } from "@/lib/team-view";
 
-// Widok zapisanej drużyny (FR-008) — ten sam `TeamComposer` co kompletowanie, w trybie odczytu.
+// Zapisana drużyna na jednym ekranie do oglądania i edycji (FR-008 + FR-009) — ten sam
+// `TeamComposer` co kompletowanie, różniący się wyłącznie celem zapisu, który niesie `teamId`.
 //
 // Gołe 404 idzie przez `Astro.response.status` i gałąź szablonu renderującą `null`, nigdy przez
 // top-level `return`: typowana reguła `@typescript-eslint/no-misused-promises` crashuje na nim
 // i wywraca `npm run lint` (lekcja z S-03).
+
+// `POST /api/teams/[id]` wraca tu z `?saved=1` po udanym zapisie albo z `?error=` przy odrzuceniu.
+const saved = Astro.url.searchParams.has("saved");
+const error = Astro.url.searchParams.get("error");
+
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 let team: TeamDetail | null = null;
@@ -93,16 +100,20 @@ if (notFound) {
             </a>
           </div>
           {composition !== null && pool !== null ? (
-            <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <div class="flex flex-col gap-4">
               {/*
-                Brak `client:*` jest decyzją, nie przeoczeniem: w trybie odczytu wyspa nie ma ani
-                jednej interakcji (dialog niemontowany, bramka nierenderowana, sloty bez akcji),
-                `useState` służy wyłącznie za wartość początkową, a `CompetencyRadar` to statyczny
-                SVG — render serwerowy daje ten sam ekran przy zerowym JS. Dzięki temu „nie da się
-                nic zmienić" wynika z braku runtime'u, a nie z poprawnie przekazanej flagi.
-                **Nota dla S-05**: podłączając zapis, trzeba dopisać `client:load` z powrotem.
+                Oba paski żyją **wyłącznie** w tej gałęzi: na ekranie 404 i na „drużyna niedostępna"
+                nie mają sensu i nie mogą zdradzić, że POST w ogóle dotarł.
               */}
-              <TeamComposer pool={pool} initialComposition={composition} readOnly />
+              {saved && (
+                <p class="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+                  Roster saved.
+                </p>
+              )}
+              <ServerError message={error} />
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+                <TeamComposer pool={pool} initialComposition={composition} teamId={team.id} client:load />
+              </div>
             </div>
           ) : (
             <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">

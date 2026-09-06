@@ -542,37 +542,37 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 
 #### Automatyczne
 
-- [x] 2.1 Nowe testy przechodzą, stare bez zmian (`npm test`)
-- [x] 2.2 Lint i typy przechodzą (`npx astro sync && npm run lint`)
-- [x] 2.3 Build przechodzi (`npm run build`)
-- [x] 2.4 Trasa nie zwraca JSON-a
-- [x] 2.5 Każda gałąź kończy się `context.redirect` (liczba `return` == liczba `context.redirect`)
-- [x] 2.6 Reguła progu nie ma drugiej kopii ani w liczeniu, ani w tekście komunikatu
+- [x] 2.1 Nowe testy przechodzą, stare bez zmian (`npm test`) — f21508b
+- [x] 2.2 Lint i typy przechodzą (`npx astro sync && npm run lint`) — f21508b
+- [x] 2.3 Build przechodzi (`npm run build`) — f21508b
+- [x] 2.4 Trasa nie zwraca JSON-a — f21508b
+- [x] 2.5 Każda gałąź kończy się `context.redirect` (liczba `return` == liczba `context.redirect`) — f21508b
+- [x] 2.6 Reguła progu nie ma drugiej kopii ani w liczeniu, ani w tekście komunikatu — f21508b
 
 #### Ręczne
 
-- [x] 2.7 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500
-- [x] 2.8 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia
-- [x] 2.9 POST na nie-UUID kończy się redirectem, nie błędem `22P02`
+- [x] 2.7 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500 — f21508b
+- [x] 2.8 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia — f21508b
+- [x] 2.9 POST na nie-UUID kończy się redirectem, nie błędem `22P02` — f21508b
 
 ### Faza 3: Ekran edycji
 
 #### Automatyczne
 
-- [ ] 3.1 Lint i typy przechodzą (`npx astro sync && npm run lint`)
-- [ ] 3.2 Testy przechodzą (`npm test`)
-- [ ] 3.3 Build przechodzi (`npm run build`)
-- [ ] 3.4 Prop `readOnly` nie istnieje nigdzie w `src/`
-- [ ] 3.5 Nazwa `EmbarkGate` nie została nigdzie w `src/`
-- [ ] 3.6 Oba renderowania `TeamComposer` mają dyrektywę hydratacji
-- [ ] 3.7 Cała faza weszła jednym commitem (cztery pliki razem)
+- [x] 3.1 Lint i typy przechodzą (`npx astro sync && npm run lint`)
+- [x] 3.2 Testy przechodzą (`npm test`)
+- [x] 3.3 Build przechodzi (`npm run build`)
+- [x] 3.4 Prop `readOnly` nie istnieje nigdzie w `src/`
+- [x] 3.5 Nazwa `EmbarkGate` nie została nigdzie w `src/`
+- [x] 3.6 Oba renderowania `TeamComposer` mają dyrektywę hydratacji
+- [x] 3.7 Cała faza weszła jednym commitem (cztery pliki razem)
 
 #### Ręczne
 
-- [ ] 3.8 `/teams/<własne-id>` pokazuje edytowalny skład z przyciskiem „Save changes"
-- [ ] 3.9 Usunięcie członka blokuje zapis, ponowne domknięcie progu odblokowuje (dwukierunkowość)
-- [ ] 3.10 Zapis wraca na `/teams/<id>` z potwierdzeniem, a odświeżenie pokazuje nowy skład
-- [ ] 3.11 Nazwa-hash jest identyczna przed i po zapisie
-- [ ] 3.12 Wyjście bez zapisu nie utrwala zmian
-- [ ] 3.13 Drugie konto dalej dostaje 404 na `/teams/<cudze-id>`
-- [ ] 3.14 Wykres aktualizuje się w czasie nieodczuwalnym (< 200 ms)
+- [x] 3.8 `/teams/<własne-id>` pokazuje edytowalny skład z przyciskiem „Save changes"
+- [x] 3.9 Usunięcie członka blokuje zapis, ponowne domknięcie progu odblokowuje (dwukierunkowość)
+- [x] 3.10 Zapis wraca na `/teams/<id>` z potwierdzeniem, a odświeżenie pokazuje nowy skład
+- [x] 3.11 Nazwa-hash jest identyczna przed i po zapisie
+- [x] 3.12 Wyjście bez zapisu nie utrwala zmian
+- [x] 3.13 Drugie konto dalej dostaje 404 na `/teams/<cudze-id>`
+- [x] 3.14 Wykres aktualizuje się w czasie nieodczuwalnym (< 200 ms)

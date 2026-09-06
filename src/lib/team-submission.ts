@@ -22,7 +22,11 @@ import {
  * Druga kopia umowy `{ characterId, perkIds }` po stronie odczytu rozjechałaby się z tą.
  */
 
-/** Nazwa ukrytego pola formularza — wspólna dla `EmbarkGate` i `POST /api/teams`. */
+/**
+ * Nazwa ukrytego pola formularza — wspólna dla `CompositionGate` i **obu** tras zapisu
+ * (`POST /api/teams`, `POST /api/teams/[id]`), bo bramka wysyła ten sam ładunek niezależnie
+ * od tego, czy zapis tworzy wiersz, czy podmienia skład istniejącego.
+ */
 export const COMPOSITION_FIELD = "composition";
 
 /**
