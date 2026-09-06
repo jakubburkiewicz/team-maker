@@ -136,11 +136,11 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 
 ### Auth routes
 
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
+| Route                 | Description                                                                   |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `/auth/signin`        | Email/password sign-in form                                                   |
+| `/auth/signup`        | Email/password sign-up form                                                   |
+| `/auth/confirm-email` | Post-signup "check your inbox" page                                           |
 | `/`                   | Your saved teams — protected (redirects to `/auth/signin` if unauthenticated) |
 
 Route protection is handled in `src/middleware.ts`, which asks `isProtectedRoute()` in `src/lib/routes.ts`. Add paths there to require authentication.

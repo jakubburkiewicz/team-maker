@@ -48,7 +48,8 @@ export const POST: APIRoute = async (context) => {
   const id = encodeURIComponent(context.params.id ?? "");
   const reject = (message: string) => `/teams/${id}?error=${encodeURIComponent(message)}`;
 
-  // Obrona w głąb: prefiks `/api/teams` jest w PROTECTED_ROUTES, więc middleware już przekierował.
+  // Obrona w głąb: prefiks `/api/teams` jest chroniony przez `isProtectedRoute()`
+  // (`src/lib/routes.ts`), więc middleware już przekierował.
   if (!context.locals.user) {
     return context.redirect("/auth/signin");
   }

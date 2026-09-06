@@ -27,7 +27,8 @@ function rejectToComposer(context: Parameters<APIRoute>[0], message: string): Re
 }
 
 export const POST: APIRoute = async (context) => {
-  // Obrona w głąb: `/api/teams` jest w PROTECTED_ROUTES, więc middleware już przekierował.
+  // Obrona w głąb: `/api/teams` jest chronione przez `isProtectedRoute()` (`src/lib/routes.ts`),
+  // więc middleware już przekierował.
   const user = context.locals.user;
   if (!user) {
     return context.redirect("/auth/signin");

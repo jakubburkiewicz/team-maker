@@ -26,6 +26,9 @@ describe("isProtectedRoute — trasy chronione", () => {
     expect(isProtectedRoute("/teams/new")).toBe(true);
     expect(isProtectedRoute(`/teams/${TEAM_ID}`)).toBe(true);
     expect(isProtectedRoute(`/teams/${TEAM_ID}/embark`)).toBe(true);
+    // `trailingSlash` zostaje domyślne („ignore"), więc wzorce tras kończą się `\/?$` i `/teams/new/`
+    // jest realnie osiągalna — dopasowanie prefiksu musi ją łapać tak samo jak wersję bez ukośnika.
+    expect(isProtectedRoute("/teams/new/")).toBe(true);
   });
 
   it("trasy API drużyn wymagają zalogowania", () => {
