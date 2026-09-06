@@ -29,6 +29,14 @@ Kluczowe ograniczenie zewnętrzne: obie trasy, do których te linki celują — 
 — **znikają** w zmianie `2026-09-06-teams-list-as-home`. Ta zmiana jest wymaganiem wstępnym
 niniejszego planu (rozstrzygnięte w sesji planowania), więc plan opisuje pliki w stanie **po** niej.
 
+**Bramka.** W chwili pisania tego planu wymaganie wstępne ma `status: new` i nie ma jeszcze
+`plan.md`. Kryterium 1.1 Fazy 1 sprawdza jego wdrożenie mechanicznie. Gdy jest czerwone — przerwij
+implementację i wykonaj najpierw `2026-09-06-teams-list-as-home`; bez niego Faza 2 pkt 4 wywraca
+`npm run build` (`src/components/Welcome.astro:2` wciąż importuje `Topbar.astro`), Faza 3 pkt 1
+opisuje treść, której w `src/pages/index.astro` nie ma, `/` niesie dwa nagłówki naraz
+(`AppHeader` z powłoki i `Topbar` w `Welcome.astro:28`), a `src/pages/dashboard.astro`
+i `src/pages/teams/index.astro` zostają konsumentami `Layout.astro` poza oboma koszykami planu.
+
 ### Kluczowe odkrycia:
 
 - `src/middleware.ts:13` ustawia `context.locals.user` przy **każdym** żądaniu, nie tylko na trasach
@@ -51,7 +59,12 @@ niniejszego planu (rozstrzygnięte w sesji planowania), więc plan opisuje pliki
 - `astro.config.mjs` nie ustawia `trailingSlash`, więc do dopasowania ścieżki może przyjść zarówno
   `/teams/new`, jak i `/teams/new/`.
 - `context/foundation/roadmap.md` nie zawiera pozycji o Change ID `2026-09-06-app-shell-header-nav`
-  — synchronizacja statusu roadmapy została pominięta.
+  — i **tak ma zostać**. Kamień milowy M-1 jest zamknięty: wszystkie fragmenty S-01…S-08 mają
+  `Status: done`. Ta zmiana i dwie siostrzane (`2026-09-06-teams-list-as-home`,
+  `2026-09-06-team-action-buttons`) są poprawkami po kamieniu milowym, zgłoszonymi bezpośrednio
+  przez użytkownika, i celowo nie mają pozycji w roadmapie. Nie jest to pominięta synchronizacja
+  do nadrobienia; gdyby miały wejść do planu produktu, właściwym krokiem jest otwarcie M-2 przez
+  `/10x-roadmap`, a nie dopisanie wiersza do zamkniętego kamienia milowego.
 
 ## Pożądany stan końcowy
 
@@ -158,6 +171,9 @@ stałą podąża za jej mutacją i przestaje cokolwiek wiązać (wzorzec z `src/
 
 #### Automatyczna weryfikacja:
 
+- **Wymaganie wstępne wdrożone** (bramka — czerwone znaczy „przerwij i wykonaj najpierw
+  `2026-09-06-teams-list-as-home`", nie „napraw w tej zmianie"):
+  `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
 - Testy przechodzą: `npm test`
 - Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/nav.ts`
 - Moduł nie zna usuwanych tras: `! grep -nE '"/(dashboard|teams)"' src/lib/nav.ts`
@@ -199,6 +215,17 @@ w `src/components/Topbar.astro:19-23`, bo działają i `AGENTS.md` chroni ten ko
 Aktywna pozycja dostaje `aria-current="page"` i wyróżnienie wizualne. Wyróżnienie składaj przez
 `cn()` z `@/lib/utils` (`AGENTS.md` → Conventions: nie sklejaj łańcuchów klas).
 
+**Nazwany kompromis:** `cn()` nie ma dziś w tym repo precedensu w `.astro` — wszystkie osiem
+wywołań siedzi w `.tsx`, a każdy istniejący `.astro` używa literalnego `class="…"`. Astro ma na to
+formę natywną (`class:list`) i `eslint.config.js:67` włącza `astro/prefer-class-list-directive`
+właśnie w tę stronę. Wybieramy `cn()`, bo `AGENTS.md` mówi to wprost i bo reguła jest **warnem** —
+`eslint .` nie kończy się błędem na warnach, więc `npm run lint` i CI zostają zielone. To decyzja,
+nie przeoczenie: `/10x-impl-review` nie ma jej czytać jako dryfu.
+
+`aria-current` jest bezpieczne wobec `flat/jsx-a11y-recommended`: `<a href={item.href}
+aria-current={active ? "page" : undefined}>` przechodzi lint czysto (sprawdzone 2026-09-06
+przez `eslint --stdin` na tym kształcie; precedens w tree: `src/layouts/Layout.astro:29`).
+
 Gdy `Astro.locals.user` jest `null`, nagłówek nie renderuje e-maila ani menu (obrona w głąb —
 wszystkie strony w powłoce są chronione przez middleware, więc ta gałąź jest nieosiągalna;
 ten sam wzorzec co gałęzie `!supabase` w stronach domenowych). Nagłówek **nie** odtwarza gałęzi
@@ -211,15 +238,34 @@ w punkcie 1 zgłoszenia („jak na aktualnej stronie głównej").
 
 **Plik**: `src/layouts/AppLayout.astro`
 
-**Cel**: Powłoka stron domenowych — wspólne tło, kontener treści i nagłówek na każdej stronie, która
-z niej korzysta. Sam wybór tego layoutu jest jedynym przełącznikiem obecności nagłówka.
+**Cel**: Powłoka stron domenowych — wspólne tło i nagłówek na każdej stronie, która z niej
+korzysta. Sam wybór tego layoutu jest jedynym przełącznikiem obecności nagłówka.
 
 **Umowa**: Przyjmuje te same propsy co `Layout.astro` (`title?: string`) i przekazuje je dalej;
-opakowuje `Layout.astro`, renderuje `<AppHeader />` przed `<slot />`. **Nie** przyjmuje propsa
-włączającego nagłówek. Wnosi wspólny kontener, który dziś każda strona powtarza u siebie
-(`bg-cosmic min-h-screen p-4 text-white` + wewnętrzny `mx-auto w-full max-w-*`) — szerokość
-kontenera zostaje propem, bo strony realnie różnią się między `max-w-3xl`, `max-w-6xl`
-i wąską kartą; wartość domyślna ma odpowiadać najczęstszemu przypadkowi.
+opakowuje `Layout.astro`, renderuje `<AppHeader />` przed `<slot />`. **Nie** przyjmuje żadnego
+innego propsa — ani włączającego nagłówek, ani szerokości, ani trybu układu.
+
+**Powłoka nie wnosi kontenera treści.** Kształt to `bg-cosmic flex min-h-screen flex-col text-white`
+na opakowaniu, w środku `<AppHeader />`, a pod nim `<slot />` w opakowaniu `flex-1` (żeby karty
+wyśrodkowane w pionie miały czym się wyśrodkować). Każda strona **zachowuje swój dzisiejszy
+kontener wewnętrzny** — `mx-auto w-full max-w-3xl`, `max-w-6xl` albo wyśrodkowaną kartę
+`flex items-center justify-center` + `max-w-sm`.
+
+Trzy powody, dla których kontener treści **nie** wchodzi do powłoki, mimo że jest powtórzony:
+
+- Strony nie mają jednego układu, tylko dwa: górno-wyrównany (`index`, `teams/new`, `teams/[id]`)
+  i wyśrodkowana karta (`TeamNotFound`, `embark`). Prop, który je rozróżnia, byłby dokładnie tym
+  cichym przełącznikiem, przed którym ostrzega sekcja „Podejście do implementacji".
+- `min-h-screen` w dwóch miejscach naraz (powłoka + strona) daje wysokość dokumentu
+  `wysokość nagłówka + 100vh`, czyli stały martwy pasek przewijania na **każdym** ekranie powłoki.
+  Dlatego `min-h-screen` żyje wyłącznie na opakowaniu powłoki, a strony przechodzą na `flex-1`
+  tam, gdzie dziś mają `min-h-screen`.
+- `bg-cosmic` (`src/styles/global.css:113-115`) ustawia **tylko** `background-image`. Nagłówek
+  wyrenderowany nad kontenerem z tą klasą malowałby się na `bg-background` — widoczny szew poziomy.
+  Nagłówek musi być **wewnątrz** pudełka niosącego `bg-cosmic`.
+
+Deduplikacji kontenerów nie obiecuje ani „Pożądany stan końcowy", ani żadne Kryterium sukcesu —
+jest poza zakresem tej zmiany.
 
 #### 3. Ekran „Team not found" w powłoce
 
@@ -230,10 +276,17 @@ w `/teams` i `/dashboard` — obie trasy nie istnieją po wymaganiu wstępnym. N
 a linki znikają.
 
 **Umowa**: Zamiana importu `Layout` na `AppLayout` przy zachowaniu `title="Team not found"`;
-usunięcie bloku dwóch linków (`src/components/team/TeamNotFound.astro:30-37`). Komponent **nadal
+usunięcie bloku dwóch linków (`src/components/team/TeamNotFound.astro:30-37`). Własny kontener
+karty **zostaje**, z jedną korektą: `min-h-screen` na `src/components/team/TeamNotFound.astro:24`
+zamienia się na `flex-1` (`min-h-screen` żyje teraz raz, na opakowaniu powłoki — patrz pkt 2),
+reszta klas (`flex items-center justify-center p-4`, `max-w-sm`) bez zmian. `bg-cosmic` schodzi
+z tego diva, bo niesie je powłoka. Komponent **nadal
 nie przyjmuje żadnego propsa** — komentarz w pliku (linie 4-8) uzasadnia to izolacją z S-07 i ta
 własność jest wiążąca: obie trasy dynamiczne muszą odpowiadać na cudze id identycznie. Zaktualizuj
-ten komentarz tak, by opisywał stan po zmianie, zamiast zostawiać go opisującym usunięte linki.
+ten komentarz tak, by opisywał stan po zmianie, zamiast zostawiać go opisującym usunięte linki —
+i **nie używaj w nim literału `Astro.props`**: strażnik z Kryteriów sukcesu strzyże wprawdzie
+linie komentarza, ale proza opisująca dokładnie to, czego grep ma nie znaleźć, jest tu klasą
+błędu samą w sobie (`lessons.md`). Pisz „bez propsów", nie „nie czyta `Astro.props`".
 
 #### 4. Usunięcie osieroconego paska
 
@@ -252,9 +305,22 @@ jedynym.
 
 - Osierocony pasek nie istnieje: `! test -e src/components/Topbar.astro`
 - Nikt go nie importuje: `! grep -rn 'components/Topbar' src/`
+- Nagłówek **korzysta** z modułu nawigacji, a nie z własnej kopii reguły:
+  `grep -nE '^import .* from "@/lib/nav"' src/components/AppHeader.astro`
+- Adresy pozycji menu przychodzą z listy, nie z markupu (wzorzec strzyże komentarze — patrz
+  strażnik propsów niżej): `! grep -vE '^\s*(//|\*|/\*)' src/components/AppHeader.astro | grep -q 'href="'`
+  (`Sign out` jest `<form action="/api/auth/signout">`, nie `href`, więc nie wchodzi w kolizję.)
+  Przesondowane 2026-09-06 na syntetycznym nagłówku poza repozytorium: oba kryteria zielone dla
+  `<a href={item.href}>` nad `NAV_ITEMS` i czerwone po wpisaniu `href="/teams/new"` na sztywno.
 - Ekran 404 jest w powłoce: `grep -n 'from "@/layouts/AppLayout.astro"' src/components/team/TeamNotFound.astro`
 - Ekran 404 nie ma już linków wyjścia: `! grep -nE 'href="/(dashboard|teams)"' src/components/team/TeamNotFound.astro`
-- Ekran 404 nadal nie przyjmuje propsów (niezmiennik S-07): `! grep -n 'Astro.props' src/components/team/TeamNotFound.astro`
+- Ekran 404 nadal nie przyjmuje propsów (niezmiennik S-07) — wzorzec strzyże komentarze, bo ten
+  sam punkt każe przepisać prozę w liniach 4-8 (`lessons.md` → „Kryteria grepowe kotwicz na
+  składni, nie na słowach"):
+  `! grep -vE '^\s*(//|\*|/\*)' src/components/team/TeamNotFound.astro | grep -q 'Astro\.props'`
+  Przesondowane 2026-09-06 na kopii pliku poza repozytorium: wariant literalny (`grep -n 'Astro.props'`)
+  czerwieni się fałszywie, gdy komentarz wspomni `Astro.props`; wariant powyżej przechodzi wtedy
+  zielono, a po dopisaniu realnego `const { reason } = Astro.props;` czerwieni się poprawnie.
 - Testy przechodzą: `npm test`
 - Linting przechodzi: `npm run lint`
 - Build przechodzi: `npm run build`
@@ -263,9 +329,14 @@ jedynym.
 
 - Wejście na `/teams/<losowy-uuid>` pokazuje ekran „Team not found" **z nagłówkiem**: e-mail
   zalogowanego po lewej, `Your teams` / `New team` / `Sign out` po prawej.
+- Karta 404 jest widoczna w całości bez przewijania, nadal wyśrodkowana w pionie pod nagłówkiem,
+  a strona **nie ma paska przewijania** (kontrola, że `min-h-screen` nie zdublowało się między
+  powłoką a kartą). Nagłówek leży na gradiencie `bg-cosmic`, bez szwu na styku z treścią.
 - Z ekranu 404 da się wyjść wyłącznie przez nagłówek — `Your teams` prowadzi na `/`,
   `New team` na `/teams/new`.
-- `Sign out` w nagłówku wylogowuje i ląduje na `/`.
+- `Sign out` w nagłówku wylogowuje i kończy przekierowaniem `/` → `/auth/signin`: trasa signout
+  celuje w `/`, a `/` jest po wymaganiu wstępnym w `PROTECTED_ROUTES`, więc middleware odbija na
+  logowanie. Ekran logowania **nie ma** nagłówka.
 - Na ekranie 404 żadna pozycja menu nie jest wyróżniona (`/teams/<uuid>` nie pasuje do żadnej).
 - Kod odpowiedzi dla nieistniejącego id to nadal 404 (zakładka narzędzi sieciowych) — powłoka nie
   zmieniła `Astro.response.status`.
@@ -292,9 +363,9 @@ Po tej fazie nawigacja ma w `src/` dokładnie jedno źródło.
 **Cel**: Strona przejmuje powłokę; jej własny nagłówek redukuje się do samego tytułu. Znikają link
 „← Back to dashboard" obok `<h1>` i przycisk „Back to dashboard" z gałęzi awarii odczytu.
 
-**Umowa**: Import `AppLayout` zamiast `Layout` (`title="Your teams"`); zewnętrzny kontener
-`bg-cosmic min-h-screen p-4` i wewnętrzny `mx-auto w-full max-w-3xl` przechodzą do powłoki;
-usunięcie obu odwołań do `/dashboard`. Trzy gałęzie stanu — awaria odczytu (`teams === null`),
+**Umowa**: Import `AppLayout` zamiast `Layout` (`title="Your teams"`); zewnętrzny
+`bg-cosmic min-h-screen p-4 text-white` redukuje się do `p-4` (tło i wysokość niesie powłoka),
+wewnętrzny `mx-auto w-full max-w-3xl` **zostaje w pliku**; usunięcie obu odwołań do `/dashboard`. Trzy gałęzie stanu — awaria odczytu (`teams === null`),
 pusta lista, lista z wierszami — oraz baner `?deleted=1` zostają bez zmian co do treści i warunków.
 Przycisk „Assemble your first team" / „Assemble a new team" **zostaje**: to wezwanie do działania
 w kontekście listy, nie nawigacja powłoki.
@@ -310,7 +381,8 @@ Numery linii w tym punkcie odnoszą się do `src/pages/teams/index.astro:52-74` 
 **Cel**: To samo co wyżej: powłoka zamiast własnego układu, tytuł bez linku powrotnego, gałąź awarii
 puli bez przycisku „Back to dashboard".
 
-**Umowa**: Import `AppLayout` (`title="New team"`, szerokość kontenera `max-w-6xl`); usunięcie
+**Umowa**: Import `AppLayout` (`title="New team"`); zewnętrzny `bg-cosmic min-h-screen p-4 text-white`
+redukuje się do `p-4`, wewnętrzny `mx-auto w-full max-w-6xl` zostaje w pliku; usunięcie
 odwołań do `/dashboard` z `src/pages/teams/new.astro:40` i `:57`. Wyspa `<TeamComposer … client:load />`
 i `<ServerError />` bez zmian.
 
@@ -321,7 +393,8 @@ i `<ServerError />` bez zmian.
 **Cel**: Powłoka zamiast własnego układu; znika link „← Your teams" obok `<h1>` oraz przycisk
 „Back to your teams" z gałęzi awarii/niespójności.
 
-**Umowa**: Import `AppLayout` (`max-w-6xl`) **wyłącznie w gałęzi `else`** warunku `notFound` —
+**Umowa**: Import `AppLayout` **wyłącznie w gałęzi `else`** warunku `notFound` (zewnętrzny
+`bg-cosmic min-h-screen p-4 text-white` → `p-4`, wewnętrzny `mx-auto w-full max-w-6xl` zostaje) —
 gałąź `notFound` renderuje `<TeamNotFound />`, który po Fazie 2 nosi powłokę sam. Usunięcie odwołań
 do `/teams` z `src/pages/teams/[id].astro:115` i `:146`. Bez zmian zostają: `Astro.response.status = 404`
 we frontmatterze (nigdy top-level `return` — `context/foundation/lessons.md`), warunki gałęzi,
@@ -338,8 +411,10 @@ duplikują nagłówek albo celują w usuniętą trasę.
 
 **Umowa**: Import `AppLayout` w gałęzi `else` warunku `notFound` (gałąź `notFound` to
 `<TeamNotFound />` z własną powłoką); usunięcie odwołań z `src/pages/teams/[id]/embark.astro:77`,
-`:83` i `:93`. Karta jest wyśrodkowana (`flex items-center justify-center`, `max-w-sm`), więc
-powłoka musi umieć taki kontener — to przypadek, pod który dobierasz prop szerokości z Fazy 2 pkt 2.
+`:83` i `:93`. Karta jest wyśrodkowana i **zostaje wyśrodkowana**: `bg-cosmic flex min-h-screen
+items-center justify-center p-4` (`:57`) → `flex flex-1 items-center justify-center p-4`, `max-w-sm`
+bez zmian. Ten sam ruch co w `TeamNotFound` (Faza 2 pkt 3) — `min-h-screen` i `bg-cosmic` należą
+teraz do powłoki.
 Treść potwierdzenia zapisu i blok „Work in Progress" zostają nietknięte: FR-019 wymaga, by komunikat
 wprost potwierdzał zapis.
 
@@ -374,7 +449,8 @@ wprost potwierdzał zapis.
   (`SUPABASE_URL`/`SUPABASE_KEY`) i sprawdź, że karta błędu renderuje się w powłoce.
 - Pełna pętla CRUD przechodzi bez regresji: zapis nowej drużyny → `embark` → edycja → usunięcie
   (baner „Team deleted." na `/`).
-- Wylogowanie z nagłówka na każdym z pięciu ekranów kończy się na `/` jako niezalogowany.
+- Wylogowanie z nagłówka na każdym z pięciu ekranów kończy się tak samo: `/` → `/auth/signin`,
+  bez nagłówka i bez sesji.
 
 **Uwaga implementacyjna**: To ostatnia faza; po jej ręcznym potwierdzeniu zmiana jest gotowa do
 `/10x-impl-review`.
@@ -450,11 +526,12 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [ ] 1.1 Testy przechodzą: `npm test`
-- [ ] 1.2 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`)
-- [ ] 1.3 Moduł nie zna usuwanych tras `/dashboard` i `/teams`
-- [ ] 1.4 Linting przechodzi: `npm run lint`
-- [ ] 1.5 Build przechodzi: `npm run build`
+- [ ] 1.1 Wymaganie wstępne `2026-09-06-teams-list-as-home` wdrożone (bramka)
+- [ ] 1.2 Testy przechodzą: `npm test`
+- [ ] 1.3 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`)
+- [ ] 1.4 Moduł nie zna usuwanych tras `/dashboard` i `/teams`
+- [ ] 1.5 Linting przechodzi: `npm run lint`
+- [ ] 1.6 Build przechodzi: `npm run build`
 
 ### Faza 2: Powłoka i pierwszy konsument
 
@@ -462,20 +539,23 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 - [ ] 2.1 `src/components/Topbar.astro` nie istnieje
 - [ ] 2.2 Nikt nie importuje `components/Topbar`
-- [ ] 2.3 `TeamNotFound.astro` importuje `AppLayout`
-- [ ] 2.4 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams`
-- [ ] 2.5 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07)
-- [ ] 2.6 Testy przechodzą: `npm test`
-- [ ] 2.7 Linting przechodzi: `npm run lint`
-- [ ] 2.8 Build przechodzi: `npm run build`
+- [ ] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav`
+- [ ] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu
+- [ ] 2.5 `TeamNotFound.astro` importuje `AppLayout`
+- [ ] 2.6 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams`
+- [ ] 2.7 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07)
+- [ ] 2.8 Testy przechodzą: `npm test`
+- [ ] 2.9 Linting przechodzi: `npm run lint`
+- [ ] 2.10 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 2.9 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu
-- [ ] 2.10 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`)
-- [ ] 2.11 `Sign out` z nagłówka wylogowuje i ląduje na `/`
-- [ ] 2.12 Na ekranie 404 żadna pozycja menu nie jest wyróżniona
-- [ ] 2.13 Odpowiedź dla nieistniejącego id to nadal 404
+- [ ] 2.11 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu
+- [ ] 2.12 Karta 404 wyśrodkowana i widoczna bez przewijania; brak paska przewijania; brak szwu tła
+- [ ] 2.13 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`)
+- [ ] 2.14 `Sign out` z nagłówka wylogowuje i kończy przekierowaniem `/` → `/auth/signin`
+- [ ] 2.15 Na ekranie 404 żadna pozycja menu nie jest wyróżniona
+- [ ] 2.16 Odpowiedź dla nieistniejącego id to nadal 404
 
 ### Faza 3: Migracja stron domenowych
 
@@ -498,4 +578,4 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 - [ ] 3.12 Ekran potwierdzenia zapisu ma dokładnie jeden link kontekstowy „View this team"
 - [ ] 3.13 Gałęzie awarii (Supabase wyłączony) renderują się w powłoce i mają wyjście
 - [ ] 3.14 Pełna pętla CRUD bez regresji (zapis → embark → edycja → usunięcie)
-- [ ] 3.15 Wylogowanie z nagłówka działa z każdego z pięciu ekranów
+- [ ] 3.15 Wylogowanie z nagłówka z każdego z pięciu ekranów kończy się na `/auth/signin`
