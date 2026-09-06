@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { CHARACTER_POOL, addMember, evaluateTeam, togglePerk, type TeamComposition } from "@/lib/domain";
+import {
+  CHARACTER_POOL,
+  COMPETENCY_THRESHOLD,
+  addMember,
+  evaluateTeam,
+  removeMember,
+  togglePerk,
+  type Competency,
+  type TeamComposition,
+} from "@/lib/domain";
 import { findThresholdSolution } from "@/lib/domain/solvability";
 import { COMPOSITION_FIELD, gateTeamSubmission, parseTeamComposition } from "@/lib/team-submission";
 
@@ -17,6 +26,19 @@ function perkIdsOf(characterId: string): readonly string[] {
   const character = CHARACTER_POOL.find((candidate) => candidate.id === characterId);
   if (character === undefined) throw new Error(`Character ${characterId} missing from pool`);
   return character.perks.map((perk) => perk.id);
+}
+
+/**
+ * Kompetencja, do której perk dokłada punkty — szukana po `id` w całej puli, bo perki żyją
+ * w postaciach. Istniejący `perkIdsOf` zwraca same identyfikatory, więc test edycji potrzebuje
+ * drugiego lookupu, żeby wiedzieć, **którą** kompetencję cofa odznaczenie.
+ */
+function competencyOfPerk(perkId: string): Competency {
+  for (const character of CHARACTER_POOL) {
+    const perk = character.perks.find((candidate) => candidate.id === perkId);
+    if (perk !== undefined) return perk.competency;
+  }
+  throw new Error(`Perk ${perkId} missing from pool`);
 }
 
 /** Skład domykający próg z solvera — rzuca, gdy pula jest nierozwiązywalna (to sprawdza F-02). */
@@ -185,5 +207,82 @@ describe("gateTeamSubmission", () => {
     for (const member of result.composition) {
       expect(member).not.toHaveProperty("note");
     }
+  });
+});
+
+/**
+ * Próg działa **w obie strony** (US-02, FR-009): bramka nie wie, czy zapisuje nowy wiersz, czy
+ * podmienia istniejący, więc edycja przechodzi przez dokładnie tę samą regułę co pierwszy zapis.
+ * Bez tego bloku ryzyko „fragment sprawdzający próg tylko przy pierwszym zapisie łamie Guardrail
+ * tylnymi drzwiami" byłoby komentarzem, a nie wykonywalnym zdaniem w CI.
+ *
+ * Każdy skład idzie przez `JSON.stringify` — bramka przyjmuje string, więc to jest ta sama droga,
+ * którą idzie formularz. Punktem wyjścia jest zawsze `solvedComposition()`; `roster.ts` służy
+ * do wykonywania na nim **ruchów**, nie do budowania go od zera.
+ */
+describe("gateTeamSubmission — edycja zapisanej drużyny", () => {
+  it("usunięcie członka cofa próg — zapis zmian jest odrzucany tak samo jak pierwszy zapis", () => {
+    const saved = solvedComposition();
+    const [dropped] = saved;
+
+    const edited = removeMember(saved, dropped.characterId);
+
+    expect(edited).toHaveLength(saved.length - 1);
+    expect(gateTeamSubmission(JSON.stringify(edited), CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "below-threshold" },
+    });
+  });
+
+  it("odznaczenie perka cofa jego kompetencję poniżej progu — blokada nie omija perków", () => {
+    const saved = solvedComposition();
+    // Rozwiązanie solvera stawia wszystkie siedem kompetencji **dokładnie** na progu, więc każdy
+    // wybrany perk jest ostatnim punktem swojej kompetencji — wystarczy wziąć pierwszy z brzegu
+    // i sprawdzić, którą kompetencję cofa. Twardy identyfikator rozsypałby się po zmianie seeda.
+    const owner = saved.find((member) => member.perkIds.length > 0);
+    if (owner === undefined) throw new Error("Solved composition has no perks to unselect");
+    const [perkId] = owner.perkIds;
+    const competency = competencyOfPerk(perkId);
+
+    const toggled = togglePerk(saved, owner.characterId, perkId, CHARACTER_POOL);
+    expect(toggled.ok).toBe(true);
+    if (!toggled.ok) return;
+
+    expect(toggled.composition).not.toContainEqual(owner);
+    expect(evaluateTeam(toggled.composition, CHARACTER_POOL).scores[competency]).toBeLessThan(COMPETENCY_THRESHOLD);
+    expect(gateTeamSubmission(JSON.stringify(toggled.composition), CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "below-threshold" },
+    });
+  });
+
+  it("wymiana członka utrzymująca próg przechodzi, a zapisany skład niesie nową postać", () => {
+    const saved = solvedComposition();
+    const [dropped] = saved;
+    const without = removeMember(saved, dropped.characterId);
+
+    // Zastępca jest **znajdowany**, nie wpisywany: po usunięciu członka próg domyka dokładnie jedna
+    // postać z puli i zmiana seeda mogłaby ją podmienić. Usunięty jest wykluczony z kandydatów —
+    // ponowne dodanie tej samej postaci odtworzyłoby skład zapisany, a to nie jest wymiana.
+    const replacement = POOL_IDS.filter(
+      (id) => id !== dropped.characterId && !without.some((member) => member.characterId === id),
+    ).find((id) => {
+      const added = addMember(without, id, CHARACTER_POOL);
+      return added.ok && gateTeamSubmission(JSON.stringify(added.composition), CHARACTER_POOL).ok;
+    });
+    if (replacement === undefined) throw new Error("No single character closes the threshold after the removal");
+
+    const added = addMember(without, replacement, CHARACTER_POOL);
+    expect(added.ok).toBe(true);
+    if (!added.ok) return;
+
+    const result = gateTeamSubmission(JSON.stringify(added.composition), CHARACTER_POOL);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const savedIds = result.composition.map((member) => member.characterId);
+    expect(savedIds).toContain(replacement);
+    expect(savedIds).not.toContain(dropped.characterId);
+    expect(savedIds).toHaveLength(saved.length);
   });
 });

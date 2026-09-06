@@ -526,34 +526,34 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 
 #### Automatyczne
 
-- [x] 1.1 Sprawdzanie typów i lint przechodzą (`npx astro sync && npm run lint`)
-- [x] 1.2 Testy przechodzą bez zmian w plikach testowych (`npm test`)
-- [x] 1.3 Build przechodzi (`npm run build`)
-- [x] 1.4 Migracja jest jedynym nowym plikiem i nie dotyka `delete`/`truncate`
-- [x] 1.5 Ładunek update'u nie niesie nazwy, właściciela ani daty
+- [x] 1.1 Sprawdzanie typów i lint przechodzą (`npx astro sync && npm run lint`) — aae8fcf
+- [x] 1.2 Testy przechodzą bez zmian w plikach testowych (`npm test`) — aae8fcf
+- [x] 1.3 Build przechodzi (`npm run build`) — aae8fcf
+- [x] 1.4 Migracja jest jedynym nowym plikiem i nie dotyka `delete`/`truncate` — aae8fcf
+- [x] 1.5 Ładunek update'u nie niesie nazwy, właściciela ani daty — aae8fcf
 
 #### Ręczne
 
-- [x] 1.6 `supabase db push` stosuje migrację bez błędu
-- [x] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete
-- [x] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_`
+- [x] 1.6 `supabase db push` stosuje migrację bez błędu — aae8fcf
+- [x] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete — aae8fcf
+- [x] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_` — aae8fcf
 
 ### Faza 2: Trasa zapisu zmian
 
 #### Automatyczne
 
-- [ ] 2.1 Nowe testy przechodzą, stare bez zmian (`npm test`)
-- [ ] 2.2 Lint i typy przechodzą (`npx astro sync && npm run lint`)
-- [ ] 2.3 Build przechodzi (`npm run build`)
-- [ ] 2.4 Trasa nie zwraca JSON-a
-- [ ] 2.5 Każda gałąź kończy się `context.redirect` (liczba `return` == liczba `context.redirect`)
-- [ ] 2.6 Reguła progu nie ma drugiej kopii ani w liczeniu, ani w tekście komunikatu
+- [x] 2.1 Nowe testy przechodzą, stare bez zmian (`npm test`)
+- [x] 2.2 Lint i typy przechodzą (`npx astro sync && npm run lint`)
+- [x] 2.3 Build przechodzi (`npm run build`)
+- [x] 2.4 Trasa nie zwraca JSON-a
+- [x] 2.5 Każda gałąź kończy się `context.redirect` (liczba `return` == liczba `context.redirect`)
+- [x] 2.6 Reguła progu nie ma drugiej kopii ani w liczeniu, ani w tekście komunikatu
 
 #### Ręczne
 
-- [ ] 2.7 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500
-- [ ] 2.8 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia
-- [ ] 2.9 POST na nie-UUID kończy się redirectem, nie błędem `22P02`
+- [x] 2.7 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500
+- [x] 2.8 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia
+- [x] 2.9 POST na nie-UUID kończy się redirectem, nie błędem `22P02`
 
 ### Faza 3: Ekran edycji
 

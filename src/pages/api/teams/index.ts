@@ -1,19 +1,25 @@
 import type { APIRoute } from "astro";
 
 import { getCharacterPool } from "@/lib/character-pool-repo";
-import { COMPETENCY_THRESHOLD } from "@/lib/domain";
 import { createClient } from "@/lib/supabase";
 import { createTeam } from "@/lib/team-repo";
-import { COMPOSITION_FIELD, gateTeamSubmission } from "@/lib/team-submission";
+import {
+  BELOW_THRESHOLD_MESSAGE,
+  COMPOSITION_FIELD,
+  INVALID_PAYLOAD_MESSAGE,
+  gateTeamSubmission,
+} from "@/lib/team-submission";
 
 /**
- * `POST /api/teams` — jedyny pisarz do `teams` w aplikacji (FR-007). Kształt `signin.ts`: natywny
+ * `POST /api/teams` — trasa tworzenia drużyny (FR-007); od S-05 drugim pisarzem do `teams` jest
+ * `POST /api/teams/[id]`, który podmienia skład istniejącego wiersza. Kształt `signin.ts`: natywny
  * formularz, każdy błąd to redirect z `?error=` na `/teams/new`, sukces to redirect na stronę
  * potwierdzenia. Żaden `throw` nie wychodzi z handlera (nieprzechwycony throw w Workerze to 500),
  * żadnego JSON w odpowiedziach.
  *
- * Próg jest sprawdzany tu, na puli z bazy, tym samym `evaluateTeam` co w wyspie — Guardrail
- * „reguła obowiązuje także poza interfejsem". Własność wiersza egzekwuje RLS.
+ * Próg jest sprawdzany tu, na puli z bazy, tą samą bramką `gateTeamSubmission` co w trasie
+ * edycji i w wyspie — Guardrail „reguła obowiązuje także poza interfejsem", jedna kopia reguły
+ * dla obu kierunków zapisu. Własność wiersza egzekwuje RLS.
  */
 
 function rejectToComposer(context: Parameters<APIRoute>[0], message: string): Response {
@@ -38,10 +44,10 @@ export const POST: APIRoute = async (context) => {
   try {
     raw = (await context.request.formData()).get(COMPOSITION_FIELD);
   } catch {
-    return rejectToComposer(context, "Invalid team payload");
+    return rejectToComposer(context, INVALID_PAYLOAD_MESSAGE);
   }
   if (typeof raw !== "string") {
-    return rejectToComposer(context, "Invalid team payload");
+    return rejectToComposer(context, INVALID_PAYLOAD_MESSAGE);
   }
 
   let pool;
@@ -57,9 +63,7 @@ export const POST: APIRoute = async (context) => {
   if (!gate.ok) {
     return rejectToComposer(
       context,
-      gate.reason.kind === "invalid-payload"
-        ? "Invalid team payload"
-        : `Every competency needs at least ${COMPETENCY_THRESHOLD} points before the team can embark.`,
+      gate.reason.kind === "invalid-payload" ? INVALID_PAYLOAD_MESSAGE : BELOW_THRESHOLD_MESSAGE,
     );
   }
 

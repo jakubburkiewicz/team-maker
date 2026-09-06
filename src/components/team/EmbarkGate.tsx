@@ -2,8 +2,8 @@ import { Rocket } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { COMPETENCY_THRESHOLD, type TeamComposition } from "@/lib/domain";
-import { COMPOSITION_FIELD } from "@/lib/team-submission";
+import { type TeamComposition } from "@/lib/domain";
+import { BELOW_THRESHOLD_MESSAGE, COMPOSITION_FIELD } from "@/lib/team-submission";
 import { cn } from "@/lib/utils";
 
 interface EmbarkGateProps {
@@ -52,9 +52,7 @@ export function EmbarkGate({ ready, composition }: EmbarkGateProps) {
         {submitting ? "Embarking…" : "Embark on the job"}
       </Button>
       <p id={HINT_ID} className={cn("text-center text-sm", ready ? "text-emerald-300" : "text-blue-100/60")}>
-        {ready
-          ? "All seven competencies are covered."
-          : `Every competency needs at least ${COMPETENCY_THRESHOLD} points before the team can embark.`}
+        {ready ? "All seven competencies are covered." : BELOW_THRESHOLD_MESSAGE}
       </p>
     </form>
   );

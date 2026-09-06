@@ -1,4 +1,10 @@
-import { evaluateTeam, type CharacterPool, type MemberSelection, type TeamComposition } from "@/lib/domain";
+import {
+  COMPETENCY_THRESHOLD,
+  evaluateTeam,
+  type CharacterPool,
+  type MemberSelection,
+  type TeamComposition,
+} from "@/lib/domain";
 
 /**
  * Decyzja zapisu drużyny — jedno miejsce, w którym surowe wejście z formularza staje się
@@ -18,6 +24,17 @@ import { evaluateTeam, type CharacterPool, type MemberSelection, type TeamCompos
 
 /** Nazwa ukrytego pola formularza — wspólna dla `EmbarkGate` i `POST /api/teams`. */
 export const COMPOSITION_FIELD = "composition";
+
+/**
+ * Tekst odmowy dla `below-threshold` (FR-018) — **jedyna kopia w drzewie**. Bramka w wyspie
+ * pokazuje go pod zablokowanym przyciskiem, a obie trasy zapisu odrzucają nim przez `?error=`;
+ * druga kopia rozjechałaby się z regułą, którą liczy `evaluateTeam`. Zbudowany
+ * z `COMPETENCY_THRESHOLD`, żeby liczba w tekście nie mogła rozminąć się z progiem w domenie.
+ */
+export const BELOW_THRESHOLD_MESSAGE = `Every competency needs at least ${COMPETENCY_THRESHOLD} points before the team can embark.`;
+
+/** Tekst odmowy dla `invalid-payload` — wspólny dla obu tras zapisu, z tego samego powodu. */
+export const INVALID_PAYLOAD_MESSAGE = "Invalid team payload";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
