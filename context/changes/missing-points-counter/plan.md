@@ -405,20 +405,20 @@ trwałego do przeniesienia, więc nie ma też czego wycofywać poza samym kodem.
 
 #### Automatyczne
 
-- [ ] 1.1 `npx astro sync` i `npm run lint` przechodzą
-- [ ] 1.2 `npm test` przechodzi
-- [ ] 1.3 `npx vitest run src/lib/missing-competencies.test.ts` — co najmniej osiem przypadków
-- [ ] 1.4 Kontrola mutacyjna A: odwrócona kolejność czerwieni przypadki 2 i 4, mutacja cofnięta
-- [ ] 1.5 Kontrola mutacyjna B: warunek nieujemny czerwieni przypadki 1, 3 i 5, mutacja cofnięta
-- [ ] 1.6 Kontrola mutacyjna C: brak gałęzi liczby pojedynczej czerwieni przypadek 7, mutacja cofnięta
-- [ ] 1.7 Helper bez runtime'u Astro i Supabase (grep zakotwiczony na `^\s*import … from`)
-- [ ] 1.8 `git diff --quiet f11ba86 -- src/lib/domain/`
-- [ ] 1.9 `git diff --quiet f11ba86 -- package.json package-lock.json`
+- [x] 1.1 `npx astro sync` i `npm run lint` przechodzą
+- [x] 1.2 `npm test` przechodzi
+- [x] 1.3 `npx vitest run src/lib/missing-competencies.test.ts` — co najmniej osiem przypadków
+- [x] 1.4 Kontrola mutacyjna A: odwrócona kolejność czerwieni przypadki 2 i 4, mutacja cofnięta
+- [x] 1.5 Kontrola mutacyjna B: warunek nieujemny czerwieni przypadki 1, 3 i 5, mutacja cofnięta
+- [x] 1.6 Kontrola mutacyjna C: brak gałęzi liczby pojedynczej czerwieni przypadek 7, mutacja cofnięta
+- [x] 1.7 Helper bez runtime'u Astro i Supabase (grep zakotwiczony na `^\s*import … from`)
+- [x] 1.8 `git diff --quiet f11ba86 -- src/lib/domain/`
+- [x] 1.9 `git diff --quiet f11ba86 -- package.json package-lock.json`
 
 #### Ręczne
 
-- [ ] 1.10 Nazwy przypadków nazywają własność, nie implementację
-- [ ] 1.11 Asercje na literałach z PRD, nie na importowanych stałych
+- [x] 1.10 Nazwy przypadków nazywają własność, nie implementację
+- [x] 1.11 Asercje na literałach z PRD, nie na importowanych stałych
 
 ### Faza 2: Lista przy wykresie i wspólna gałąź umowy
 

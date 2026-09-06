@@ -66,7 +66,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | done        |
 | S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | done        |
 | S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | done        |
-| S-08 | `missing-points-counter`           | zobaczyć, ilu punktów brakuje w każdej kompetencji poniżej progu          | S-02              | FR-017                                           | planning |
+| S-08 | `missing-points-counter`           | zobaczyć, ilu punktów brakuje w każdej kompetencji poniżej progu          | S-02              | FR-017                                           | in-progress |
 
 ## Strumienie
 
@@ -337,7 +337,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   żadnego Kryterium sukcesu ani Guardraila — a więc pierwszy kandydat do cięcia, gdy okno czasowe
   zacznie się domykać. Rozstrzygnięcie FR-018 zostało celowo osłabione do komunikatu ogólnego
   właśnie po to, żeby zapis nie zależał od tego fragmentu.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Przekazanie do backlogu
 
