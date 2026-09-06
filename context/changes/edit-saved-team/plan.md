@@ -537,6 +537,14 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 - [x] 1.6 `supabase db push` stosuje migrację bez błędu — aae8fcf
 - [x] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete — aae8fcf
 - [x] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_` — aae8fcf
+  > Przegląd implementacji 2026-09-06 (F1): pozycja była odhaczona bez artefaktu w repo —
+  > `npx wrangler secret list` pokazuje wyłącznie nazwy, a `aae8fcf` nie niósł dowodu.
+  > **Zweryfikowane ręcznie 2026-09-06**: sekret w Workerze produkcyjnym zaczyna się od
+  > `sb_publishable_`. Lokalny `.env` sprawdzony niezależnie tego samego dnia — ten sam prefiks.
+  > Stawka zapisana wprost, żeby nie trzeba jej było odtwarzać: `updateTeam` nie filtruje po
+  > `user_id` (`src/lib/team-repo.ts:11-14`), więc klucz `sb_secret_` omijałby RLS i przewracał
+  > Guardrail US-04 dla zapisu — cicho i wyłącznie cross-account. Ta weryfikacja jest warunkiem
+  > stałym, nie jednorazowym: każda podmiana sekretu musi ją powtórzyć.
 
 ### Faza 2: Trasa zapisu zmian
 

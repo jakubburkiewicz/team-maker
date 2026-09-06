@@ -1,7 +1,7 @@
 ---
 change_id: edit-saved-team
 title: Edycja składu zapisanej drużyny
-status: implemented
+status: impl_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---

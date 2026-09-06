@@ -1,5 +1,7 @@
 import {
   COMPETENCY_THRESHOLD,
+  MAX_PERKS_PER_MEMBER,
+  MAX_TEAM_SIZE,
   evaluateTeam,
   type CharacterPool,
   type MemberSelection,
@@ -89,7 +91,25 @@ export function toTeamComposition(value: unknown): TeamComposition | null {
  * Sam `JSON.parse` w `try`/`catch` plus `toTeamComposition` — cała kontrola kształtu jest tam,
  * więc ścieżka zapisu i odczytu nie mogą się rozjechać. Nie-JSON → `null`.
  */
+/**
+ * Górna granica sensownego ładunku, wyprowadzona ze stałych domeny, a nie wpisana z palca:
+ * najdłuższe pole to identyfikator (najdłuższy w puli ma 27 znaków, budżet 64 daje zapas na
+ * przyszłe postacie), a jeden skład niesie ich co najwyżej `MAX_TEAM_SIZE × (1 perk-slotów + 1
+ * characterId)`. Do tego 512 bajtów na nawiasy, cudzysłowy i nazwy pól. Uczciwy skład mieści się
+ * poniżej 800 bajtów, więc limit nie może trafić gracza — odcina wyłącznie ładunki spoza interfejsu.
+ */
+export const MAX_COMPOSITION_PAYLOAD_BYTES = MAX_TEAM_SIZE * (MAX_PERKS_PER_MEMBER + 1) * 64 + 512;
+
 export function parseTeamComposition(raw: string): TeamComposition | null {
+  // Limit **przed** `JSON.parse`: dalej nie ma już żadnego wczesnego wyjścia — `toTeamComposition`
+  // iteruje całą tablicę, a `evaluateTeam` przechodzi pełną pętlą także po dopisaniu naruszenia
+  // `too-many-members`. Bez tego zalogowane konto pali CPU Workera wielomegabajtową tablicą.
+  // Kontrola stoi tutaj, nie w `gateTeamSubmission`, żeby chronić samo parsowanie — obie trasy
+  // zapisu dziedziczą ją przez bramkę.
+  if (raw.length > MAX_COMPOSITION_PAYLOAD_BYTES) {
+    return null;
+  }
+
   let parsed: unknown;
 
   try {

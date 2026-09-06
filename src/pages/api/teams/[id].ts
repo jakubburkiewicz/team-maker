@@ -35,6 +35,12 @@ export const POST: APIRoute = async (context) => {
   // się odesłaniem, a nie błędem Postgresa `22P02`. Do budowy adresu `?? ""`, jak
   // `src/pages/teams/[id]/embark.astro:27`.
   const id = context.params.id ?? "";
+  // Odesłanie kosztuje **niezapisaną edycję**: strona odtwarza wyspę z bazy, a `initialComposition`
+  // jest wartością początkową `useState` (`TeamComposer.tsx:52`), więc gracz wraca do składu sprzed
+  // zmian. Przyjęte świadomie: `below-threshold` i `invalid-payload` są z interfejsu nieosiągalne
+  // (przycisk `disabled`), więc realnie zostają awarie przemijające, a przenoszenie składu przez URL
+  // albo `sessionStorage` dokładałoby drugie źródło prawdy — dokładnie to, czemu zapobiega brak
+  // `useEffect` w wyspie. Ta sama własność jest na `/teams/new` od S-03.
   const reject = (message: string) => `/teams/${id}?error=${encodeURIComponent(message)}`;
 
   // Obrona w głąb: prefiks `/api/teams` jest w PROTECTED_ROUTES, więc middleware już przekierował.

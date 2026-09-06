@@ -11,7 +11,12 @@ import {
   type TeamComposition,
 } from "@/lib/domain";
 import { findThresholdSolution } from "@/lib/domain/solvability";
-import { COMPOSITION_FIELD, gateTeamSubmission, parseTeamComposition } from "@/lib/team-submission";
+import {
+  COMPOSITION_FIELD,
+  MAX_COMPOSITION_PAYLOAD_BYTES,
+  gateTeamSubmission,
+  parseTeamComposition,
+} from "@/lib/team-submission";
 
 /**
  * Dowód Guardraila „zapisana drużyna zawsze spełnia próg — reguła obowiązuje także poza
@@ -68,6 +73,38 @@ function rosterBuiltComposition(): TeamComposition {
 describe("COMPOSITION_FIELD", () => {
   it("jest stałym literałem nazwy pola — obie strony formularza dzielą go przez import", () => {
     expect(COMPOSITION_FIELD).toBe("composition");
+  });
+});
+
+describe("parseTeamComposition — limit rozmiaru ładunku", () => {
+  it("uczciwy skład maksymalnej wielkości mieści się w limicie z ogromnym zapasem", () => {
+    // To jest właściwa treść tego testu: limit nie może trafić gracza. Gdyby przyszła zmiana
+    // (dłuższe identyfikatory, większy skład) zbliżyła uczciwy ładunek do granicy, ten test
+    // spada, zanim zrobi to użytkownik.
+    const raw = JSON.stringify(solvedComposition());
+
+    expect(raw.length).toBeLessThan(MAX_COMPOSITION_PAYLOAD_BYTES / 2);
+    expect(parseTeamComposition(raw)).not.toBeNull();
+  });
+
+  it("ładunek powyżej limitu jest odrzucany bez parsowania", () => {
+    // Poprawny JSON, poprawny kształt — odrzucony wyłącznie za rozmiar, więc dowodzi, że kontrola
+    // stoi przed `JSON.parse`, a nie wynika z niepoprawnej treści.
+    const huge = JSON.stringify(Array.from({ length: 5000 }, () => ({ characterId: POOL_IDS[0], perkIds: [] })));
+
+    expect(huge.length).toBeGreaterThan(MAX_COMPOSITION_PAYLOAD_BYTES);
+    expect(parseTeamComposition(huge)).toBeNull();
+  });
+
+  it("bramka mapuje przerośnięty ładunek na invalid-payload, nie below-threshold", () => {
+    // Różnica jest widoczna dla gracza: `below-threshold` mówi „uzupełnij kompetencje", a to nie
+    // jest prawda o ładunku, którego nie dało się nawet odczytać.
+    const huge = JSON.stringify(Array.from({ length: 5000 }, () => ({ characterId: POOL_IDS[0], perkIds: [] })));
+
+    expect(gateTeamSubmission(huge, CHARACTER_POOL)).toEqual({
+      ok: false,
+      reason: { kind: "invalid-payload" },
+    });
   });
 });
 
