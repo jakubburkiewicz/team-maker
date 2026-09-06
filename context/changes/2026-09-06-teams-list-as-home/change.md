@@ -1,7 +1,7 @@
 ---
 change_id: 2026-09-06-teams-list-as-home
 title: Lista drużyn na stronie głównej zamiast dashboardu i osobnej trasy /teams
-status: planned
+status: plan_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 archived_at: null

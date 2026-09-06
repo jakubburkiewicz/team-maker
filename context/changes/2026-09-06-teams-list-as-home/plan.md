@@ -83,13 +83,18 @@ Po tej zmianie spełniona jest bramka wstępna planu `2026-09-06-app-shell-heade
 
 - **Nie usuwamy `src/components/Topbar.astro`.** Po skasowaniu `Welcome.astro` zostaje osierocony,
   ale jego kasację jawnie deklaruje `2026-09-06-app-shell-header-nav` §Faza 2. Dublowanie dałoby
-  konflikt między dwoma planami.
+  konflikt między dwoma planami. Poprawiamy w nim natomiast `href="/dashboard"` (`:13`) — patrz
+  Faza 3 pkt 1 — bo bez tego strażnik 3.1 nie może być zielony; edycja `href` nie koliduje
+  z kasacją, którą zrobi plan siostrzany.
 - **Nie dodajemy nagłówka ani menu nawigacyjnego** — to zakres `2026-09-06-app-shell-header-nav`.
-  Ta zmiana jest jego wymaganiem wstępnym, nie jego częścią.
+  Ta zmiana jest jego wymaganiem wstępnym, nie jego częścią. Wyjątkiem jest **pojedynczy** formularz
+  `Sign out` na `/` (Faza 2 pkt 1 ppkt 4): nie jest menu, tylko ratunkiem dla FR-003 na czas między
+  tą zmianą a wdrożeniem nagłówka.
 - **Nie usuwamy linków powrotnych, tylko je przekierowujemy** na `/`. Usunięcie zostawiłoby cztery
   ekrany bez żadnej nawigacji do czasu wdrożenia nagłówka; kasację zrobi zmiana siostrzana.
-- **Nie zmieniamy przycisków na pozycjach listy** („Embark", „Edit", „Delete" jako ikony) — zakres
-  `2026-09-06-team-action-buttons`.
+- **Nie dodajemy ikonowych akcji na pozycjach listy** („Embark", „Edit", „Delete") — dziś ich tam
+  nie ma, pozycje są zwykłymi `<a>` z nazwą i datą (`src/pages/teams/index.astro:113-123`) i takie
+  zostają. Dodaje je `2026-09-06-team-action-buttons` (pkt 6 zgłoszenia).
 - **Nie usuwamy przycisku „Assemble a new team"** z gałęzi niepustej ani CTA ze stanu pustego, mimo
   że po wdrożeniu nagłówka powstanie duplikat wejścia do `/teams/new`. Decyzja należy do zmian
   siostrzanych; tutaj treść przenosi się dosłownie.
@@ -160,7 +165,10 @@ tańsza niż wyjaśnianie, dlaczego hipotetyczne `/teamsomething` byłoby chroni
 wyrażenie i domyka klasę tej samej pułapki, którą rozwiązuje tryb dokładny.
 
 Fragment kontraktu dopasowania — bo to jest dokładnie ta jedna linia, której nieoczywistość jest
-sednem całej fazy:
+sednem całej fazy. Zostaje jako komentarz (dokumentuje pułapkę w miejscu, w którym ktoś ją odtworzy),
+dlatego kryterium 1.4 musi ostrzyc komentarze przed dopasowaniem. Sam strażnik 1.4 łapie wyłącznie
+naiwny zapis `pathname.startsWith("/")` wprost w kodzie — pułapkę w postaci `"/"` dorzuconego do
+tablicy prefiksów wiąże **wyłącznie test** (kryterium 1.1), i tak ma zostać:
 
 ```ts
 // `/` musi być dopasowane przez równość: `"/auth/signin".startsWith("/")` jest prawdą,
@@ -193,7 +201,9 @@ i przestaje cokolwiek wiązać). Pokrywa co najmniej:
 - Moduł jest czysty (nie wciąga Astro ani Supabase):
   `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts`
 - Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts`
-- Moduł nie dopasowuje `/` przez prefiks: `! grep -n 'startsWith("/")' src/lib/routes.ts`
+- Moduł nie dopasowuje `/` przez prefiks (komentarze ostrzyżone przed dopasowaniem — fragment
+  kontraktu wyżej **sam zawiera** ten literał, a plik jest grepowany surowo, lekcja S-06):
+  `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'`
 - Linting przechodzi: `npm run lint`
 - Build przechodzi: `npm run build`
 
@@ -224,7 +234,7 @@ i po niej.
 **Cel**: `/` pokazuje listę własnych drużyn zamiast strony startowej szablonu (punkt 3 zgłoszenia).
 
 **Umowa**: Zawartość `src/pages/teams/index.astro` — cały frontmatter i cały szablon — przeniesiona
-**dosłownie**, z trzema kategoriami zmian i żadną inną:
+**dosłownie**, z czterema kategoriami zmian i żadną inną:
 
 1. `href="/dashboard"` w nagłówku (`:59`) i w karcie awarii (`:69`) → usunięte wraz z linkiem
    „← Back to dashboard" i przyciskiem „Back to dashboard". Nagłówek zostaje jako sam `<h1>`;
@@ -234,6 +244,20 @@ i po niej.
    z `PROTECTED_ROUTES`…") i `:13` („`POST /api/teams/[id]/delete` wraca tu z `?deleted=1`") oraz
    log `"Failed to list teams for /teams"` (`:48`) → zaktualizowane do `/`.
 3. Import `Welcome` i jego użycie → zastąpione importami z przenoszonego frontmatteru.
+4. **Wyjście „Sign out" w nagłówku** — jedyny dodatek do przenoszonej treści. Faza 2 pkt 3 kasuje
+   `dashboard.astro:31` i `Welcome.astro:28` (jedynego konsumenta `Topbar.astro:19`), czyli **oba**
+   dzisiejsze wyzwalacze `POST /api/auth/signout`. Bez tego punktu FR-003 („Zalogowany gracz może
+   się wylogować", priorytet „musi być") nie miałby po Fazie 2 żadnej ścieżki w interfejsie aż do
+   `2026-09-06-app-shell-header-nav` §Faza 2, a kryterium ręczne 2.12 byłoby niewykonalne.
+
+   W miejsce usuwanego linku z punktu 1 wchodzi po prawej stronie nagłówka
+   `<form method="POST" action="/api/auth/signout">` z `<button type="submit">Sign out</button>` —
+   kształt, trasa i klasy **skopiowane dosłownie** z `src/components/Topbar.astro:19-23`, bo działają
+   i nie warto ich projektować na nowo. Bez `client:*`; formularz POST-uje natywnie (AGENTS.md
+   → Conventions).
+
+   To jest UI tymczasowe i tak ma być nazwane w commicie: `app-shell-header-nav` §Faza 3 przenosi
+   `Sign out` do `AppHeader` i ten formularz stąd usuwa. Nie inwestuj w jego wygląd.
 
 **Musi zostać nietknięte**: rozróżnienie `null` (awaria) od `[]` (nowe konto) wraz z oboma ekranami;
 formatowanie daty przez `savedAtFormat` **wewnątrz `try`**, nie w szablonie; gałąź `!supabase` jako
@@ -282,6 +306,7 @@ bez zmian.
 - Pliki nie istnieją:
   `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro`
 - Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro`
+- Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro`
 - Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
 - Middleware nie trzyma już własnej listy:
   `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
@@ -297,7 +322,8 @@ bez zmian.
 - Niezalogowany otwiera `/` i ląduje na `/auth/signin` — **bez pętli**: formularz logowania
   renderuje się, adres zostaje na `/auth/signin`.
 - Zalogowanie przez formularz kończy się na `/` z listą (`signin.ts` już celuje w `/`).
-- Wylogowanie kończy się na ekranie logowania (przez jedno dodatkowe przekierowanie z `/`).
+- Przycisk „Sign out" w nagłówku `/` wylogowuje i kończy na ekranie logowania (przez jedno
+  dodatkowe przekierowanie z `/`).
 - Konto bez żadnej drużyny widzi na `/` stan pusty „No crew on the books yet" z CTA, nie kartę
   awarii i nie zero wyników.
 - Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie **ostatniej** drużyny pokazuje
@@ -315,8 +341,8 @@ uwierzytelniania — pętla przekierowań objawia się wyłącznie w przeglądar
 
 ### Przegląd
 
-Cztery strony i jeden plik dokumentacji wskazują na `/dashboard` lub `/teams`. Faza jest czysto
-mechaniczna i w całości weryfikowalna grepem.
+Cztery strony, osierocony pasek i dwa pliki dokumentacji wskazują na `/dashboard`, `/teams` albo na
+skasowaną tablicę `PROTECTED_ROUTES`. Faza jest czysto mechaniczna i w całości weryfikowalna grepem.
 
 ### Wymagane zmiany:
 
@@ -324,7 +350,7 @@ mechaniczna i w całości weryfikowalna grepem.
 
 **Pliki**: `src/pages/teams/new.astro` (`:40`, `:57`), `src/pages/teams/[id].astro` (`:115`, `:146`),
 `src/pages/teams/[id]/embark.astro` (`:77`, `:83`, `:93`),
-`src/components/team/TeamNotFound.astro` (`:31`, `:34`)
+`src/components/team/TeamNotFound.astro` (`:31`, `:34`), `src/components/Topbar.astro` (`:13`)
 
 **Cel**: Żaden link nie może prowadzić w 404 po usunięciu obu tras. Przekierowanie, nie kasacja —
 do czasu wdrożenia `2026-09-06-app-shell-header-nav` te linki są jedyną nawigacją na tych ekranach.
@@ -343,20 +369,34 @@ dashboard" (`TeamNotFound.astro:31,34`, `embark.astro:77,83`) albo dwa linki w r
 - `new.astro` — `:40` staje się „← Your teams", `:57` „Back to your teams"; to różne gałęzie, więc
   oba zostają.
 - `[id].astro` — `:115` i `:146` są w różnych gałęziach, oba zostają, oba celują w `/`.
+- `Topbar.astro` — `:13` (`href="/dashboard"`, etykieta „Dashboard") → `href="/"` z etykietą
+  **„Your teams"**. Plik jest po Fazie 2 osierocony i nie renderuje się nigdzie, więc to nie jest
+  praca nad wyglądem — to jedyny sposób, żeby strażnik 3.1 mógł zostać bez wyjątku. Kasację
+  całego pliku robi `2026-09-06-app-shell-header-nav` §Faza 2; tutaj **nie kasujemy**.
 
 Nie zmieniamy klas Tailwind, struktury ani niczego poza `href` i tekstem etykiety. Wszystkie te
 linki znikają w `2026-09-06-app-shell-header-nav` §Faza 3 — nie inwestuj w ich wygląd.
 
-#### 2. Tabela tras w dokumentacji
+#### 2. Dokumentacja: tabela tras i reguła ochrony
 
-**Plik**: `README.md` (`:144`)
+**Pliki**: `README.md` (`:144`, `:146`), `AGENTS.md` (`:33`)
 
-**Cel**: Dokumentacja przestaje opisywać nieistniejącą trasę.
+**Cel**: Dokumentacja przestaje opisywać nieistniejącą trasę i skasowany mechanizm.
 
-**Umowa**: Wiersz `| \`/dashboard\` | Example protected page … |` zastąpiony wierszem o `/` jako
-chronionej stronie z listą drużyn. Zdanie pod tabelą o `PROTECTED_ROUTES` w `src/middleware.ts`
-wskazuje teraz `src/lib/routes.ts`. Reszta README bez zmian — pozostałe wystąpienia słowa
-„dashboard" (`:119`, `:120`, `:131`, `:164`) dotyczą panelu Supabase i Cloudflare, nie trasy.
+**Umowa**: W `README.md` wiersz `| \`/dashboard\` | Example protected page … |` zastąpiony wierszem
+o `/` jako chronionej stronie z listą drużyn. Zdanie pod tabelą o `PROTECTED_ROUTES`
+w `src/middleware.ts` wskazuje teraz `src/lib/routes.ts`. Reszta README bez zmian — pozostałe
+wystąpienia słowa „dashboard" (`:119`, `:120`, `:131`, `:164`) dotyczą panelu Supabase
+i Cloudflare, nie trasy.
+
+W `AGENTS.md:33` konwencja „Protect a route by adding its path to `PROTECTED_ROUTES` in
+`src/middleware.ts`" wskazuje po zmianie na nieistniejącą tablicę. Zastąp ją regułą wskazującą
+`isProtectedRoute` w `src/lib/routes.ts` i nazywającą rozróżnienie: wpis **dokładny** (dopasowanie
+przez równość — tak jest chronione `/`) kontra **prefiksowy** (dopasowanie po granicy segmentu).
+To nie jest kosmetyka: `AGENTS.md` jest plikiem, który agent czyta **przed** kodem (`CLAUDE.md:1`),
+więc nietknięty kazałby następnej zmianie odtworzyć skasowaną tablicę. `AGENTS.md:24` („route
+protection in `src/middleware.ts`") zostaje bez zmian — middleware dalej jest miejscem, w którym
+reguła jest egzekwowana.
 
 ### Kryteria sukcesu:
 
@@ -367,6 +407,7 @@ wskazuje teraz `src/lib/routes.ts`. Reszta README bez zmian — pozostałe wyst�
   (kotwica na atrybucie: `href="/teams/new"` nie pasuje, a polskie komentarze o `/teams`
   w `src/lib/team-repo.ts:31` i `src/pages/teams/[id]/embark.astro:8` nie mają `href=`)
 - README nie dokumentuje usuniętej trasy: `! grep -n '^| \`/dashboard\`' README.md`
+- Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md`
 - Testy przechodzą: `npm test`
 - Linting przechodzi: `npm run lint`
 - Build przechodzi: `npm run build`
@@ -380,12 +421,16 @@ wskazuje teraz `src/lib/routes.ts`. Reszta README bez zmian — pozostałe wyst�
 - Z `/teams/[id]/embark` (po zapisaniu drużyny) wszystkie linki prowadzą do istniejących ekranów.
 - Cudze lub nieistniejące id daje ekran „Team not found" z działającym linkiem na `/`, dalej
   ze statusem 404 i identyczną treścią dla `/teams/[id]` i `/teams/[id]/embark`.
-- Wyłączenie kluczy Supabase (`.env`) pokazuje karty awarii z działającymi przyciskami — to jedyny
-  sposób, żeby zobaczyć gałęzie `:57`, `:93`, `:146`.
+- Karty awarii (`new.astro:57`, `embark.astro:93`, `[id].astro:146`) pokazują przyciski celujące
+  w `/`. **Nie da się tam dojść przez zdjęcie kluczy Supabase**: bez kluczy `createClient()` zwraca
+  `null`, middleware ustawia `locals.user = null` i chroniona trasa odbija na `/auth/signin`, zanim
+  frontmatter się wykona (`src/pages/teams/new.astro:20`, `src/pages/teams/[id]/embark.astro:26`).
+  Te gałęzie włącza **rzut z repo**, nie brak klienta — patrz sonda w §Kroki testowania ręcznego.
+- Sonda cofnięta przed commitem: `git diff src/lib/` jest czysty.
 
 **Uwaga implementacyjna**: Po zielonych kryteriach automatycznych zatrzymaj się na ręczne
-potwierdzenie. Gałęzie awarii nie są osiągalne z działającą konfiguracją — bez zdjęcia kluczy
-połowa zmienionych linków pozostaje nieprzetestowana.
+potwierdzenie. Trzy z ośmiu zmienionych linków żyją wyłącznie w gałęziach awarii, nieosiągalnych
+z działającą konfiguracją — bez sondy z kroku 12 pozostają nieprzetestowane.
 
 ---
 
@@ -419,9 +464,15 @@ połowa zmienionych linków pozostaje nieprzetestowana.
 9. Otwórz `/dashboard` i `/teams` — obie muszą dać 404.
 10. Otwórz `/teams/<losowy-uuid>` i `/teams/<losowy-uuid>/embark` — identyczny ekran „Team not found",
     status 404, link na `/`.
-11. Wyloguj się — ekran logowania.
-12. Zdejmij `SUPABASE_URL` i `SUPABASE_KEY` z `.env`, zrestartuj `npm run dev`, otwórz `/teams/new`
-    i `/teams/<uuid>` — karty awarii z przyciskami celującymi w `/`. Przywróć klucze.
+11. Wyloguj się przyciskiem „Sign out" w nagłówku `/` — ekran logowania.
+12. **Sonda gałęzi awarii.** Klucze Supabase zostają na miejscu — sesja musi żyć, inaczej middleware
+    odbije na logowanie, zanim frontmatter się wykona. Zamiast tego wymuś rzut z warstwy danych:
+    dopisz tymczasowo `throw new Error("probe");` na początku `getCharacterPool`
+    (`src/lib/character-pool-repo.ts`) oraz `getTeamSummary` (`src/lib/team-repo.ts`), zrestartuj
+    `npm run dev` i otwórz `/teams/new`, `/teams/<uuid>` i `/teams/<uuid>/embark` — trzy karty
+    awarii z przyciskami celującymi w `/`. **Cofnij obie edycje przed commitem** (`git diff` musi
+    być czysty w `src/lib/`). Repo rzuca, strona łapie i mapuje na stan strony — to ta sama gałąź
+    `catch`, którą wywołałaby prawdziwa awaria zapytania (AGENTS.md → Conventions).
 
 ## Uwagi dotyczące wydajności
 
@@ -465,7 +516,7 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 - [ ] 1.1 Testy przechodzą: `npm test`
 - [ ] 1.2 Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts`
 - [ ] 1.3 Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts`
-- [ ] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -n 'startsWith("/")' src/lib/routes.ts`
+- [ ] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'`
 - [ ] 1.5 Linting przechodzi: `npm run lint`
 - [ ] 1.6 Build przechodzi: `npm run build`
 
@@ -475,22 +526,23 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 - [ ] 2.1 Pliki nie istnieją: `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro`
 - [ ] 2.2 Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro`
-- [ ] 2.3 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
-- [ ] 2.4 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
-- [ ] 2.5 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts`
-- [ ] 2.6 Testy przechodzą: `npm test`
-- [ ] 2.7 Linting przechodzi: `npm run lint`
-- [ ] 2.8 Build przechodzi: `npm run build`
+- [ ] 2.3 Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro`
+- [ ] 2.4 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
+- [ ] 2.5 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
+- [ ] 2.6 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts`
+- [ ] 2.7 Testy przechodzą: `npm test`
+- [ ] 2.8 Linting przechodzi: `npm run lint`
+- [ ] 2.9 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 2.9 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]`
-- [ ] 2.10 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań
-- [ ] 2.11 Zalogowanie kończy się na `/` z listą
-- [ ] 2.12 Wylogowanie kończy się na ekranie logowania
-- [ ] 2.13 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii
-- [ ] 2.14 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym
-- [ ] 2.15 `/dashboard` i `/teams` zwracają 404
+- [ ] 2.10 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]`
+- [ ] 2.11 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań
+- [ ] 2.12 Zalogowanie kończy się na `/` z listą
+- [ ] 2.13 Przycisk `Sign out` na `/` wylogowuje i kończy na ekranie logowania (przez 302 z `/`)
+- [ ] 2.14 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii
+- [ ] 2.15 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym
+- [ ] 2.16 `/dashboard` i `/teams` zwracają 404
 
 ### Faza 3: Odwołania do usuniętych tras
 
@@ -498,15 +550,17 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 - [ ] 3.1 Brak odwołań w kodzie: `! grep -rn 'href="/dashboard"' src/ && ! grep -rn 'href="/teams"' src/`
 - [ ] 3.2 README nie dokumentuje usuniętej trasy: ``! grep -n '^| `/dashboard`' README.md``
-- [ ] 3.3 Testy przechodzą: `npm test`
-- [ ] 3.4 Linting przechodzi: `npm run lint`
-- [ ] 3.5 Build przechodzi: `npm run build`
-- [ ] 3.6 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
+- [ ] 3.3 Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md`
+- [ ] 3.4 Testy przechodzą: `npm test`
+- [ ] 3.5 Linting przechodzi: `npm run lint`
+- [ ] 3.6 Build przechodzi: `npm run build`
+- [ ] 3.7 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
 
 #### Ręczne
 
-- [ ] 3.7 Link powrotny z `/teams/new` prowadzi na `/`
-- [ ] 3.8 Link powrotny z `/teams/[id]` prowadzi na `/`
-- [ ] 3.9 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów
-- [ ] 3.10 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/`
-- [ ] 3.11 Karty awarii przy zdjętych kluczach Supabase mają przyciski celujące w `/`
+- [ ] 3.8 Link powrotny z `/teams/new` prowadzi na `/`
+- [ ] 3.9 Link powrotny z `/teams/[id]` prowadzi na `/`
+- [ ] 3.10 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów
+- [ ] 3.11 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/`
+- [ ] 3.12 Karty awarii (sonda: tymczasowy `throw` w `getCharacterPool` i `getTeamSummary`) mają przyciski celujące w `/`
+- [ ] 3.13 Sonda cofnięta przed commitem: `git diff src/lib/` czysty
