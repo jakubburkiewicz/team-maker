@@ -1,7 +1,7 @@
 ---
 change_id: edit-saved-team
 title: Edycja składu zapisanej drużyny
-status: planned
+status: plan_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---
@@ -15,9 +15,10 @@ updated: 2026-09-06
 - Odnośniki PRD: US-02, FR-009, FR-011, FR-018, Non-Goal „edycja nazwy drużyny”.
 - Domyka dwa zobowiązania z przeglądu S-04: **F2** (przywrócić `client:load` na `/teams/[id]`)
   i **F5** (rozstrzygnąć, co wchodzi w miejsce po `EmbarkGate` w trybie edycji).
-- Domyka follow-up **F7** z przeglądu implementacji S-04 (wydzielić `src/lib/team-composition.ts`).
-  Martwy punkt tamtego przeglądu policzony: `toTeamComposition` ma **jednego** importera
-  (`src/lib/team-repo.ts:4`), a typ `TeamComposition` mieszka w `@/lib/domain`, nie w module zapisu.
+- Follow-up **F7** z przeglądu implementacji S-04 (wydzielić `src/lib/team-composition.ts`)
+  **zostaje follow-upem** — decyzja przeglądu planu 2026-09-06 (F4). Martwy punkt tamtego przeglądu
+  policzony: `toTeamComposition` ma **jednego** importera (`src/lib/team-repo.ts:4`) i pozostaje
+  jedyny po S-05, bo trasa edycji bierze `gateTeamSubmission`, nie kształt.
 - Decyzje projektowe z sesji planowania 2026-09-06:
   - `/teams/[id]` otwiera się **od razu edytowalne** — prop `readOnly` znika z `TeamComposer`
     w całości, więc para przełączników z `context/foundation/lessons.md` przestaje istnieć.

@@ -78,13 +78,18 @@ Weryfikacja: `npm run lint`, `npm test`, `npm run build` przechodzą; ręczny sc
 - `src/pages/teams/[id].astro:103` — nota „**Nota dla S-05**: podłączając zapis, trzeba dopisać
   `client:load` z powrotem".
 - `src/lib/team-view.ts:8-11` — ochrona przed cichym skasowaniem członka przy edycji już istnieje.
-- `src/lib/team-repo.ts:4` — **jedyny** importer `toTeamComposition`. Follow-up F7 zakładał, że
-  liczba jest nieznana; jest równa 1, a typ `TeamComposition` w ogóle nie mieszka w module zapisu
-  (jest w `@/lib/domain/types.ts:83`). Refaktor to przeniesienie jednej funkcji i jedna linia importu.
+- `src/lib/team-repo.ts:4` — **jedyny** importer `toTeamComposition`, i **pozostaje jedyny po tym
+  fragmencie**: trasa edycji bierze `COMPOSITION_FIELD` i `gateTeamSubmission`, nie kształt. Martwy
+  punkt F7 policzony (liczba = 1, a `TeamComposition` mieszka w `@/lib/domain/types.ts:83`), więc
+  refaktor jest tani — ale nie staje się tańszy przez zrobienie go teraz i nie jest potrzebny
+  do stanu końcowego. Zostaje follow-upem.
 - `src/middleware.ts:4` — `PROTECTED_ROUTES` zawiera prefiks `/api/teams`, a dopasowanie idzie przez
   `startsWith`, więc `/api/teams/<uuid>` jest chronione **bez zmiany w middleware** (FR-004).
 - `src/components/team/TeamComposer.tsx:96-98` — `handlers: RosterSlotHandlers | undefined` to
-  jedyny nośnik trybu odczytu w slotach; po zdjęciu `readOnly` grupa jest zawsze obecna.
+  nośnik trybu odczytu w slotach; po zdjęciu `readOnly` grupa jest zawsze obecna. **Ale sama
+  opcjonalność `handlers?` w `RosterSlot.tsx:26-35` jest trzecim przełącznikiem trybu odczytu** —
+  bez uczynienia propu wymaganym zostają dwie martwe gałęzie i docstring opisujący tryb, którego
+  już nie ma.
 
 ## Czego NIE robimy
 
@@ -104,6 +109,10 @@ Weryfikacja: `npm run lint`, `npm test`, `npm run build` przechodzą; ręczny sc
   polityki `delete` ani `grant delete`.
 - **Rozstrzygnięcia 404 vs redirect dla cudzej drużyny** — zostaje jak w S-04 (nierozróżnialny
   `null`); docelowo rozstrzyga S-07.
+- **Wydzielenia `src/lib/team-composition.ts` (follow-up F7)** — kształt składu zostaje
+  w `team-submission.ts`. Trasa edycji nie importuje `toTeamComposition`, więc trzeci konsument
+  nie powstaje, a liczba importerów po tym fragmencie dalej wynosi jeden. Refaktor jest równie
+  tani później; wchodzi jako osobny follow-up, nie w fazie z migracją.
 - **Testów komponentów React** — runner obejmuje `src/**/*.test.ts`, bez `.tsx`; dokładanie
   środowiska DOM to zmiana narzędziowa poza zakresem (Moduł 3).
 
@@ -125,8 +134,9 @@ nie dostaje własnej kopii reguły ani własnego progu; dostaje tylko inny cel z
 
 ## Krytyczne szczegóły implementacji
 
-**Sekwencjonowanie fazy 3.** Trzy zmiany — `client:load` w `[id].astro`, zdjęcie `readOnly`
-z `TeamComposer` i podmiana `EmbarkGate` na `CompositionGate` — muszą wejść **jednym commitem**.
+**Sekwencjonowanie fazy 3.** Cztery zmiany — `client:load` w `[id].astro`, zdjęcie `readOnly`
+z `TeamComposer`, uczynienie `handlers` wymaganym w `RosterSlot` i podmiana `EmbarkGate` na
+`CompositionGate` — muszą wejść **jednym commitem**.
 Każda z osobna zostawia ekran w stanie cicho zepsutym, którego nie wykryje ani lint, ani typy, ani
 testy: `client:load` bez pozostałych to hydratacja bez interakcji, a zdjęcie `readOnly` bez
 `client:load` to ekran z przyciskami, które nic nie robią (`context/foundation/lessons.md`).
@@ -146,7 +156,7 @@ a nie błąd zapytania — musi zejść inną gałęzią niż `throw`.
 ### Przegląd
 
 Baza zaczyna przyjmować `update` na kolumnie `composition` własnego wiersza i nic poza tym; repo
-zyskuje `updateTeam`; kształt składu przenosi się do własnego modułu (follow-up F7).
+zyskuje `updateTeam`. Nic poza tym — wydzielenie `team-composition.ts` (F7) zostaje follow-upem.
 
 ### Wymagane zmiany:
 
@@ -183,24 +193,6 @@ odcięty przez RLS) — nierozróżnialnie, dokładnie jak `getTeamSummary`; `th
 przy `error` z PostgREST. Docstring ma nazywać wprost, że nazwa nie wchodzi do ładunku, i wskazać
 kolumnowy grant jako drugą, niezależną barierę.
 
-#### 3. Wydzielenie modułu kształtu składu (follow-up F7)
-
-**Plik**: `src/lib/team-composition.ts` (nowy), `src/lib/team-submission.ts`, `src/lib/team-repo.ts`
-
-**Cel**: Rozdzielić dwie role, które `team-submission.ts` pełni od S-04: **umowę kształtu**
-(`{ characterId, perkIds }[]`, czytana w obie strony) i **bramkę zapisu** (próg + parser formularza).
-Po tym fragmencie kształt ma trzeciego konsumenta — trasę edycji — więc odczyt przestaje importować
-z modułu o nazwie „submission".
-
-**Umowa**: `toTeamComposition(value: unknown): TeamComposition | null` przenosi się do
-`src/lib/team-composition.ts` bez zmiany sygnatury i bez zmiany zachowania, razem z prywatnymi
-pomocnikami `isRecord`, `isStringArray`, `toMemberSelection`. W `team-submission.ts` zostają
-`COMPOSITION_FIELD`, `parseTeamComposition`, `gateTeamSubmission` i typy wyniku; moduł importuje
-`toTeamComposition` z nowego pliku. Do poprawienia jest **jeden** import konsumenta
-(`src/lib/team-repo.ts:4`). Docstring `team-submission.ts:13-16` traci akapit o podwójnej roli —
-ta prawda przenosi się do nowego pliku. `src/lib/team-submission.test.ts` **nie jest przenoszony
-ani przepisywany**: testuje `parseTeamComposition` i `gateTeamSubmission`, które zostają na miejscu.
-
 ### Kryteria sukcesu:
 
 #### Automatyczna weryfikacja:
@@ -218,9 +210,18 @@ ani przepisywany**: testuje `parseTeamComposition` i `gateTeamSubmission`, któr
 
 - `supabase db push` stosuje migrację na projekcie hostowanym bez błędu (jedyna sankcjonowana
   ścieżka do bazy hostowanej — nigdy `supabase config push`)
-- W dashboardzie Supabase tabela `teams` ma cztery polityki: insert, select, update — i **żadnej**
+- W dashboardzie Supabase tabela `teams` ma trzy polityki: insert, select, update — i **żadnej**
   dla delete
-- `toTeamComposition` nie jest już importowane z `@/lib/team-submission` w żadnym pliku
+- **Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie od `sb_secret_`.**
+  Projekt używa nowego systemu kluczy Supabase: **publishable** (następca `anon` — bezpieczny dla
+  przeglądarki, **RLS obowiązuje**) i **secret** (następca `service_role` — **RLS omijane**).
+  Cała izolacja zapisu tego fragmentu stoi na RLS: `updateTeam` nie filtruje po `user_id`, więc
+  klucz `sb_secret_` ominąłby nową politykę `update` i POST na cudze id faktycznie zmieniłby
+  cudzy wiersz. Lokalny `.env` zweryfikowany 2026-09-06 (`sb_publishable_`); sprawdzić **sekret
+  produkcyjny w Workerze** — `npx wrangler secret list` pokazuje wyłącznie nazwy, więc porównać
+  z wartością w dashboardzie Supabase (API Keys) albo przestawić go na nowo
+  `npx wrangler secret put SUPABASE_KEY` kluczem publishable. Ryzyko odziedziczone po S-04 (F8);
+  do S-07 zostaje **weryfikacja**, nie samo założenie. Sprawdzić **zanim faza 2 wypuści trasę zapisu**.
 
 ---
 
@@ -234,7 +235,25 @@ poniżej progu" miało dowód w CI, a nie komentarz.
 
 ### Wymagane zmiany:
 
-#### 1. Trasa aktualizacji drużyny
+#### 1. Komunikaty odrzucenia jako stałe
+
+**Plik**: `src/lib/team-submission.ts`, `src/pages/api/teams/index.ts`,
+`src/components/team/EmbarkGate.tsx`
+
+**Cel**: Zdjąć trzecią kopię tekstu FR-018, zanim powstanie. Dziś ten sam zdanie stoi dwa razy —
+`src/components/team/EmbarkGate.tsx:57` i `src/pages/api/teams/index.ts:62` — a trasa edycji
+dołożyłaby trzecią. Bez tego punktu argument fazy 3 („bramka nie może się rozdwoić, bo komunikat
+progu musi istnieć raz") jest nieprawdziwy w chwili zapisania.
+
+**Umowa**: `team-submission.ts` eksportuje dwie stałe obok `COMPOSITION_FIELD`:
+`BELOW_THRESHOLD_MESSAGE` (zbudowany z `COMPETENCY_THRESHOLD`, dosłownie dzisiejszy tekst
+z `EmbarkGate.tsx:57`) i `INVALID_PAYLOAD_MESSAGE` (`"Invalid team payload"`). `EmbarkGate.tsx`
+i `api/teams/index.ts` przestają trzymać literały i importują stałe — zmiana czysto mechaniczna,
+bez zmiany widocznego tekstu. Trasa z punktu 2 i `CompositionGate` z fazy 3 importują te same
+stałe. Dopiero po tym punkcie komunikat gotowości w bramce może różnić się między trybami
+(„Save changes" vs „Embark on the job") bez rozdwojenia reguły.
+
+#### 2. Trasa aktualizacji drużyny
 
 **Plik**: `src/pages/api/teams/[id].ts` (nowy)
 
@@ -247,17 +266,19 @@ Kolejność bramek — brak `context.locals.user` → redirect na `/auth/signin`
 `/api/teams` jest już w `PROTECTED_ROUTES`); `createClient` zwrócił `null` → odrzucenie;
 `request.formData()` w `try`/`catch` (`TypeError` przy spreparowanym ciele nie może wyjść z handlera);
 pole `COMPOSITION_FIELD` nie jest stringiem → odrzucenie; `getCharacterPool` w `try`/`catch`;
-`gateTeamSubmission(raw, pool)` z tymi samymi dwoma komunikatami co trasa tworzenia (w tym
-dosłownie ten sam tekst progu z `COMPETENCY_THRESHOLD`, FR-018); `updateTeam` w `try`/`catch`.
+`gateTeamSubmission(raw, pool)` z komunikatami **zaimportowanymi** z `team-submission`
+(`INVALID_PAYLOAD_MESSAGE` / `BELOW_THRESHOLD_MESSAGE`, punkt 1) — żadnego literału tekstu
+w trasie; `updateTeam` w `try`/`catch`.
 Wyniki `updateTeam`: rekord → `context.redirect(\`/teams/${id}?saved=1\`)`; `null` → redirect
-`/teams/${id}?error=…` (strona sama zdecyduje, czy pokazać błąd, czy 404 — cudza drużyna nie
+`/teams/${id}?error=` z komunikatem `"Could not save the team"` (ten sam, co gałąź `throw` —
+gałęzie różnią się logiem, nie tym, co widzi gracz) (strona sama zdecyduje, czy pokazać błąd, czy 404 — cudza drużyna nie
 wycieka, bo ta strona i tak renderuje 404 z pustym ciałem); `throw` → log + redirect z `?error=`.
 **Żaden `throw` nie wychodzi z handlera** — nieprzechwycony throw w Workerze to 500.
 `context.params.id` ma typ `string | undefined` i idzie do `updateTeam` bez zawężania — kontrolę
 formatu robi `isTeamId` w repo; do budowy URL-a redirectu użyć `?? ""`, jak
 `src/pages/teams/[id]/embark.astro:27`.
 
-#### 2. Test regresyjny progu edycji
+#### 3. Test regresyjny progu edycji
 
 **Plik**: `src/lib/team-submission.test.ts`
 
@@ -270,10 +291,19 @@ Trzy przypadki, wszystkie startujące od składu domykającego próg: (1) `remov
 → `gateTeamSubmission` zwraca `ok: false` z `below-threshold`; (2) `togglePerk` odznaczające perk,
 który był ostatnim punktem swojej kompetencji → `below-threshold`; (3) `removeMember` + `addMember`
 innej postaci utrzymujące próg → `ok: true`, a zwrócony skład zawiera nową postać, nie starą.
-Skład ma powstawać przez `roster.ts` (`addMember`/`removeMember`/`togglePerk`) i przechodzić przez
+Skład startowy pochodzi z istniejącego `solvedComposition` (czyli z `findThresholdSolution`,
+`src/lib/domain/solvability.ts:129`) — `roster.ts` (`addMember`/`removeMember`/`togglePerk`) służy
+do wykonywania na nim **ruchów**, nie do zbudowania go od zera. Każdy skład przechodzi przez
 `JSON.stringify`, bo bramka przyjmuje string — to jest ta sama droga, którą idzie formularz.
-Przypadek (2) wymaga wybrania perka, którego kompetencja stoi dokładnie na progu; wyliczyć go
-z `evaluateTeam(...).scores`, a nie zapisywać na sztywno — pula może się zmienić.
+
+**Przypadki (2) i (3) muszą wyliczać swoje wejście z puli, nie zapisywać go na sztywno.**
+Rozwiązanie solvera stawia wszystkie siedem kompetencji **dokładnie** na progu, więc oba są ciasne:
+(2) każdy odznaczony perk cofa swoją kompetencję — wybrać go przez lookup `perkId → competency`
+w `CHARACTER_POOL` (istniejący `perkIdsOf` zwraca same id, więc dopisać obok niego mały helper;
+istniejących helperów nie zmieniamy); (3) po usunięciu członka próg domyka **dokładnie jedna**
+postać z puli (dziś `marlow` po usunięciu `vesper`), więc test ma ją **znaleźć** — pierwsza wolna
+postać, dla której `gateTeamSubmission` zwraca `ok: true` — a nie wziąć pierwszej z brzegu ani
+wpisać identyfikatora. Pula może się zmienić i oba twarde wpisy rozsypałyby się po zmianie seeda.
 
 ### Kryteria sukcesu:
 
@@ -282,10 +312,13 @@ z `evaluateTeam(...).scores`, a nie zapisywać na sztywno — pula może się zm
 - Nowe testy przechodzą, stare bez zmian: `npm test`
 - Lint i typy przechodzą: `npx astro sync && npm run lint`
 - Build przechodzi: `npm run build`
-- Trasa nie zwraca JSON-a ani nie wypuszcza throwa — kontrola wzrokowa diffu: każdy `await` przy
-  I/O jest w `try`/`catch`, a każda gałąź kończy się `context.redirect`
-- Reguła progu nie ma drugiej kopii: `grep -rn "COMPETENCY_THRESHOLD\|evaluateTeam"
-  src/pages/api/` pokazuje wyłącznie import stałej do komunikatu, nigdy własnego liczenia
+- Trasa nie zwraca JSON-a: `! grep -nE "Response\.json|new Response|JSON\.stringify" 'src/pages/api/teams/[id].ts'`
+- Każda gałąź kończy się redirectem, a liczba `return` równa się liczbie `context.redirect`:
+  `test "$(grep -c 'return ' 'src/pages/api/teams/[id].ts')" = "$(grep -c 'context.redirect' 'src/pages/api/teams/[id].ts')"`
+- Reguła progu nie ma drugiej kopii **ani w liczeniu, ani w tekście**:
+  `! grep -rn "COMPETENCY_THRESHOLD\|evaluateTeam" src/pages/api/` oraz
+  `! grep -rn "Every competency needs\|Invalid team payload" src/pages/api/ src/components/`
+  (oba komunikaty przychodzą wyłącznie importem z `@/lib/team-submission`)
 
 #### Ręczna weryfikacja:
 
@@ -303,13 +336,14 @@ z `evaluateTeam(...).scores`, a nie zapisywać na sztywno — pula może się zm
 
 `/teams/[id]` przestaje być martwym podglądem i staje się ekranem edycji. Tryb odczytu znika
 z `TeamComposer` w całości, a `EmbarkGate` uogólnia się do `CompositionGate` obsługującej oba
-cele zapisu. **Cała faza to jeden commit** — trzy pliki wyrażają jeden przełącznik.
+cele zapisu. **Cała faza to jeden commit** — cztery pliki wyrażają jeden przełącznik.
 
 ### Wymagane zmiany:
 
 #### 1. `EmbarkGate` → `CompositionGate`
 
-**Plik**: `src/components/team/CompositionGate.tsx` (przemianowany z `EmbarkGate.tsx`)
+**Plik**: `src/components/team/CompositionGate.tsx` (przemianowany z `EmbarkGate.tsx`),
+`src/lib/team-submission.ts`
 
 **Cel**: Jedna bramka dla obu kierunków zapisu, żeby próg, `disabled`, ukryte pole JSON i komunikat
 FR-018 istniały dokładnie raz. Domyka zobowiązanie F5 z przeglądu planu S-04.
@@ -318,13 +352,21 @@ FR-018 istniały dokładnie raz. Domyka zobowiązanie F5 z przeglądu planu S-04
 TeamComposition; teamId?: string })`. Tryb wynika **wyłącznie** z obecności `teamId` — nie ma
 osobnej flagi trybu, więc „edycja bez id" i „tworzenie z id" są niereprezentowalne. Brak `teamId`
 → `action="/api/teams"`, etykiety „Embark on the job" / „Embarking…". `teamId` obecne →
-`action={\`/api/teams/${teamId}\`}`, etykiety „Save changes" / „Saving…". Komunikat **niespełnionego
-progu jest wspólny i niezmieniony** (dosłowny tekst FR-018) — to jest jedyny powód, dla którego
-komponent nie może się rozdwoić. Komunikat gotowości może różnić się między trybami. Reszta bez
+`action={\`/api/teams/${teamId}\`}`, etykiety „Save changes" / „Saving…". Komunikat niespełnionego
+progu przychodzi **importem** `BELOW_THRESHOLD_MESSAGE` z `@/lib/team-submission` (faza 2, pkt 1),
+ten sam dla obu trybów i ten sam, którym odrzucają obie trasy — reguła FR-018 ma jeden tekst
+w całym drzewie. Komunikat gotowości może różnić się między trybami. Powodem, dla którego komponent
+się nie rozdwaja, jest **próg i `disabled`**, nie tekst: dwie bramki oznaczałyby dwie kopie
+warunku `!ready`. Reszta bez
 zmian: `disabled={!ready || submitting}` jako jedyna bariera progu, `onSubmit` wyłącznie jako zapis
 „już wysłano" przeciw dwuklikowi, brak `preventDefault`, brak `useFormStatus` (React nie ustawia
 `pending` dla `action` będącego stringiem — ustalenie F2 z przeglądu S-03). Docstring ma zostać
 przepisany na obie role (FR-007 i FR-009); stary opis mówi wyłącznie o tworzeniu.
+
+Razem z przemianowaniem idzie **jedna linia poza komponentem**: docstring `COMPOSITION_FIELD`
+w `src/lib/team-submission.ts:19` („wspólna dla `EmbarkGate` i `POST /api/teams`") to czwarte
+i ostatnie wystąpienie nazwy `EmbarkGate` w `src/` — bez niego kryterium 3.5 świeci na czerwono.
+Nowa treść nazywa `CompositionGate` i **obie** trasy zapisu.
 
 #### 2. `TeamComposer` bez trybu odczytu
 
@@ -343,7 +385,25 @@ i staje się teraz **jedyną** ochroną edycji przed zapisaniem okrojonego skła
 początkowej `useState` bez `useEffect` zostaje bez zmian — to jest właśnie ta decyzja, która pozwala
 edycji nie mieć dwóch źródeł prawdy.
 
-#### 3. Strona edycji zapisanej drużyny
+#### 3. `RosterSlot` bez opcjonalnych akcji
+
+**Plik**: `src/components/team/RosterSlot.tsx`
+
+**Cel**: Domknąć **trzeci** nośnik trybu odczytu. Tryb odczytu nie był wyrażony dwoma
+przełącznikami, tylko trzema: `readOnly` w wyspie, brak `client:*` w `.astro` i **opcjonalność**
+`handlers` w slocie (`RosterSlot.tsx:26-35`). Zdjęcie samego `readOnly` zostawia trzeci na miejscu:
+gałęzie `onRecruit === undefined` i perki jako `<span>` stają się kodem martwym, a docstring
+opisuje tryb, którego nie ma — dokładnie ten kształt cichej awarii, przed którym ostrzega
+`context/foundation/lessons.md`.
+
+**Umowa**: `handlers: RosterSlotHandlers` staje się **wymagany** (`?` znika), a lokalne `const`
+z linii 51–54 tracą `?.`. Usunąć obie gałęzie trybu odczytu: pusty slot bez `onRecruit` (linie
+58–66) i perki renderowane jako `<span>` — po tej zmianie pusty slot jest zawsze przyciskiem
+„Recruit", a perk zawsze przełącznikiem. Docstring `RosterSlotProps` i akapit „W trybie odczytu
+(`handlers` pominięte)…" znikają razem z gałęziami. Po tym punkcie typ nie dopuszcza stanu „slot
+bez akcji", więc trzeci przełącznik nie może się już rozjechać z pozostałymi dwoma.
+
+#### 4. Strona edycji zapisanej drużyny
 
 **Plik**: `src/pages/teams/[id].astro`
 
@@ -352,7 +412,9 @@ z trasy zapisu: potwierdzenie i błąd. Domyka zobowiązanie F2 z przeglądu pla
 
 **Umowa**: `<TeamComposer pool={pool} initialComposition={composition} teamId={team.id} client:load />`
 — `client:load` wraca, `readOnly` znika, komentarz o świadomym braku hydratacji (linie 97–104) jest
-usuwany w całości razem z notą dla S-05. Frontmatter dokłada odczyt `Astro.url.searchParams`:
+usuwany w całości razem z notą dla S-05. Komentarz nagłówkowy frontmattera (linia 10, „ten sam
+`TeamComposer` co kompletowanie, **w trybie odczytu**") przestaje być prawdą i idzie razem z nimi —
+nowa treść mówi o jednym ekranie oglądania i edycji (FR-008 + FR-009). Frontmatter dokłada odczyt `Astro.url.searchParams`:
 `saved` (obecność → pasek potwierdzenia nad wyspą) i `error` (renderowany istniejącym
 `ServerError` z `@/components/auth/ServerError`, tak jak robi to `src/pages/teams/new.astro:47`).
 Oba paski renderują się **wyłącznie** w gałęzi, w której wyspa jest widoczna — na ekranie 404 ani
@@ -373,7 +435,7 @@ na dwa niezależne odczyty, `resolveSavedTeam` jako bramka spójności z pulą. 
 - Każde renderowanie `TeamComposer` ma `client:load`: `grep -rn "<TeamComposer" src/pages/` zwraca
   dokładnie dwa wiersze i oba zawierają `client:load`
 - Cała faza jest jednym commitem: `git show --stat HEAD` wymienia `CompositionGate.tsx`,
-  `TeamComposer.tsx` i `[id].astro` razem
+  `TeamComposer.tsx`, `RosterSlot.tsx` i `[id].astro` razem
 
 #### Ręczna weryfikacja:
 
@@ -397,10 +459,8 @@ na dwa niezależne odczyty, `resolveSavedTeam` jako bramka spójności z pulą. 
 - **Próg działa w obie strony** (faza 2, `src/lib/team-submission.test.ts`) — usunięcie członka
   i odznaczenie perka cofające kompetencję poniżej dwóch punktów są odrzucane przez tę samą bramkę,
   którą woła trasa edycji; poprawna wymiana członka przechodzi.
-- **Bez zmian w istniejących testach** — `parseTeamComposition` i `gateTeamSubmission` zostają
-  w `team-submission.ts`, więc przeniesienie `toTeamComposition` (faza 1) nie dotyka pliku testowego.
-  Diff `src/lib/team-submission.test.ts` po fazie 1 musi być pusty; po fazie 2 zawiera wyłącznie
-  dopisany blok.
+- **Bez zmian w istniejących testach** — faza 1 nie dotyka `src/lib/team-submission.test.ts`
+  w ogóle (jej diff musi być pusty); po fazie 2 plik zawiera wyłącznie dopisany blok.
 
 ### Testy integracyjne:
 
@@ -476,7 +536,7 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 
 - [ ] 1.6 `supabase db push` stosuje migrację bez błędu
 - [ ] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete
-- [ ] 1.8 `toTeamComposition` nie jest już importowane z `@/lib/team-submission`
+- [ ] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_`
 
 ### Faza 2: Trasa zapisu zmian
 
@@ -485,14 +545,15 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 - [ ] 2.1 Nowe testy przechodzą, stare bez zmian (`npm test`)
 - [ ] 2.2 Lint i typy przechodzą (`npx astro sync && npm run lint`)
 - [ ] 2.3 Build przechodzi (`npm run build`)
-- [ ] 2.4 Każda gałąź trasy kończy się `context.redirect`, żaden `throw` nie wychodzi z handlera
-- [ ] 2.5 Reguła progu nie ma drugiej kopii w `src/pages/api/`
+- [ ] 2.4 Trasa nie zwraca JSON-a
+- [ ] 2.5 Każda gałąź kończy się `context.redirect` (liczba `return` == liczba `context.redirect`)
+- [ ] 2.6 Reguła progu nie ma drugiej kopii ani w liczeniu, ani w tekście komunikatu
 
 #### Ręczne
 
-- [ ] 2.6 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500
-- [ ] 2.7 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia
-- [ ] 2.8 POST na nie-UUID kończy się redirectem, nie błędem `22P02`
+- [ ] 2.7 POST z ciałem niebędącym formularzem kończy się `?error=`, nie 500
+- [ ] 2.8 POST na cudze id nie zmienia wiersza i nie ujawnia jego istnienia
+- [ ] 2.9 POST na nie-UUID kończy się redirectem, nie błędem `22P02`
 
 ### Faza 3: Ekran edycji
 
@@ -504,7 +565,7 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 - [ ] 3.4 Prop `readOnly` nie istnieje nigdzie w `src/`
 - [ ] 3.5 Nazwa `EmbarkGate` nie została nigdzie w `src/`
 - [ ] 3.6 Oba renderowania `TeamComposer` mają dyrektywę hydratacji
-- [ ] 3.7 Cała faza weszła jednym commitem (trzy pliki razem)
+- [ ] 3.7 Cała faza weszła jednym commitem (cztery pliki razem)
 
 #### Ręczne
 

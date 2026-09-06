@@ -34,19 +34,22 @@ z bazy. Nazwy-hasha nie da się zmienić **żadną ścieżką**, bo rola `authen
 | Wejście w tryb edycji | `/teams/[id]` od razu edytowalne; `readOnly` usunięty | Realizuje FR-008 dosłownie i **likwiduje** parę przełączników z `lessons.md`, zamiast wymagać jej pilnowania. |
 | Trasa zapisu | `POST /api/teams/[id]`, natywny formularz | Kopia wzorca `POST /api/teams` — zero JS, jeden kanał błędów przez `?error=`, zgodnie z konwencją AGENTS.md. |
 | Po udanym zapisie | Redirect na `/teams/[id]?saved=1` | Gracz widzi zapisany skład tam, gdzie go zmieniał; `/teams/[id]/embark` zostaje potwierdzeniem **pierwszego** zapisu. |
-| Następca `EmbarkGate` (F5) | Jeden `CompositionGate`, tryb z obecności `teamId` | Próg, `disabled` i komunikat FR-018 istnieją raz, więc bramka tworzenia i edycji nie mogą się rozjechać. |
+| Następca `EmbarkGate` (F5) | Jeden `CompositionGate`, tryb z obecności `teamId` | Próg i `disabled` istnieją raz, więc bramka tworzenia i edycji nie mogą się rozjechać. |
+| Komunikaty odrzucenia | Stałe `BELOW_THRESHOLD_MESSAGE` / `INVALID_PAYLOAD_MESSAGE` w `team-submission` | Tekst FR-018 stał już w dwóch miejscach; trasa edycji dołożyłaby trzecie — jeden eksport zamiast trzech literałów. |
+| Trzeci przełącznik trybu odczytu | `handlers` wymagany w `RosterSlot` | Sam `readOnly` to nie cała para: opcjonalność `handlers?` zostawiałaby martwe gałęzie i nieprawdziwy docstring. |
 | Niezmienność nazwy (FR-011) | Kolumnowy `grant update (composition)` | Baza odmawia zapisu każdej innej kolumny — jedna linijka DDL w stylu obrony w głąb, który migracje już stosują. |
 | Porzucenie zmian | Brak przycisku „Discard" | Skład żyje wyłącznie w pamięci wyspy, więc wyjście ze strony już przywraca stan zapisany. |
-| Follow-up F7 | Wydzielić `src/lib/team-composition.ts` teraz | Martwy punkt policzony: **jeden** importer, więc refaktor to jedna funkcja i jedna linia importu. |
+| Follow-up F7 | **Odroczony** — `team-composition.ts` nie powstaje w tym fragmencie | Trasa edycji bierze `gateTeamSubmission`, nie kształt, więc trzeci konsument nie powstaje; refaktor równie tani później (przegląd planu, F4). |
 | Testy | Regresja „próg działa w obie strony" | Główne ryzyko S-05 z roadmapy dostaje wykonywalny dowód w CI zamiast komentarza. |
 
 ## Zakres
 
-**W zakresie:** migracja z polityką `update` i kolumnowym przywilejem; `updateTeam` w repo; wydzielenie
-`team-composition.ts`; trasa `POST /api/teams/[id]`; test regresyjny progu edycji; `CompositionGate`;
-usunięcie `readOnly` z `TeamComposer`; hydratacja i stany `?saved=1` / `?error=` na `/teams/[id]`.
+**W zakresie:** migracja z polityką `update` i kolumnowym przywilejem; `updateTeam` w repo;
+komunikaty odrzucenia jako stałe w `team-submission`; trasa `POST /api/teams/[id]`; test regresyjny
+progu edycji; `CompositionGate`; usunięcie `readOnly` z `TeamComposer`; `handlers` wymagany
+w `RosterSlot`; hydratacja i stany `?saved=1` / `?error=` na `/teams/[id]`.
 
-**Poza zakresem:** edycja nazwy drużyny; wersje robocze; obsługa równoległej edycji w dwóch kartach
+**Poza zakresem:** wydzielenie `src/lib/team-composition.ts` (follow-up F7 — odroczony); edycja nazwy drużyny; wersje robocze; obsługa równoległej edycji w dwóch kartach
 (wygrywa ostatni zapis); przycisk „Discard" i `beforeunload`; blokowanie zapisu przy braku zmian;
 usuwanie drużyny (S-06, bez polityki `delete`); rozstrzygnięcie 404-vs-redirect dla cudzej drużyny
 (S-07); testy komponentów React.
@@ -55,6 +58,7 @@ usuwanie drużyny (S-06, bez polityki `delete`); rozstrzygnięcie 404-vs-redirec
 
 ```
 /teams/[id].astro  ──(client:load)──►  TeamComposer(teamId)  ──►  CompositionGate(teamId)
+       │                               └─► RosterSlot(handlers)      │
        │                                       │                          │ POST (natywny formularz)
        │ getTeamDetail + getCharacterPool      │ evaluateTeam             ▼
        │ resolveSavedTeam (bramka spójności)   │ (blokada przycisku)   /api/teams/[id].ts
@@ -72,14 +76,14 @@ są niereprezentowalne. Próg jest liczony w jednym miejscu dla obu kierunków.
 
 | Faza | Co dostarcza | Kluczowe ryzyko |
 | --- | --- | --- |
-| 1. Baza i warstwa danych | Migracja `update`, `updateTeam`, wydzielony `team-composition.ts` | Sam `using` bez `with check` przepuściłby przepisanie wiersza na cudze konto |
-| 2. Trasa zapisu zmian | `POST /api/teams/[id]` + test regresyjny progu | Trasa z własną kopią reguły przepuściłaby edycję poniżej progu — Guardrail tylnymi drzwiami |
-| 3. Ekran edycji | `CompositionGate`, `TeamComposer` bez `readOnly`, hydratacja `/teams/[id]` | Rozbicie fazy na commity daje awarię cichą, której nie łapie lint, typy ani testy |
+| 1. Baza i warstwa danych | Migracja `update`, `updateTeam` | Sam `using` bez `with check` przepuściłby przepisanie wiersza na cudze konto; klucz `sb_secret_` w produkcji ominąłby całą politykę |
+| 2. Trasa zapisu zmian | Stałe komunikatów, `POST /api/teams/[id]` + test regresyjny progu | Trasa z własną kopią reguły przepuściłaby edycję poniżej progu — Guardrail tylnymi drzwiami |
+| 3. Ekran edycji | `CompositionGate`, `TeamComposer` bez `readOnly`, `RosterSlot` bez opcjonalnych akcji, hydratacja `/teams/[id]` | Rozbicie fazy na commity daje awarię cichą, której nie łapie lint, typy ani testy |
 
 **Wymagania wstępne:** S-04 zarchiwizowane; projekt Supabase zlinkowany (dla `supabase db push`);
 konto testowe z co najmniej jedną zapisaną drużyną, a drugie konto do sprawdzenia izolacji.
 
-**Szacowany wysiłek:** ~2 sesje w 3 fazach; fazy 1 i 2 są małe, faza 3 musi wejść w całości naraz.
+**Szacowany wysiłek:** ~2 sesje w 3 fazach; fazy 1 i 2 są małe, faza 3 musi wejść w całości naraz — **cztery pliki, jeden commit**.
 
 ## Otwarte ryzyka i założenia
 
@@ -90,10 +94,13 @@ konto testowe z co najmniej jedną zapisaną drużyną, a drugie konto do sprawd
   przełącznik rozłożony na trzy pliki (`context/foundation/lessons.md`).
 - **Kolumnowy `grant update` daje mało czytelny błąd Postgresa** przy próbie zapisu innej kolumny,
   więc log w `updateTeam` musi nieść oryginalny `error.message`.
-- **Założenie odziedziczone z S-04 (F8, nadal otwarte):** produkcyjny `SUPABASE_KEY` jest kluczem
-  anon, nie `service_role`. Ten fragment **zwiększa stawkę** — `service_role` omijałby także nową
-  politykę `update`, więc POST na cudze id faktycznie zmieniłby cudzy wiersz. Kontrola pozostaje
-  przypisana do S-07; jeśli ma być przesunięta, to tutaj.
+- **Założenie odziedziczone z S-04 (F8) — przesunięte tutaj i zamienione na kryterium.** Projekt
+  używa nowego systemu kluczy Supabase: **publishable** (`sb_publishable_`, następca `anon` — RLS
+  obowiązuje) i **secret** (`sb_secret_`, następca `service_role` — RLS omijane). Ten fragment
+  **zwiększa stawkę**: klucz secret ominąłby także nową politykę `update`, więc POST na cudze id
+  faktycznie zmieniłby cudzy wiersz. Lokalny `.env` zweryfikowany 2026-09-06 (`sb_publishable_`);
+  sekret produkcyjny sprawdza **kryterium ręczne 1.8**, zanim faza 2 wypuści trasę zapisu.
+  Pełna kontrola ścieżek pozostaje przypisana do S-07.
 - **Zapis nietkniętego składu jest dozwolony** (przycisk aktywny bez zmian) — przyjęte świadomie
   jako no-op zamiast wprowadzania stanu „czy coś się zmieniło".
 
