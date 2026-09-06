@@ -112,13 +112,16 @@ Kolejność jest wymuszona: Faza 2 importuje helper z Fazy 1.
 
 ## Krytyczne szczegóły implementacji
 
-- **Debugowanie i obserwowalność.** Kryterium 2.2 zlicza wystąpienia literału
-  `violations.length === 0` w `TeamComposer.tsx` po odsianiu linii komentarza i wymaga dokładnie
-  jednego. W tym repozytorium trzy kryteria grepowe już raz trafiły we własną prozę
-  (`lessons.md` §„Kryteria grepowe kotwicz na składni"), a plik, o którym mowa, jest gęsto
-  komentowany po polsku i **opisuje tę umowę słowami**. Dlatego: komentarz dokumentujący gałąź ma
-  nazywać warunek prozą („przy pustym `violations`"), a **nie** powtarzać wyrażenia w postaci
-  kodu. Kryterium biegnie po surowym pliku i nie odróżni jednego od drugiego.
+- **Debugowanie i obserwowalność.** Kryterium 2.2 liczy gałęzie egzekwujące umowę w
+  `TeamComposer.tsx` i wymaga dokładnie jednej. Kotwiczy się na **składni otwarcia gałęzi JSX**
+  (`^\s*\{evaluation\.violations\.length === 0 \?`), a nie na słowach — zgodnie z `lessons.md`
+  §„Kryteria grepowe kotwicz na składni, nie na słowach": odsiew komentarzy jest wyjściem
+  awaryjnym na wypadek braku kotwicy, a tutaj kotwica istnieje i proza komentarza nie może jej
+  przypadkiem napisać. Filtr komentarzy byłby tu w dodatku dziurawy: blok `{/* … */}` w tym pliku
+  ma linie kontynuacji bez żadnego znacznika (`TeamComposer.tsx:123-125`), więc `^\s*(//|\*|/\*|\{/\*)`
+  ich nie odsiewa. Niezależnie od kotwicy komentarz dokumentujący gałąź ma nazywać warunek prozą
+  („przy pustym `violations`"), a nie powtarzać wyrażenia w postaci kodu — plik jest gęsto
+  komentowany po polsku i **opisuje tę umowę słowami**.
 
 ---
 
@@ -143,11 +146,19 @@ Mieszka w `src/lib/`, a nie w `src/lib/domain/`, bo kolejność wierszy listy je
 prezentacyjną, nie regułą domenową; dokładnie ta granica dzieli `radar-geometry.ts` od
 `evaluate-team.ts`.
 
-**Umowa**: eksportuje typ wiersza (`competency: Competency`, `missing: number`) oraz funkcję
-przyjmującą `Readonly<Record<Competency, number>>` i zwracającą `readonly` listę wierszy.
-Zawiera wyłącznie pozycje o dodatniej liczbie braków, w kolejności `COMPETENCIES`
-z `@/lib/domain` — tej samej tablicy, którą `CompetencyRadar.tsx:21` podaje do `radarLayout`,
-więc lista i osie wykresu nie mogą się rozjechać. Funkcja jest czysta: nie mutuje wejścia.
+**Umowa**: eksportuje typ wiersza `MissingRow` (`competency: Competency`, `missing: number`)
+oraz **dwie** czyste funkcje.
+
+1. **Wybór i kolejność** — `missingCompetencies(missing)` → `readonly MissingRow[]`, gdzie wejście
+   jest typu `Readonly<Record<Competency, number>>`. Zawiera wyłącznie pozycje o dodatniej liczbie
+   braków, w kolejności `COMPETENCIES` z `@/lib/domain` — tej samej tablicy, którą `CompetencyRadar.tsx:21` podaje do `radarLayout`,
+   więc lista i osie wykresu nie mogą się rozjechać. Nie mutuje wejścia.
+2. **Etykieta wiersza** — `pointsShortLabel(missing: number) → string`: napis z **poprawną
+   liczbą gramatyczną**, `1` → „1 point short", każda inna → „N points short". Mieszka tu, a nie
+   w komponencie, bo to trzecia reguła tego fragmentu i jedyna, która inaczej zostałaby bez
+   dowodu w CI (repozytorium nie ma testów komponentów React). Precedens na napis interfejsu
+   w `src/lib/`: `BELOW_THRESHOLD_MESSAGE` w `src/lib/team-submission.ts:40`.
+
 Moduł nie importuje niczego spoza `@/lib/domain` — w szczególności żadnego `astro:*`
 ani `@/lib/supabase` (AGENTS.md → Hard rules: testy nie bootstrapują Astro ani Supabase).
 
@@ -155,8 +166,8 @@ ani `@/lib/supabase` (AGENTS.md → Hard rules: testy nie bootstrapują Astro an
 
 **Plik**: `src/lib/missing-competencies.test.ts` (nowy)
 
-**Cel**: Związać obie własności wykonywalnym dowodem, żeby regresja w odsiewie lub w kolejności
-czerwieniła CI zamiast czekać na weryfikację ręczną.
+**Cel**: Związać wszystkie trzy własności wykonywalnym dowodem, żeby regresja w odsiewie,
+w kolejności lub w liczbie gramatycznej czerwieniła CI zamiast czekać na weryfikację ręczną.
 
 **Umowa**: konwencja repozytorium bez odstępstw — `import { describe, expect, it } from "vitest";`
 w pierwszej linii, blok JSDoc pod importami nazywający wiązaną własność i cytujący FR-017,
@@ -173,7 +184,10 @@ budowania wejść. Zakres przypadków:
    kolejności osi, nadal wychodzi w kolejności osi;
 5. wartości niedodatnie (0 i wartość ujemna) nie trafiają na listę;
 6. funkcja nie mutuje przekazanego rekordu (`JSON.stringify` przed i po, wzorem
-   `evaluate-team.test.ts:179`).
+   `evaluate-team.test.ts:179`);
+7. etykieta przy jednym brakującym punkcie jest w liczbie pojedynczej — dokładnie „1 point short";
+8. etykieta przy większej liczbie jest w liczbie mnogiej — „2 points short" (literał z pustego
+   składu: próg PRD to 2 punkty).
 
 ### Kryteria sukcesu:
 
@@ -182,12 +196,14 @@ budowania wejść. Zakres przypadków:
 - `npx astro sync` przechodzi, a po nim `npm run lint` (Node 22.14.0 — najpierw `nvm use`
   i `hash -r`)
 - Cały zestaw przechodzi: `npm test`
-- Nowy plik biegnie i ma co najmniej sześć przypadków:
+- Nowy plik biegnie i ma co najmniej osiem przypadków:
   `npx vitest run src/lib/missing-competencies.test.ts`
 - **Kontrola mutacyjna A (kolejność)**: odwrócenie kolejności iteracji w helperze czerwieni
   przypadki 2 i 4; mutacja cofnięta, `npm test` znów zielony
 - **Kontrola mutacyjna B (odsiew)**: zamiana warunku „braki dodatnie" na „braki nieujemne"
   czerwieni przypadki 1, 3 i 5; mutacja cofnięta, `npm test` znów zielony
+- **Kontrola mutacyjna C (liczba gramatyczna)**: usunięcie gałęzi liczby pojedynczej (zawsze
+  „points short") czerwieni przypadek 7; mutacja cofnięta, `npm test` znów zielony
 - Helper nie sięga po runtime Astro ani Supabase:
   `! grep -nE '^\s*import .* from "(astro:|@/lib/supabase)' src/lib/missing-competencies.ts`
 - Domena nietknięta: `git diff --quiet f11ba86 -- src/lib/domain/`
@@ -222,19 +238,21 @@ a nie w dwóch kopiach warunku, które mogą się rozjechać bez sygnału z lint
 **Cel**: Nazwać luki, które wykres tylko pokazuje kształtem — czytelność łamigłówki dla persony
 recenzenta wchodzącej bez tutoriala (FR-017, `## Success Criteria` → Secondary).
 
-**Umowa**: eksport nazwany (jak `CompetencyRadar` i `CompositionGate`; domyślne eksporty są
-w tym repozytorium zarezerwowane dla wysp). Jeden prop: `Readonly<Record<Competency, number>>`
-— komponent nie dostaje całego `TeamEvaluation`, bo nie ma prawa czytać niczego więcej.
-Bezstanowy, bez efektów, cała logika przychodzi z helpera Fazy 1.
+**Umowa**: eksport nazwany `MissingPointsList` (jak `CompetencyRadar` i `CompositionGate`;
+domyślne eksporty są w tym repozytorium zarezerwowane dla wysp). Jeden prop:
+`missing: Readonly<Record<Competency, number>>` — komponent nie dostaje całego `TeamEvaluation`,
+bo nie ma prawa czytać niczego więcej. Bezstanowy, bez efektów, cała logika przychodzi
+z `missingCompetencies` i `pointsShortLabel` (Faza 1).
 
-Zwraca `null`, gdy lista jest pusta — decyzja „przy domknięciu licznik znika całkowicie":
+Zwraca `null`, gdy `missingCompetencies` zwróci pustą listę — decyzja „przy domknięciu licznik znika całkowicie":
 bramka mówi wtedy „All seven competencies are covered." i drugi komunikat sukcesu byłby
 duplikatem.
 
 Renderuje etykietę sekcji i `<ul>` wierszy. Każdy wiersz: nazwa kompetencji stylem z `RosterSlot`
-(`text-xs tracking-wide uppercase`, akcent purpurowy) oraz liczba brakujących punktów z **poprawną
-liczbą gramatyczną** — „1 point short" przy jednym, „N points short" przy większej liczbie.
-Paleta cosmic literałami klas Tailwind, `cn()` wyłącznie tam, gdzie coś jest warunkowe.
+(`text-xs tracking-wide uppercase`, akcent purpurowy) oraz napis z `pointsShortLabel` **wzięty wprost
+z helpera Fazy 1** — komponent nie rozgałęzia się na liczbie gramatycznej sam, bo ta gałąź
+ma dowód w `npm test`, a nie w oglądaniu ekranu. Paleta cosmic literałami klas Tailwind, `cn()`
+wyłącznie tam, gdzie coś jest warunkowe.
 
 #### 2. Wspólna gałąź w wyspie
 
@@ -254,7 +272,9 @@ cannot be shown"), bo warunek chroni teraz dwa elementy — przeformułować tak
 
 Komentarz nad gałęzią zostaje i zyskuje zdanie o tym, że warunek jest **jeden dla obu
 konsumentów**. Ma opisywać warunek prozą („przy pustym `violations`") i **nie** powtarzać wyrażenia
-w postaci kodu — patrz „Krytyczne szczegóły implementacji"; kryterium 2.2 biegnie po surowym pliku.
+w postaci kodu — patrz „Krytyczne szczegóły implementacji". Kryterium 2.2 kotwiczy się na składni
+otwarcia gałęzi JSX, więc proza go nie przewróci; dyscyplina komentarza zostaje jako druga
+warstwa, nie jako jedyna ochrona.
 
 Poza tym plik się nie zmienia: żadnego nowego propa, żadnego nowego stanu, żadnego `useMemo`
 (react-compiler; koszt to filtr nad siedmioma liczbami, NFR 200 ms z zapasem).
@@ -279,8 +299,9 @@ S-08 zmienia `/10x-implement` (`in-progress`) i `/10x-archive` (`done`) — ta f
 
 - Pełny łańcuch CI lokalnie, w kolejności z AGENTS.md:
   `npx astro sync && npm run lint && npm test && npm run build`
-- **Dokładnie jedna** gałąź egzekwująca umowę w wyspie — komenda musi wypisać `1`:
-  `grep -vE '^\s*(//|\*|/\*|\{/\*)' src/components/team/TeamComposer.tsx | grep -c 'violations\.length === 0'`
+- **Dokładnie jedna** gałąź egzekwująca umowę w wyspie — kotwica na składni otwarcia gałęzi JSX,
+  której proza komentarza napisać nie może; komenda musi wypisać `1`:
+  `grep -cE '^\s*\{evaluation\.violations\.length === 0 \?' src/components/team/TeamComposer.tsx`
 - Bramka nietknięta: `git diff --quiet f11ba86 -- src/components/team/CompositionGate.tsx`
 - Domena, wykres i geometria nietknięte:
   `git diff --quiet f11ba86 -- src/lib/domain/ src/components/team/CompetencyRadar.tsx src/lib/radar-geometry.ts`
@@ -290,6 +311,9 @@ S-08 zmienia `/10x-implement` (`in-progress`) i `/10x-archive` (`done`) — ta f
 - Bez nowych zależności: `git diff --quiet f11ba86 -- package.json package-lock.json`
 - Otwarte pytanie nr 1 domknięte — komenda musi zwrócić linię:
   `grep -n '~~\*\*Czy S-08' context/foundation/roadmap.md`
+- Komunikat gałęzi awaryjnej faktycznie przeformułowany — stary literał zniknął (gałąź jest
+  nieosiągalna z interfejsu, więc żaden krok ręczny jej nie zobaczy):
+  `! grep -F 'so the chart cannot be shown' src/components/team/TeamComposer.tsx`
 
 #### Ręczna weryfikacja:
 
@@ -317,13 +341,14 @@ potwierdzenie człowieka przed zamknięciem fragmentu.
 
 ### Testy jednostkowe:
 
-- `src/lib/missing-competencies.test.ts` — wybór wierszy (tylko braki dodatnie) i ich kolejność
-  (kolejność osi wykresu, niezależna od wielkości luk), czystość funkcji.
+- `src/lib/missing-competencies.test.ts` — wybór wierszy (tylko braki dodatnie), ich kolejność
+  (kolejność osi wykresu, niezależna od wielkości luk), czystość funkcji oraz liczba gramatyczna
+  etykiety („1 point short" / „N points short").
 - Przypadki brzegowe: same zera (lista pusta), komplet siedmiu braków (stan początkowy
   `/teams/new`), dokładnie jeden brak jednopunktowy (liczba pojedyncza w interfejsie), wartości
   niedodatnie.
-- Kontrola mutacyjna obu własności jest częścią kryteriów Fazy 1 — asercja bez kontroli mutacyjnej
-  jest dekoracją (`lessons.md` §„Strażnik grepowy…").
+- Kontrola mutacyjna wszystkich trzech własności jest częścią kryteriów Fazy 1 — asercja bez
+  kontroli mutacyjnej jest dekoracją (`lessons.md` §„Strażnik grepowy…").
 
 ### Testy integracyjne:
 
@@ -382,36 +407,38 @@ trwałego do przeniesienia, więc nie ma też czego wycofywać poza samym kodem.
 
 - [ ] 1.1 `npx astro sync` i `npm run lint` przechodzą
 - [ ] 1.2 `npm test` przechodzi
-- [ ] 1.3 `npx vitest run src/lib/missing-competencies.test.ts` — co najmniej sześć przypadków
+- [ ] 1.3 `npx vitest run src/lib/missing-competencies.test.ts` — co najmniej osiem przypadków
 - [ ] 1.4 Kontrola mutacyjna A: odwrócona kolejność czerwieni przypadki 2 i 4, mutacja cofnięta
 - [ ] 1.5 Kontrola mutacyjna B: warunek nieujemny czerwieni przypadki 1, 3 i 5, mutacja cofnięta
-- [ ] 1.6 Helper bez runtime'u Astro i Supabase (grep zakotwiczony na `^\s*import … from`)
-- [ ] 1.7 `git diff --quiet f11ba86 -- src/lib/domain/`
-- [ ] 1.8 `git diff --quiet f11ba86 -- package.json package-lock.json`
+- [ ] 1.6 Kontrola mutacyjna C: brak gałęzi liczby pojedynczej czerwieni przypadek 7, mutacja cofnięta
+- [ ] 1.7 Helper bez runtime'u Astro i Supabase (grep zakotwiczony na `^\s*import … from`)
+- [ ] 1.8 `git diff --quiet f11ba86 -- src/lib/domain/`
+- [ ] 1.9 `git diff --quiet f11ba86 -- package.json package-lock.json`
 
 #### Ręczne
 
-- [ ] 1.9 Nazwy przypadków nazywają własność, nie implementację
-- [ ] 1.10 Asercje na literałach z PRD, nie na importowanych stałych
+- [ ] 1.10 Nazwy przypadków nazywają własność, nie implementację
+- [ ] 1.11 Asercje na literałach z PRD, nie na importowanych stałych
 
 ### Faza 2: Lista przy wykresie i wspólna gałąź umowy
 
 #### Automatyczne
 
 - [ ] 2.1 `npx astro sync && npm run lint && npm test && npm run build`
-- [ ] 2.2 Dokładnie jedna gałąź `violations.length === 0` w `TeamComposer.tsx` (grep po odsianiu komentarzy wypisuje `1`)
+- [ ] 2.2 Dokładnie jedna gałąź otwierająca `{evaluation.violations.length === 0 ?` w `TeamComposer.tsx` (grep zakotwiczony na składni JSX wypisuje `1`)
 - [ ] 2.3 `git diff --quiet f11ba86 -- src/components/team/CompositionGate.tsx`
 - [ ] 2.4 `git diff --quiet f11ba86 -- src/lib/domain/ src/components/team/CompetencyRadar.tsx src/lib/radar-geometry.ts`
 - [ ] 2.5 `git diff --quiet f11ba86 -- src/pages/teams/new.astro ':(literal)src/pages/teams/[id].astro'`
 - [ ] 2.6 `git diff --quiet f11ba86 -- package.json package-lock.json`
 - [ ] 2.7 `grep -n '~~\*\*Czy S-08' context/foundation/roadmap.md` zwraca linię
+- [ ] 2.8 Komunikat gałęzi awaryjnej przeformułowany: `! grep -F 'so the chart cannot be shown' src/components/team/TeamComposer.tsx`
 
 #### Ręczne
 
-- [ ] 2.8 Pusty skład: siedem wierszy „2 points short" w kolejności osi wykresu
-- [ ] 2.9 Dodanie postaci usuwa wiersz jej specjalizacji natychmiast
-- [ ] 2.10 Jeden brakujący punkt daje „1 point short" (liczba pojedyncza)
-- [ ] 2.11 Domknięcie progu usuwa listę w całości; zdjęcie perka ją przywraca i blokuje przycisk
-- [ ] 2.12 Komunikat FR-018 pod przyciskiem niezmieniony i widoczny niezależnie od listy
-- [ ] 2.13 `/teams/[id]`: brak listy na zapisanej drużynie; usunięcie członka pokazuje ją i blokuje „Save changes"
-- [ ] 2.14 Siedem wierszy nie rozpycha układu ani nie przewija poziomo
+- [ ] 2.9 Pusty skład: siedem wierszy „2 points short" w kolejności osi wykresu
+- [ ] 2.10 Dodanie postaci usuwa wiersz jej specjalizacji natychmiast
+- [ ] 2.11 Jeden brakujący punkt daje „1 point short" (liczba pojedyncza)
+- [ ] 2.12 Domknięcie progu usuwa listę w całości; zdjęcie perka ją przywraca i blokuje przycisk
+- [ ] 2.13 Komunikat FR-018 pod przyciskiem niezmieniony i widoczny niezależnie od listy
+- [ ] 2.14 `/teams/[id]`: brak listy na zapisanej drużynie; usunięcie członka pokazuje ją i blokuje „Save changes"
+- [ ] 2.15 Siedem wierszy nie rozpycha układu ani nie przewija poziomo

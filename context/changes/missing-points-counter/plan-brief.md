@@ -37,7 +37,8 @@ i `/teams/[id]`, bez jednego nowego propa i bez tknięcia bramki zapisu.
 
 ## Zakres
 
-**W zakresie:** `src/lib/missing-competencies.ts` + test z kontrolą mutacyjną obu własności;
+**W zakresie:** `src/lib/missing-competencies.ts` (`missingCompetencies` i `pointsShortLabel`)
+wraz z testem i kontrolą mutacyjną wszystkich trzech własności;
 `MissingPointsList` w `src/components/team/`; przebudowa istniejącej gałęzi warunkowej
 w `TeamComposer` na wspólną dla wykresu i listy; przeformułowanie komunikatu awaryjnego tej
 gałęzi; domknięcie otwartego pytania nr 1 mapy drogowej.
@@ -68,7 +69,7 @@ limitu i bramka nie ma prawa zniknąć.
 
 | Faza | Co dostarcza | Kluczowe ryzyko |
 | --- | --- | --- |
-| 1. Czysty wybór wierszy | Helper `missingCompetencies` + test wiążący odsiew i kolejność, z dwiema kontrolami mutacyjnymi | Asercja kolejności przez importowaną stałą byłaby tautologią — musi kotwiczyć na literalnej liście siedmiu nazw |
+| 1. Czysty wybór wierszy | Helper `missingCompetencies` + `pointsShortLabel` i test wiążący odsiew, kolejność i liczbę gramatyczną, z trzema kontrolami mutacyjnymi | Asercja kolejności przez importowaną stałą byłaby tautologią — musi kotwiczyć na literalnej liście siedmiu nazw |
 | 2. Lista przy wykresie | `MissingPointsList`, wspólna gałąź `violations`, przeformułowany komunikat awaryjny, domknięcie pytania mapy | Kryterium grepowe zliczające gałąź biegnie po gęsto komentowanym pliku — komentarz nie może powtórzyć wyrażenia w postaci kodu |
 
 **Wymagania wstępne:** S-02 zarchiwizowane (jest); Node 22.14.0 (`nvm use && hash -r`);
@@ -80,11 +81,14 @@ linii w wyspie.
 
 - Założenie: `<>…</>` wewnątrz `<aside className="flex flex-col gap-4">` nie tworzy węzła DOM,
   więc odstęp między wykresem, listą i bramką pozostaje bez zmian. Sprawdzalne wzrokiem
-  w kroku ręcznym 2.14.
+  w kroku ręcznym 2.15.
 - Ryzyko: lista pojawiająca się i znikająca przesuwa bramkę w pionie. Przyjęte świadomie —
   alternatywa (stała wysokość z komunikatem sukcesu) powiela tekst bramki.
-- Ryzyko: kryterium 2.2 może trafić we własną prozę, jak trzy kryteria w S-06. Domknięte umową:
-  komentarz opisuje warunek słowami, nie kodem, a kryterium ma odsiew linii komentarza.
+- Ryzyko: kryterium 2.2 może trafić we własną prozę, jak trzy kryteria w S-06. Domknięte kotwicą
+  na składni otwarcia gałęzi JSX (`^\s*\{evaluation\.violations\.length === 0 \?`), której proza
+  napisać nie może; dyscyplina komentarza (warunek słowami, nie kodem) zostaje jako druga warstwa.
+  Odsiew linii komentarza byłby tu dziurawy — blok `{/* … */}` w tym pliku ma linie kontynuacji
+  bez znacznika.
 - Założenie: żaden przegląd nie zażąda testu komponentu React — repozytorium nie ma jsdom,
   a strategia testowania to Moduł 3.
 
@@ -94,5 +98,5 @@ linii w wyspie.
   i obserwuje, jak lista topnieje do zera przy każdym kliknięciu (FR-017).
 - Ta sama lista działa przy edycji zapisanej drużyny, a zablokowany przycisk nadal nosi ten sam
   ogólny komunikat co przed zmianą (FR-018 niezależny od FR-017).
-- `npm test` dowodzi odsiewu i kolejności wierszy poza przeglądarką, z kontrolą mutacyjną obu
-  własności; `git diff` pokazuje zero zmian w domenie, wykresie, bramce, stronach i `package.json`.
+- `npm test` dowodzi odsiewu, kolejności wierszy i liczby gramatycznej etykiety poza przeglądarką,
+  z kontrolą mutacyjną wszystkich trzech własności; `git diff` pokazuje zero zmian w domenie, wykresie, bramce, stronach i `package.json`.
