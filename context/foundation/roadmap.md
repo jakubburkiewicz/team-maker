@@ -65,7 +65,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | done        |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | done        |
 | S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | done        |
-| S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | proposed |
+| S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | planning |
 | S-08 | `missing-points-counter`           | zobaczyć, ilu punktów brakuje w każdej kompetencji poniżej progu          | S-02              | FR-017                                           | proposed |
 
 ## Strumienie
@@ -317,7 +317,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   **Punkt kontrolny z S-03 (2026-09-05):** `/teams/[id]/embark` zwraca gołe 404 dla nieznanego
   i cudzego id — prowizorycznie, bez rozróżnienia; S-07 rozstrzyga docelowo (404 vs redirect na
   listę) i dokłada nawigację.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-08: Gracz widzi listę brakujących punktów
 
