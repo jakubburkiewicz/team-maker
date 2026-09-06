@@ -536,44 +536,44 @@ produkcji gracze mogą trwale kasować własne rekordy.
 
 #### Automatyczne
 
-- [x] 1.1 `npx astro sync && npm run lint` przechodzi
-- [x] 1.2 `npm test` przechodzi (w tym przepisany `teams-policy-sql.test.ts`)
-- [x] 1.3 `npm run build` przechodzi
-- [x] 1.4 Migracja nadaje politykę `for delete` oraz `grant delete on public.teams to authenticated`
-- [x] 1.5 Polityka delete nie ma `with check`
-- [x] 1.6 Repo nadal nie filtruje po `user_id`
-- [x] 1.7 Repo nadal nie importuje `astro:*` ani `@/lib/supabase`
-- [x] 1.8 Nieaktualna granica zakresu „to S-06" zniknęła z testu SQL
-- [x] 1.9 Żaden przywilej usuwania nie wyciekł poza tabelowy `delete` (brak `grant all`, brak `truncate`)
-- [x] 1.10 Żadna trasa ani komponent nie woła jeszcze `deleteTeam`
+- [x] 1.1 `npx astro sync && npm run lint` przechodzi — 97f14d3
+- [x] 1.2 `npm test` przechodzi (w tym przepisany `teams-policy-sql.test.ts`) — 97f14d3
+- [x] 1.3 `npm run build` przechodzi — 97f14d3
+- [x] 1.4 Migracja nadaje politykę `for delete` oraz `grant delete on public.teams to authenticated` — 97f14d3
+- [x] 1.5 Polityka delete nie ma `with check` — 97f14d3
+- [x] 1.6 Repo nadal nie filtruje po `user_id` — 97f14d3
+- [x] 1.7 Repo nadal nie importuje `astro:*` ani `@/lib/supabase` — 97f14d3
+- [x] 1.8 Nieaktualna granica zakresu „to S-06" zniknęła z testu SQL — 97f14d3
+- [x] 1.9 Żaden przywilej usuwania nie wyciekł poza tabelowy `delete` (brak `grant all`, brak `truncate`) — 97f14d3
+- [x] 1.10 Żadna trasa ani komponent nie woła jeszcze `deleteTeam` — 97f14d3
 
 #### Ręczne
 
-- [x] 1.11 `supabase db push` stosuje migrację bez błędu
-- [x] 1.12 Panel Supabase pokazuje na `public.teams` dokładnie cztery polityki
-- [x] 1.13 Warunek stały przed Fazą 2: produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`
+- [x] 1.11 `supabase db push` stosuje migrację bez błędu — 97f14d3
+- [x] 1.12 Panel Supabase pokazuje na `public.teams` dokładnie cztery polityki — 97f14d3
+- [x] 1.13 Warunek stały przed Fazą 2: produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_` — 97f14d3
 
 ### Faza 2: Trasa usuwania
 
 #### Automatyczne
 
-- [ ] 2.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 2.2 `npm test` przechodzi
-- [ ] 2.3 `npm run build` przechodzi
-- [ ] 2.4 Zero JSON w odpowiedziach trasy
-- [ ] 2.5 Każdy `return` w trasie to `context.redirect`
-- [ ] 2.6 Trasa nie zna bramki progu, składu ani `formData`
-- [ ] 2.7 `reject(DELETE_FAILED_MESSAGE)` występuje dokładnie 2× (obie gałęzie odmowy, jeden tekst)
-- [ ] 2.8 Cel przekierowania sukcesu to dokładnie `"/teams?deleted=1"`
-- [ ] 2.9 `src/middleware.ts` nietknięty
-- [ ] 2.10 Żaden komponent nie woła jeszcze trasy usuwania
+- [x] 2.1 `npx astro sync && npm run lint` przechodzi
+- [x] 2.2 `npm test` przechodzi
+- [x] 2.3 `npm run build` przechodzi
+- [x] 2.4 Zero JSON w odpowiedziach trasy
+- [x] 2.5 Każdy `return` w trasie to `context.redirect`
+- [x] 2.6 Trasa nie zna bramki progu, składu ani `formData`
+- [x] 2.7 `reject(DELETE_FAILED_MESSAGE)` występuje dokładnie 2× (obie gałęzie odmowy, jeden tekst)
+- [x] 2.8 Cel przekierowania sukcesu to dokładnie `"/teams?deleted=1"`
+- [x] 2.9 `src/middleware.ts` nietknięty
+- [x] 2.10 Żaden komponent nie woła jeszcze trasy usuwania
 
 #### Ręczne
 
-- [ ] 2.11 POST na własne id → 302 na `/teams?deleted=1`, wiersz znika z listy
-- [ ] 2.12 POST na id drugiego konta → 302 na `?error=`, strona docelowa to puste 404, drużyna drugiego konta nietknięta (US-04)
-- [ ] 2.13 POST na id niebędące UUID → ten sam komunikat, bez 500 i bez `22P02` w logach
-- [ ] 2.14 POST bez ciasteczka sesji → przekierowanie na `/auth/signin`
+- [x] 2.11 POST na własne id → 302 na `/teams?deleted=1`, wiersz znika z listy
+- [x] 2.12 POST na id drugiego konta → 302 na `?error=`, strona docelowa to puste 404, drużyna drugiego konta nietknięta (US-04)
+- [x] 2.13 POST na id niebędące UUID → ten sam komunikat, bez 500 i bez `22P02` w logach
+- [x] 2.14 POST bez ciasteczka sesji → przekierowanie na `/auth/signin`
 
 ### Faza 3: Ekran
 
