@@ -30,7 +30,7 @@ Baseline layout: @README.md. What it omits — shadcn primitives sit in `src/com
 - Use React only where interactivity is needed, hydrated from `.astro` with `client:load`. Forms POST natively to `src/pages/api/`.
 - PascalCase for Astro and React components; shadcn primitives stay lowercase (`ui/button.tsx`). Add them with `npx shadcn@latest add <name>` ("new-york" style).
 - Merge Tailwind classes with `cn()` from `@/lib/utils`; do not concatenate class strings.
-- Protect a route by adding its path to `PROTECTED_ROUTES` in `src/middleware.ts`.
+- Protect a route by adding its path to `isProtectedRoute()` in `src/lib/routes.ts` — an **exact** entry (matched by equality, which is how `/` is protected without swallowing `/auth/signin`) or a **prefix** entry (matched on a segment boundary, covering subroutes). `src/middleware.ts` enforces it.
 - Data modules in `src/lib/` (e.g. `character-pool-repo.ts`) take the Supabase client as an argument and **throw** `Error` on query failure or impossible state (empty pool) — they never swallow. Callers in pages and API routes must catch and map to `?error=` or a page state; an uncaught throw in the Worker is a 500.
 - Prefix deliberately unused variables with `_`; `no-console` is a lint warning. Formatting is enforced by @.prettierrc.json via eslint-plugin-prettier.
 - Node 22.14.0 (`.nvmrc`).

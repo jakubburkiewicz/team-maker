@@ -524,43 +524,43 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 #### Automatyczne
 
-- [x] 2.1 Pliki nie istnieją: `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro`
-- [x] 2.2 Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro`
-- [x] 2.3 Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro`
-- [x] 2.4 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
-- [x] 2.5 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
-- [x] 2.6 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts`
-- [x] 2.7 Testy przechodzą: `npm test`
-- [x] 2.8 Linting przechodzi: `npm run lint`
-- [x] 2.9 Build przechodzi: `npm run build`
+- [x] 2.1 Pliki nie istnieją: `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro` — a0bcc0f
+- [x] 2.2 Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro` — de10a69
+- [x] 2.3 Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro` — de10a69
+- [x] 2.4 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro` — de10a69
+- [x] 2.5 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts` — de10a69
+- [x] 2.6 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts` — de10a69
+- [x] 2.7 Testy przechodzą: `npm test` — de10a69
+- [x] 2.8 Linting przechodzi: `npm run lint` — de10a69
+- [x] 2.9 Build przechodzi: `npm run build` — de10a69
 
 #### Ręczne
 
-- [x] 2.10 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]`
-- [x] 2.11 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań
-- [x] 2.12 Zalogowanie kończy się na `/` z listą
-- [x] 2.13 Przycisk `Sign out` na `/` wylogowuje i kończy na ekranie logowania (przez 302 z `/`)
-- [x] 2.14 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii
-- [x] 2.15 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym
-- [x] 2.16 `/dashboard` i `/teams` zwracają 404
+- [x] 2.10 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]` — de10a69
+- [x] 2.11 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań — de10a69
+- [x] 2.12 Zalogowanie kończy się na `/` z listą — de10a69
+- [x] 2.13 Przycisk `Sign out` na `/` wylogowuje i kończy na ekranie logowania (przez 302 z `/`) — de10a69
+- [x] 2.14 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii — de10a69
+- [x] 2.15 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym — de10a69
+- [x] 2.16 `/dashboard` i `/teams` zwracają 404 — de10a69
 
 ### Faza 3: Odwołania do usuniętych tras
 
 #### Automatyczne
 
-- [ ] 3.1 Brak odwołań w kodzie: `! grep -rn 'href="/dashboard"' src/ && ! grep -rn 'href="/teams"' src/`
-- [ ] 3.2 README nie dokumentuje usuniętej trasy: ``! grep -n '^| `/dashboard`' README.md``
-- [ ] 3.3 Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md`
-- [ ] 3.4 Testy przechodzą: `npm test`
-- [ ] 3.5 Linting przechodzi: `npm run lint`
-- [ ] 3.6 Build przechodzi: `npm run build`
-- [ ] 3.7 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
+- [x] 3.1 Brak odwołań w kodzie: `! grep -rn 'href="/dashboard"' src/ && ! grep -rn 'href="/teams"' src/`
+- [x] 3.2 README nie dokumentuje usuniętej trasy: ``! grep -n '^| `/dashboard`' README.md``
+- [x] 3.3 Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md`
+- [x] 3.4 Testy przechodzą: `npm test`
+- [x] 3.5 Linting przechodzi: `npm run lint`
+- [x] 3.6 Build przechodzi: `npm run build`
+- [x] 3.7 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
 
 #### Ręczne
 
-- [ ] 3.8 Link powrotny z `/teams/new` prowadzi na `/`
-- [ ] 3.9 Link powrotny z `/teams/[id]` prowadzi na `/`
-- [ ] 3.10 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów
-- [ ] 3.11 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/`
-- [ ] 3.12 Karty awarii (sonda: tymczasowy `throw` w `getCharacterPool` i `getTeamSummary`) mają przyciski celujące w `/`
-- [ ] 3.13 Sonda cofnięta przed commitem: `git diff src/lib/` czysty
+- [x] 3.8 Link powrotny z `/teams/new` prowadzi na `/`
+- [x] 3.9 Link powrotny z `/teams/[id]` prowadzi na `/`
+- [x] 3.10 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów
+- [x] 3.11 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/`
+- [x] 3.12 Karty awarii (sonda: tymczasowy `throw` w `getCharacterPool` i `getTeamSummary`) mają przyciski celujące w `/`
+- [x] 3.13 Sonda cofnięta przed commitem: `git diff src/lib/` czysty

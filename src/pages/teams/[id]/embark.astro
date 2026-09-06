@@ -74,14 +74,11 @@ if (notFound) {
               <a href={`/teams/${team.id}`} class="text-purple-300 hover:underline">
                 View this team
               </a>
-              <a href="/teams" class="text-purple-300 hover:underline">
+              <a href="/" class="text-purple-300 hover:underline">
                 Your teams
               </a>
               <a href="/teams/new" class="text-purple-300 hover:underline">
                 Assemble another team
-              </a>
-              <a href="/dashboard" class="text-purple-300 hover:underline">
-                Back to dashboard
               </a>
             </div>
           </div>
@@ -90,10 +87,10 @@ if (notFound) {
             <h1 class="text-xl font-semibold text-red-200">Team is unavailable right now</h1>
             <p class="mt-2 text-sm text-blue-100/70">Please try again in a moment.</p>
             <a
-              href="/dashboard"
+              href="/"
               class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
             >
-              Back to dashboard
+              Back to your teams
             </a>
           </div>
         )}
