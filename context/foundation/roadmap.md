@@ -65,7 +65,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | done        |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | done        |
 | S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | done        |
-| S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | in-progress |
+| S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | done        |
 | S-08 | `missing-points-counter`           | zobaczyć, ilu punktów brakuje w każdej kompetencji poniżej progu          | S-02              | FR-017                                           | proposed |
 
 ## Strumienie
@@ -320,7 +320,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   `src/components/team/TeamNotFound.astro` z komunikatem „This team does not exist, or it is not
   yours." i linkami do `/teams` i `/dashboard`. Jedno źródło treści jest tu warunkiem, nie wygodą —
   dwie różne odpowiedzi na to samo cudze id ujawniałyby istnienie wiersza.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-08: Gracz widzi listę brakujących punktów
 
@@ -435,3 +435,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   zostawia drużynę nietkniętą, a usunięcie ostatniej drużyny przywraca stan pusty z wezwaniem
   do utworzenia nowej** — Zarchiwizowano 2026-09-06 →
   `context/archive/2026-09-06-delete-team-confirmed/`. Lekcja: —.
+- **S-07: Gracz zalogowany na jednym koncie nie może otworzyć, zmienić ani usunąć drużyny
+  należącej do innego konta — także przez bezpośredni adres z odgadniętym identyfikatorem —
+  a próba nie ujawnia ani nie zmienia cudzych danych** — Zarchiwizowano 2026-09-06 →
+  `context/archive/2026-09-06-cross-account-team-isolation/`. Lekcja: —.
