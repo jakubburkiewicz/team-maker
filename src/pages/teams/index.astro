@@ -19,6 +19,10 @@ interface TeamRow {
   savedAt: string;
 }
 
+// `POST /api/teams/[id]/delete` wraca tu z `?deleted=1` po udanym usunięciu. Baner jest jedynym
+// potwierdzeniem, gdy zniknęła ostatnia drużyna — lista nie ma wtedy czego pokazać jako dowodu.
+const deleted = Astro.url.searchParams.has("deleted");
+
 let teams: readonly TeamRow[] | null = null;
 
 // Stała lokalizacja i stała strefa: data zapisu ma czytać się tak samo niezależnie od ustawień
@@ -70,6 +74,16 @@ if (supabase) {
           </div>
         ) : (
           <Fragment>
+            {/*
+              Baner idzie nad **obie** gałęzie udanego odczytu, ale nigdy nad gałąź awarii wyżej:
+              „Team deleted." nad ekranem „Your teams are unavailable right now" byłby sprzecznym
+              sygnałem — nie wiadomo, czy usunięcie doszło do skutku.
+            */}
+            {deleted && (
+              <p class="mb-4 rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+                Team deleted.
+              </p>
+            )}
             {teams.length === 0 ? (
               <div class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center backdrop-blur-xl">
                 <div class="mb-4 text-5xl">🛰️</div>

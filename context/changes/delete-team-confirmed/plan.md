@@ -557,39 +557,39 @@ produkcji gracze mogą trwale kasować własne rekordy.
 
 #### Automatyczne
 
-- [x] 2.1 `npx astro sync && npm run lint` przechodzi
-- [x] 2.2 `npm test` przechodzi
-- [x] 2.3 `npm run build` przechodzi
-- [x] 2.4 Zero JSON w odpowiedziach trasy
-- [x] 2.5 Każdy `return` w trasie to `context.redirect`
-- [x] 2.6 Trasa nie zna bramki progu, składu ani `formData`
-- [x] 2.7 `reject(DELETE_FAILED_MESSAGE)` występuje dokładnie 2× (obie gałęzie odmowy, jeden tekst)
-- [x] 2.8 Cel przekierowania sukcesu to dokładnie `"/teams?deleted=1"`
-- [x] 2.9 `src/middleware.ts` nietknięty
-- [x] 2.10 Żaden komponent nie woła jeszcze trasy usuwania
+- [x] 2.1 `npx astro sync && npm run lint` przechodzi — 76a1f23
+- [x] 2.2 `npm test` przechodzi — 76a1f23
+- [x] 2.3 `npm run build` przechodzi — 76a1f23
+- [x] 2.4 Zero JSON w odpowiedziach trasy — 76a1f23
+- [x] 2.5 Każdy `return` w trasie to `context.redirect` — 76a1f23
+- [x] 2.6 Trasa nie zna bramki progu, składu ani `formData` — 76a1f23
+- [x] 2.7 `reject(DELETE_FAILED_MESSAGE)` występuje dokładnie 2× (obie gałęzie odmowy, jeden tekst) — 76a1f23
+- [x] 2.8 Cel przekierowania sukcesu to dokładnie `"/teams?deleted=1"` — 76a1f23
+- [x] 2.9 `src/middleware.ts` nietknięty — 76a1f23
+- [x] 2.10 Żaden komponent nie woła jeszcze trasy usuwania — 76a1f23
 
 #### Ręczne
 
-- [x] 2.11 POST na własne id → 302 na `/teams?deleted=1`, wiersz znika z listy
-- [x] 2.12 POST na id drugiego konta → 302 na `?error=`, strona docelowa to puste 404, drużyna drugiego konta nietknięta (US-04)
-- [x] 2.13 POST na id niebędące UUID → ten sam komunikat, bez 500 i bez `22P02` w logach
-- [x] 2.14 POST bez ciasteczka sesji → przekierowanie na `/auth/signin`
+- [x] 2.11 POST na własne id → 302 na `/teams?deleted=1`, wiersz znika z listy — 76a1f23
+- [x] 2.12 POST na id drugiego konta → 302 na `?error=`, strona docelowa to puste 404, drużyna drugiego konta nietknięta (US-04) — 76a1f23
+- [x] 2.13 POST na id niebędące UUID → ten sam komunikat, bez 500 i bez `22P02` w logach — 76a1f23
+- [x] 2.14 POST bez ciasteczka sesji → przekierowanie na `/auth/signin` — 76a1f23
 
 ### Faza 3: Ekran
 
 #### Automatyczne
 
-- [ ] 3.1 `npx astro sync && npm run lint` przechodzi
-- [ ] 3.2 `npm test` przechodzi
-- [ ] 3.3 `npm run build` przechodzi
-- [ ] 3.4 `alert-dialog.tsx` bez importów `from "radix-ui"` i `from "cn"`
-- [ ] 3.5 `@radix-ui/react-alert-dialog` w `dependencies`
-- [ ] 3.6 `package-lock.json` wolny od `radix-ui` i `cn`
-- [ ] 3.7 `components.json` i `src/styles/global.css` nietknięte
-- [ ] 3.8 `DeleteTeamDialog` używa natywnego formularza — bez `fetch`/`onSubmit` i bez `AlertDialogAction`
-- [ ] 3.9 `TeamComposer` nie wie o usuwaniu
-- [ ] 3.10 `/teams/[id].astro` ma dokładnie dwie dyrektywy `client:load`
-- [ ] 3.11 `/teams/index.astro` zostaje czystym SSR (zero `client:*`)
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi
+- [x] 3.2 `npm test` przechodzi
+- [x] 3.3 `npm run build` przechodzi
+- [x] 3.4 `alert-dialog.tsx` bez importów `from "radix-ui"` i `from "cn"`
+- [x] 3.5 `@radix-ui/react-alert-dialog` w `dependencies`
+- [x] 3.6 `package-lock.json` wolny od `radix-ui` i `cn`
+- [x] 3.7 `components.json` i `src/styles/global.css` nietknięte
+- [x] 3.8 `DeleteTeamDialog` używa natywnego formularza — bez `fetch`/`onSubmit` i bez `AlertDialogAction`
+- [x] 3.9 `TeamComposer` nie wie o usuwaniu
+- [x] 3.10 `/teams/[id].astro` ma dokładnie dwie dyrektywy `client:load`
+- [x] 3.11 `/teams/index.astro` zostaje czystym SSR (zero `client:*`)
 - [ ] 3.12 `git show --stat HEAD` wymienia wszystkie sześć plików Fazy 3 razem
 
 #### Ręczne
@@ -597,7 +597,7 @@ produkcji gracze mogą trwale kasować własne rekordy.
 - [ ] 3.13 Przycisk otwiera modalne okno nazywające drużynę po nazwie-hashu
 - [ ] 3.14 Escape i „Cancel" zostawiają drużynę nietkniętą (US-03)
 - [ ] 3.15 Kliknięcie w tło nie zamyka okna
-- [ ] 3.16 Potwierdzenie kończy się na `/teams` z banerem „Team deleted.", drużyna zniknęła
-- [ ] 3.17 Usunięcie ostatniej drużyny pokazuje baner nad stanem pustym z wezwaniem do utworzenia nowej
-- [ ] 3.18 Ekran 404 nie pokazuje przycisku usuwania
-- [ ] 3.19 Zapis składu z S-05 nadal działa (`?saved=1`)
+- [x] 3.16 Potwierdzenie kończy się na `/teams` z banerem „Team deleted.", drużyna zniknęła
+- [x] 3.17 Usunięcie ostatniej drużyny pokazuje baner nad stanem pustym z wezwaniem do utworzenia nowej
+- [x] 3.18 Ekran 404 nie pokazuje przycisku usuwania
+- [x] 3.19 Zapis składu z S-05 nadal działa (`?saved=1`)
