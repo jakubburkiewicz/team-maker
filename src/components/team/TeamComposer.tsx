@@ -3,6 +3,7 @@ import { useState } from "react";
 import { CompetencyRadar } from "@/components/team/CompetencyRadar";
 import { CompositionGate } from "@/components/team/CompositionGate";
 import { MemberPickerDialog } from "@/components/team/MemberPickerDialog";
+import { MissingPointsList } from "@/components/team/MissingPointsList";
 import { RosterSlot, type RosterMember, type RosterSlotHandlers } from "@/components/team/RosterSlot";
 import {
   COMPETENCY_THRESHOLD,
@@ -120,14 +121,21 @@ export default function TeamComposer({ pool, initialComposition = [], teamId }: 
       <aside className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Competencies</h2>
         {/*
-          Umowa z `evaluate-team.ts`: `scores` liczą surowy wybór, także odrzucony przez limity, więc
-          wykres czyta je tylko przy pustym `violations`. Skład budowany wyłącznie przez `roster.ts`
-          nigdy ich nie ma (dowód: `roster.test.ts`) — ta gałąź jest obroną w głąb.
+          Umowa z `evaluate-team.ts`: `scores` i `missing` liczą surowy wybór, także odrzucony przez
+          limity, więc obaj konsumenci — wykres i licznik braków — czytają je tylko przy pustym
+          `violations`. Warunek jest jeden dla obu, żeby nie dało się ich rozjechać bez sygnału
+          z lintu, typów i testów. Skład budowany wyłącznie przez `roster.ts` naruszeń nigdy nie ma
+          (dowód: `roster.test.ts`) — ta gałąź jest obroną w głąb.
         */}
         {evaluation.violations.length === 0 ? (
-          <CompetencyRadar scores={evaluation.scores} threshold={COMPETENCY_THRESHOLD} />
+          <>
+            <CompetencyRadar scores={evaluation.scores} threshold={COMPETENCY_THRESHOLD} />
+            <MissingPointsList missing={evaluation.missing} />
+          </>
         ) : (
-          <p className="text-sm text-red-200">The roster breaks a team limit, so the chart cannot be shown.</p>
+          <p className="text-sm text-red-200">
+            The roster breaks a team limit, so neither the chart nor the missing-points list is shown.
+          </p>
         )}
         <CompositionGate ready={evaluation.isValid} composition={composition} teamId={teamId} />
       </aside>

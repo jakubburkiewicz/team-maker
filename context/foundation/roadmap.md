@@ -356,9 +356,10 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
 
 ## Otwarte pytania dotyczące mapy drogowej
 
-1. **Czy S-08 (licznik brakujących punktów, FR-017) zostaje w zakresie tego kamienia milowego?**
-   Przy głównym ryzyku `time` i celu `low-complexity` jest to jedyna pozycja, której cięcie nie
-   narusza żadnego Kryterium sukcesu ani Guardraila. — Właściciel: użytkownik. Blokuje: S-08.
+1. ~~**Czy S-08 (licznik brakujących punktów, FR-017) zostaje w zakresie tego kamienia
+   milowego?**~~ — **rozstrzygnięte 2026-09-06**: zostaje. Wszystkie pozostałe fragmenty M-1 są
+   `done`, więc powód do cięcia — domykające się okno czasowe przy ryzyku `time` — nie zaszedł.
+   Zapis decyzji: `context/changes/missing-points-counter/change.md`.
 2. ~~**Jak daleko ma sięgać wykonywalna weryfikacja z F-01?**~~ — **rozstrzygnięte 2026-08-30**:
    wyłącznie czysta reguła domenowa (Vitest nad `src/lib/domain/`), bez bazy danych, trasy API
    i weryfikacji dwóch kont. Szerszy zakres wchodzi z S-03 (próg poza interfejsem) i S-07
