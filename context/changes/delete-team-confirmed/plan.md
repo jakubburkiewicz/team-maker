@@ -579,25 +579,25 @@ produkcji gracze mogą trwale kasować własne rekordy.
 
 #### Automatyczne
 
-- [x] 3.1 `npx astro sync && npm run lint` przechodzi
-- [x] 3.2 `npm test` przechodzi
-- [x] 3.3 `npm run build` przechodzi
-- [x] 3.4 `alert-dialog.tsx` bez importów `from "radix-ui"` i `from "cn"`
-- [x] 3.5 `@radix-ui/react-alert-dialog` w `dependencies`
-- [x] 3.6 `package-lock.json` wolny od `radix-ui` i `cn`
-- [x] 3.7 `components.json` i `src/styles/global.css` nietknięte
-- [x] 3.8 `DeleteTeamDialog` używa natywnego formularza — bez `fetch`/`onSubmit` i bez `AlertDialogAction`
-- [x] 3.9 `TeamComposer` nie wie o usuwaniu
-- [x] 3.10 `/teams/[id].astro` ma dokładnie dwie dyrektywy `client:load`
-- [x] 3.11 `/teams/index.astro` zostaje czystym SSR (zero `client:*`)
-- [ ] 3.12 `git show --stat HEAD` wymienia wszystkie sześć plików Fazy 3 razem
+- [x] 3.1 `npx astro sync && npm run lint` przechodzi — 335a80a
+- [x] 3.2 `npm test` przechodzi — 335a80a
+- [x] 3.3 `npm run build` przechodzi — 335a80a
+- [x] 3.4 `alert-dialog.tsx` bez importów `from "radix-ui"` i `from "cn"` — 335a80a
+- [x] 3.5 `@radix-ui/react-alert-dialog` w `dependencies` — 335a80a
+- [x] 3.6 `package-lock.json` wolny od `radix-ui` i `cn` — 335a80a
+- [x] 3.7 `components.json` i `src/styles/global.css` nietknięte — 335a80a
+- [x] 3.8 `DeleteTeamDialog` używa natywnego formularza — bez `fetch`/`onSubmit` i bez `AlertDialogAction` — 335a80a
+- [x] 3.9 `TeamComposer` nie wie o usuwaniu — 335a80a
+- [x] 3.10 `/teams/[id].astro` ma dokładnie dwie dyrektywy `client:load` — 335a80a
+- [x] 3.11 `/teams/index.astro` zostaje czystym SSR (zero `client:*`) — 335a80a
+- [x] 3.12 `git show --stat HEAD` wymienia wszystkie sześć plików Fazy 3 razem — 335a80a
 
 #### Ręczne
 
-- [ ] 3.13 Przycisk otwiera modalne okno nazywające drużynę po nazwie-hashu
-- [ ] 3.14 Escape i „Cancel" zostawiają drużynę nietkniętą (US-03)
-- [ ] 3.15 Kliknięcie w tło nie zamyka okna
-- [x] 3.16 Potwierdzenie kończy się na `/teams` z banerem „Team deleted.", drużyna zniknęła
-- [x] 3.17 Usunięcie ostatniej drużyny pokazuje baner nad stanem pustym z wezwaniem do utworzenia nowej
-- [x] 3.18 Ekran 404 nie pokazuje przycisku usuwania
-- [x] 3.19 Zapis składu z S-05 nadal działa (`?saved=1`)
+- [x] 3.13 Przycisk otwiera modalne okno nazywające drużynę po nazwie-hashu — 335a80a
+- [x] 3.14 Escape i „Cancel" zostawiają drużynę nietkniętą (US-03) — 335a80a
+- [x] 3.15 Kliknięcie w tło nie zamyka okna — 335a80a
+- [x] 3.16 Potwierdzenie kończy się na `/teams` z banerem „Team deleted.", drużyna zniknęła — 335a80a
+- [x] 3.17 Usunięcie ostatniej drużyny pokazuje baner nad stanem pustym z wezwaniem do utworzenia nowej — 335a80a
+- [x] 3.18 Ekran 404 nie pokazuje przycisku usuwania — 335a80a
+- [x] 3.19 Zapis składu z S-05 nadal działa (`?saved=1`) — 335a80a
