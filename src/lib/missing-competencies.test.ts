@@ -71,15 +71,17 @@ describe("missingCompetencies — wybór wierszy", () => {
 
 describe("missingCompetencies — kolejność i czystość", () => {
   it("kolejność wierszy jest kolejnością osi wykresu, a nie kolejnością wielkości luk", () => {
+    // Luki celowo niemonotoniczne względem osi: ani sortowanie rosnące, ani malejące po
+    // wielkości luki nie odtwarza tej sekwencji, więc jedna asercja wiąże oba kierunki.
     const rows = missingCompetencies(
       gaps({
-        combat: 1,
-        hacking: 2,
-        stealth: 3,
-        engineering: 4,
-        medicine: 5,
-        negotiation: 6,
-        navigation: 7,
+        combat: 3,
+        hacking: 1,
+        stealth: 2,
+        engineering: 5,
+        medicine: 4,
+        negotiation: 7,
+        navigation: 6,
       }),
     );
 

@@ -1,7 +1,7 @@
 ---
 change_id: missing-points-counter
 title: Gracz widzi listę brakujących punktów
-status: implemented
+status: impl_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---
