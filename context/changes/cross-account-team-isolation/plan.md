@@ -537,17 +537,17 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 
 #### Automatyczne
 
-- [x] 3.1 CI zielone przed wdrożeniem (`astro sync && lint && test && build`)
+- [x] 3.1 CI zielone przed wdrożeniem (`astro sync && lint && test && build`) — b2c5d37
 
 #### Ręczne
 
-- [x] 3.2 Wdrożenie (`npx wrangler deploy`) zakończone, aplikacja odpowiada
-- [x] 3.3 Konta A i B założone i potwierdzone, każde z zapisaną drużyną
-- [x] 3.4 READ/interfejs: konto B na `/teams` nie widzi drużyny konta A
-- [x] 3.5 READ/adres: `/teams/<id_A>` na koncie B → 404 + ekran, zero danych konta A w źródle
-- [x] 3.6 READ/adres: `/teams/<id_A>/embark` na koncie B → 404 + identyczny ekran
-- [x] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (302 z `error=Could not save the team` — nie 403, nie komunikat progu)
-- [x] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (302 z `error=Could not delete the team`, nie 403)
-- [x] 3.9 Odczyt (druga strona): drużyna konta B nie pojawia się na liście konta A
-- [x] 3.10 Regresja: konto A dalej otwiera, edytuje i usuwa własną drużynę
-- [x] 3.11 F8 zamknięty: zielony przebieg na produkcji dowodzi, że klucz nie omija RLS
+- [x] 3.2 Wdrożenie (`npx wrangler deploy`) zakończone, aplikacja odpowiada — b2c5d37
+- [x] 3.3 Konta A i B założone i potwierdzone, każde z zapisaną drużyną — b2c5d37
+- [x] 3.4 READ/interfejs: konto B na `/teams` nie widzi drużyny konta A — b2c5d37
+- [x] 3.5 READ/adres: `/teams/<id_A>` na koncie B → 404 + ekran, zero danych konta A w źródle — b2c5d37
+- [x] 3.6 READ/adres: `/teams/<id_A>/embark` na koncie B → 404 + identyczny ekran — b2c5d37
+- [x] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (302 z `error=Could not save the team` — nie 403, nie komunikat progu) — b2c5d37
+- [x] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (302 z `error=Could not delete the team`, nie 403) — b2c5d37
+- [x] 3.9 Odczyt (druga strona): drużyna konta B nie pojawia się na liście konta A — b2c5d37
+- [x] 3.10 Regresja: konto A dalej otwiera, edytuje i usuwa własną drużynę — b2c5d37
+- [x] 3.11 F8 zamknięty: zielony przebieg na produkcji dowodzi, że klucz nie omija RLS — b2c5d37
