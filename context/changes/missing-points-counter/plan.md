@@ -424,21 +424,21 @@ trwałego do przeniesienia, więc nie ma też czego wycofywać poza samym kodem.
 
 #### Automatyczne
 
-- [x] 2.1 `npx astro sync && npm run lint && npm test && npm run build`
-- [x] 2.2 Dokładnie jedna gałąź otwierająca `{evaluation.violations.length === 0 ?` w `TeamComposer.tsx` (grep zakotwiczony na składni JSX wypisuje `1`)
-- [x] 2.3 `git diff --quiet f11ba86 -- src/components/team/CompositionGate.tsx`
-- [x] 2.4 `git diff --quiet f11ba86 -- src/lib/domain/ src/components/team/CompetencyRadar.tsx src/lib/radar-geometry.ts`
-- [x] 2.5 `git diff --quiet f11ba86 -- src/pages/teams/new.astro ':(literal)src/pages/teams/[id].astro'`
-- [x] 2.6 `git diff --quiet f11ba86 -- package.json package-lock.json`
-- [x] 2.7 `grep -n '~~\*\*Czy S-08' context/foundation/roadmap.md` zwraca linię
-- [x] 2.8 Komunikat gałęzi awaryjnej przeformułowany: `! grep -F 'so the chart cannot be shown' src/components/team/TeamComposer.tsx`
+- [x] 2.1 `npx astro sync && npm run lint && npm test && npm run build` — 996b000
+- [x] 2.2 Dokładnie jedna gałąź otwierająca `{evaluation.violations.length === 0 ?` w `TeamComposer.tsx` (grep zakotwiczony na składni JSX wypisuje `1`) — 996b000
+- [x] 2.3 `git diff --quiet f11ba86 -- src/components/team/CompositionGate.tsx` — 996b000
+- [x] 2.4 `git diff --quiet f11ba86 -- src/lib/domain/ src/components/team/CompetencyRadar.tsx src/lib/radar-geometry.ts` — 996b000
+- [x] 2.5 `git diff --quiet f11ba86 -- src/pages/teams/new.astro ':(literal)src/pages/teams/[id].astro'` — 996b000
+- [x] 2.6 `git diff --quiet f11ba86 -- package.json package-lock.json` — 996b000
+- [x] 2.7 `grep -n '~~\*\*Czy S-08' context/foundation/roadmap.md` zwraca linię — 996b000
+- [x] 2.8 Komunikat gałęzi awaryjnej przeformułowany: `! grep -F 'so the chart cannot be shown' src/components/team/TeamComposer.tsx` — 996b000
 
 #### Ręczne
 
-- [x] 2.9 Pusty skład: siedem wierszy „2 points short" w kolejności osi wykresu
-- [x] 2.10 Dodanie postaci usuwa wiersz jej specjalizacji natychmiast
-- [x] 2.11 Jeden brakujący punkt daje „1 point short" (liczba pojedyncza)
-- [x] 2.12 Domknięcie progu usuwa listę w całości; zdjęcie perka ją przywraca i blokuje przycisk
-- [x] 2.13 Komunikat FR-018 pod przyciskiem niezmieniony i widoczny niezależnie od listy
-- [x] 2.14 `/teams/[id]`: brak listy na zapisanej drużynie; usunięcie członka pokazuje ją i blokuje „Save changes"
-- [x] 2.15 Siedem wierszy nie rozpycha układu ani nie przewija poziomo
+- [x] 2.9 Pusty skład: siedem wierszy „2 points short" w kolejności osi wykresu — 996b000
+- [x] 2.10 Dodanie postaci usuwa wiersz jej specjalizacji natychmiast — 996b000
+- [x] 2.11 Jeden brakujący punkt daje „1 point short" (liczba pojedyncza) — 996b000
+- [x] 2.12 Domknięcie progu usuwa listę w całości; zdjęcie perka ją przywraca i blokuje przycisk — 996b000
+- [x] 2.13 Komunikat FR-018 pod przyciskiem niezmieniony i widoczny niezależnie od listy — 996b000
+- [x] 2.14 `/teams/[id]`: brak listy na zapisanej drużynie; usunięcie członka pokazuje ją i blokuje „Save changes" — 996b000
+- [x] 2.15 Siedem wierszy nie rozpycha układu ani nie przewija poziomo — 996b000
