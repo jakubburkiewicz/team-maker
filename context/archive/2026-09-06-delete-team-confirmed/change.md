@@ -1,9 +1,10 @@
 ---
 change_id: delete-team-confirmed
 title: Usunięcie drużyny po potwierdzeniu w oknie dialogowym
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-06
+archived_at: 2026-09-06T10:44:02Z
 ---
 
 ## Notes
