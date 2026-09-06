@@ -9,6 +9,11 @@ import { evaluateTeam, type CharacterPool, type MemberSelection, type TeamCompos
  * kształt pola formularza), nie w `src/lib/domain/` (sama reguła). Parser nie sprawdza limitów
  * ani puli — to robi `evaluateTeam`; rozdział jest celowy, żeby test parsera nie duplikował
  * testów reguły.
+ *
+ * Od S-04 moduł jest **wspólną umową kształtu składu dla obu kierunków**, nie tylko dla zapisu:
+ * `toTeamComposition` startuje od `unknown` i obsługuje odczyt (`composition` z PostgREST wraca
+ * już sparsowane), a `parseTeamComposition` dokłada nad nim wyłącznie `JSON.parse` dla formularza.
+ * Druga kopia umowy `{ characterId, perkIds }` po stronie odczytu rozjechałaby się z tą.
  */
 
 /** Nazwa ukrytego pola formularza — wspólna dla `EmbarkGate` i `POST /api/teams`. */
@@ -34,10 +39,34 @@ function toMemberSelection(value: unknown): MemberSelection | null {
 }
 
 /**
+ * `unknown` → `TeamComposition`; `null` przy każdym odstępstwie od kształtu (nie rzuca).
+ *
+ * Przyjmuje wyłącznie tablicę obiektów z `characterId: string` i `perkIds: string[]`. Nie-tablica,
+ * element nie-obiekt, brak lub zły typ pola → `null`. Nadmiarowe pola są odrzucane.
+ *
+ * Wejście jest już wartością, nie tekstem — tędy wchodzi `composition` odczytane z bazy
+ * (`getTeamDetail`), które PostgREST zwraca sparsowane. Ścieżka formularza dokłada nad tym
+ * `JSON.parse` w `parseTeamComposition`.
+ */
+export function toTeamComposition(value: unknown): TeamComposition | null {
+  if (!Array.isArray(value)) return null;
+
+  const members: MemberSelection[] = [];
+
+  for (const item of value) {
+    const member = toMemberSelection(item);
+    if (member === null) return null;
+    members.push(member);
+  }
+
+  return members;
+}
+
+/**
  * JSON → `TeamComposition`; `null` przy każdym odstępstwie od kształtu (nie rzuca).
  *
- * Przyjmuje wyłącznie tablicę obiektów z `characterId: string` i `perkIds: string[]`. Nie-JSON,
- * nie-tablica, element nie-obiekt, brak lub zły typ pola → `null`. Nadmiarowe pola są odrzucane.
+ * Sam `JSON.parse` w `try`/`catch` plus `toTeamComposition` — cała kontrola kształtu jest tam,
+ * więc ścieżka zapisu i odczytu nie mogą się rozjechać. Nie-JSON → `null`.
  */
 export function parseTeamComposition(raw: string): TeamComposition | null {
   let parsed: unknown;
@@ -48,17 +77,7 @@ export function parseTeamComposition(raw: string): TeamComposition | null {
     return null;
   }
 
-  if (!Array.isArray(parsed)) return null;
-
-  const members: MemberSelection[] = [];
-
-  for (const item of parsed) {
-    const member = toMemberSelection(item);
-    if (member === null) return null;
-    members.push(member);
-  }
-
-  return members;
+  return toTeamComposition(parsed);
 }
 
 export type SubmissionRejection = { kind: "invalid-payload" } | { kind: "below-threshold" };

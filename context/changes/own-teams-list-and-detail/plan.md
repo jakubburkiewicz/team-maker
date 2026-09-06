@@ -441,14 +441,14 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 
 #### Automatyczne
 
-- [ ] 1.1 Testy przechodzą, w tym nowy plik `team-view.test.ts`: `npm test`
-- [ ] 1.2 Linting przechodzi: `npm run lint`
-- [ ] 1.3 Build przechodzi: `npm run build`
-- [ ] 1.4 Testy `src/lib/team-submission.test.ts` przechodzą bez żadnej edycji
+- [x] 1.1 Testy przechodzą, w tym nowy plik `team-view.test.ts`: `npm test`
+- [x] 1.2 Linting przechodzi: `npm run lint`
+- [x] 1.3 Build przechodzi: `npm run build`
+- [x] 1.4 Testy `src/lib/team-submission.test.ts` przechodzą bez żadnej edycji
 
 #### Ręczne
 
-- [ ] 1.5 `src/lib/team-view.ts` nie importuje `astro:*` ani `@/lib/supabase`
+- [x] 1.5 `src/lib/team-view.ts` nie importuje `astro:*` ani `@/lib/supabase`
 
 ### Faza 2: Lista własnych drużyn pod `/teams`
 

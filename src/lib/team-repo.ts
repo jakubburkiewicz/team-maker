@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { TeamComposition } from "@/lib/domain";
+import { toTeamComposition } from "@/lib/team-submission";
 
 /**
  * Zapis i odczyt nagłówka drużyny w tabeli `teams` — wzorzec `character-pool-repo.ts`: klient
@@ -23,6 +24,43 @@ interface TeamSummaryRow {
 }
 
 const SUMMARY_SELECT = "id, name";
+
+/** Pozycja listy `/teams` — nagłówek drużyny bez `composition`, którego lista nie rysuje. */
+export interface TeamListItem {
+  id: string;
+  name: string;
+  /** `created_at` w kształcie zwróconym przez PostgREST (ISO-8601); formatuje wywołujący. */
+  createdAt: string;
+}
+
+/** Wiersz `public.teams` w kształcie zwracanym przez `select("id, name, created_at")`. */
+interface TeamListRow {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+const LIST_SELECT = "id, name, created_at";
+
+/** Zapisana drużyna razem ze składem — pod widok szczegółów `/teams/[id]`. */
+export interface TeamDetail {
+  id: string;
+  name: string;
+  composition: TeamComposition;
+}
+
+/**
+ * Wiersz `public.teams` ze składem. `composition` jest `unknown`, nie `TeamComposition`:
+ * kolumna to `jsonb` bez ograniczenia kształtu, więc typ musi być zdobyty
+ * przez `toTeamComposition`, a nie zadeklarowany.
+ */
+interface TeamDetailRow {
+  id: string;
+  name: string;
+  composition: unknown;
+}
+
+const DETAIL_SELECT = "id, name, composition";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -77,4 +115,60 @@ export async function getTeamSummary(supabase: SupabaseClient, id: string | unde
   const row: TeamSummaryRow | null = data;
 
   return row === null ? null : { id: row.id, name: row.name };
+}
+
+/**
+ * Własne drużyny, najnowsza na górze. Własność egzekwuje polityka `select` (RLS), więc repo nie
+ * filtruje po `user_id` — dołożenie tu drugiego warunku sugerowałoby, że RLS sam nie wystarcza.
+ *
+ * **Pusta lista jest legalnym stanem** i wraca jako `[]` — inaczej niż w `getCharacterPool`, gdzie
+ * zero wierszy oznacza awarię: nowe konto po prostu nie ma jeszcze drużyny (US-01, stan pusty).
+ * Rzuca wyłącznie przy błędzie zapytania.
+ */
+export async function listTeams(supabase: SupabaseClient): Promise<readonly TeamListItem[]> {
+  const { data, error } = await supabase.from("teams").select(LIST_SELECT).order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to list teams: ${error.message}`, { cause: error });
+  }
+
+  const rows: readonly TeamListRow[] = data;
+
+  return rows.map((row) => ({ id: row.id, name: row.name, createdAt: row.created_at }));
+}
+
+/**
+ * Drużyna ze składem albo `null` — nierozróżnialnie dla nieznanego id, cudzego wiersza (RLS)
+ * i nie-UUID, dokładnie jak `getTeamSummary`.
+ *
+ * `composition` poza kształtem `[{ characterId, perkIds }]` **rzuca**, a nie zwraca `null`:
+ * przy jedynym pisarzu `POST /api/teams` to stan niemożliwy, więc należy do tej samej kategorii
+ * co pusta pula w `character-pool-repo.ts` — awaria do zdiagnozowania, nie „drużyny nie ma".
+ * Czy skład da się **pokazać z aktualną pulą**, rozstrzyga osobno `resolveSavedTeam`; repo zna
+ * wyłącznie kształt.
+ */
+export async function getTeamDetail(supabase: SupabaseClient, id: string | undefined): Promise<TeamDetail | null> {
+  if (!isTeamId(id)) {
+    return null;
+  }
+
+  const { data, error } = await supabase.from("teams").select(DETAIL_SELECT).eq("id", id).maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to load team ${id}: ${error.message}`, { cause: error });
+  }
+
+  const row: TeamDetailRow | null = data;
+
+  if (row === null) {
+    return null;
+  }
+
+  const composition = toTeamComposition(row.composition);
+
+  if (composition === null) {
+    throw new Error(`Team ${id} has a composition outside the { characterId, perkIds }[] shape`);
+  }
+
+  return { id: row.id, name: row.name, composition };
 }
