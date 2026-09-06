@@ -526,17 +526,17 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 
 #### Automatyczne
 
-- [ ] 1.1 Sprawdzanie typów i lint przechodzą (`npx astro sync && npm run lint`)
-- [ ] 1.2 Testy przechodzą bez zmian w plikach testowych (`npm test`)
-- [ ] 1.3 Build przechodzi (`npm run build`)
-- [ ] 1.4 Migracja jest jedynym nowym plikiem i nie dotyka `delete`/`truncate`
-- [ ] 1.5 Ładunek update'u nie niesie nazwy, właściciela ani daty
+- [x] 1.1 Sprawdzanie typów i lint przechodzą (`npx astro sync && npm run lint`)
+- [x] 1.2 Testy przechodzą bez zmian w plikach testowych (`npm test`)
+- [x] 1.3 Build przechodzi (`npm run build`)
+- [x] 1.4 Migracja jest jedynym nowym plikiem i nie dotyka `delete`/`truncate`
+- [x] 1.5 Ładunek update'u nie niesie nazwy, właściciela ani daty
 
 #### Ręczne
 
-- [ ] 1.6 `supabase db push` stosuje migrację bez błędu
-- [ ] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete
-- [ ] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_`
+- [x] 1.6 `supabase db push` stosuje migrację bez błędu
+- [x] 1.7 Tabela `teams` ma polityki insert/select/update i żadnej dla delete
+- [x] 1.8 Produkcyjny `SUPABASE_KEY` zaczyna się od `sb_publishable_`, nie `sb_secret_`
 
 ### Faza 2: Trasa zapisu zmian
 

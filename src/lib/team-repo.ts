@@ -9,7 +9,9 @@ import { toTeamComposition } from "@/lib/team-submission";
  * wciąga `astro:env/server`, a jego czysta część (`isTeamId`) jest testowalna bez Astro i Supabase.
  *
  * Własność wierszy egzekwuje RLS (`20260905185700_teams_schema.sql`): `insert` przechodzi tylko
- * z `user_id = auth.uid()`, `select` widzi tylko własne wiersze. Repo niczego tu nie dubluje.
+ * z `user_id = auth.uid()`, `select` widzi tylko własne wiersze, a `update` — dołożone przez
+ * `20260906090000_teams_update_policy.sql` — zmienia wyłącznie własne. Repo niczego tu nie dubluje:
+ * żadna funkcja nie filtruje po `user_id`, bo drugi warunek sugerowałby, że RLS sam nie wystarcza.
  */
 
 export interface TeamSummary {
@@ -94,6 +96,48 @@ export async function createTeam(
   const row: TeamSummaryRow = data;
 
   return { id: row.id, name: row.name };
+}
+
+/**
+ * Podmienia skład istniejącej drużyny (FR-009) i zwraca jej nagłówek, albo `null`, gdy nie ma
+ * czego zapisać. Rzuca wyłącznie przy błędzie zapytania.
+ *
+ * Ładunek to **wyłącznie `{ composition }`** — bez `name`, `user_id` i `id`. Nazwa-hash jest
+ * nieedytowalna (FR-011), a właściciel i identyfikator nie zmieniają się nigdy. Druga,
+ * niezależna bariera stoi w bazie: `grant update (composition)`
+ * (`20260906090000_teams_update_policy.sql`) nadaje przywilej **kolumnowo**, więc zapis
+ * innej kolumny kończy się błędem uprawnień, nie cichym pominięciem.
+ *
+ * Trzy wyniki, których wywołujący nie może pomylić: rekord (zapis się udał), `null`
+ * (`id` nie jest UUID **albo** wiersz nie wrócił — nieznane id i cudza drużyna odcięta przez RLS,
+ * nierozróżnialnie, dokładnie jak `getTeamSummary`), `throw` (awaria zapytania). Zero zmienionych
+ * wierszy **nie jest awarią**: RLS ukrywa cudzy wiersz, więc `update … returning` zwraca wtedy
+ * `null` bez `error`.
+ */
+export async function updateTeam(
+  supabase: SupabaseClient,
+  input: { id: string | undefined; composition: TeamComposition },
+): Promise<TeamSummary | null> {
+  if (!isTeamId(input.id)) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("teams")
+    .update({ composition: input.composition })
+    .eq("id", input.id)
+    .select(SUMMARY_SELECT)
+    .maybeSingle();
+
+  if (error) {
+    // `error.message` musi przejść dalej w całości: komunikat kolumnowego grantu z Postgresa jest
+    // mało czytelny, a log jest jedyną diagnostyką w Workerze.
+    throw new Error(`Failed to update team ${input.id}: ${error.message}`, { cause: error });
+  }
+
+  const row: TeamSummaryRow | null = data;
+
+  return row === null ? null : { id: row.id, name: row.name };
 }
 
 /**
