@@ -32,9 +32,12 @@ const SAVE_FAILED_MESSAGE = "Could not save the team";
 
 export const POST: APIRoute = async (context) => {
   // `params.id` idzie do repo **bez zawężania** — formatu pilnuje `isTeamId`, więc nie-UUID kończy
-  // się odesłaniem, a nie błędem Postgresa `22P02`. Do budowy adresu `?? ""`, jak
-  // `src/pages/teams/[id]/embark.astro:27`.
-  const id = context.params.id ?? "";
+  // się odesłaniem, a nie błędem Postgresa `22P02`. Do adresu i logów idzie wersja zakodowana: Astro
+  // dekoduje ścieżkę przed dopasowaniem trasy, więc `POST /api/teams/%0A` daje `params.id === "\n"`,
+  // a surowa nowa linia w nagłówku `Location` wywraca `new Response` — nieprzechwycony throw to 500.
+  // Dla poprawnego UUID kodowanie jest identycznością. Bliźniaczy kształt ma
+  // `src/pages/api/teams/[id]/delete.ts` — obie trasy zapisu traktują `params.id` tak samo.
+  const id = encodeURIComponent(context.params.id ?? "");
   // Odesłanie kosztuje **niezapisaną edycję**: strona odtwarza wyspę z bazy, a `initialComposition`
   // jest wartością początkową `useState` (`TeamComposer.tsx:52`), więc gracz wraca do składu sprzed
   // zmian. Przyjęte świadomie: `below-threshold` i `invalid-payload` są z interfejsu nieosiągalne

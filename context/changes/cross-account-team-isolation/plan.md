@@ -67,9 +67,17 @@ treść, ten sam tytuł, ta sama nawigacja — więc nie da się z niej wywniosk
 W CI każda z czterech operacji CRUD ma zakotwiczoną własną barierę SQL, a wyłączenie RLS lub
 skasowanie polityki w przyszłej migracji zapala czerwony test.
 
-Na produkcji, na dwóch kontach, przebieg macierzy cztery operacje × dwie ścieżki (interfejs
-i spreparowane żądanie) kończy się zerem: konto B nie odczytało, nie zmieniło i nie skasowało
-żadnej drużyny konta A, a konto A po całym przebiegu ma swoją drużynę w niezmienionym stanie.
+Na produkcji, na dwóch kontach, przebieg macierzy kończy się zerem: konto B nie odczytało, nie
+zmieniło i nie skasowało żadnej drużyny konta A — ani przez interfejs, ani przez spreparowane
+żądanie — a konto A po całym przebiegu ma swoją drużynę w niezmienionym stanie.
+
+Macierz obejmuje **trzy** operacje razy dwie ścieżki, nie cztery. Bariera `insert`
+(`with check (user_id = (select auth.uid()))`) jest z aplikacji **nieosiągalna do naruszenia**:
+`createTeam` przyjmuje `userId` jako argument, a `src/pages/api/teams/index.ts:71` podaje
+`user.id` z sesji — formularz niesie wyłącznie `composition`, więc żadne spreparowane żądanie nie
+podstawi cudzego `user_id`. Tę barierę dowodzi wyłącznie test SQL z Fazy 2; Faza 3 sprawdza przy
+niej tylko drugą stronę odczytu (krok 3.9). Nazwanie tego wprost jest częścią stanu końcowego:
+dowód, który obiecuje więcej, niż pokrywa, jest gorszy niż dowód mniejszy i uczciwy.
 
 ### Kluczowe odkrycia:
 
@@ -141,6 +149,22 @@ aplikacji** (konsola devtools otwarta na stronie aplikacji, sesja konta B, `fetc
 `credentials: "include"` i formularzowym `Content-Type`), żeby CSRF przepuścił je do handlera
 i barierą, która je zatrzyma, było RLS. Każdy krok macierzy musi odnotować **kod odpowiedzi**:
 403 znaczy „nie sprawdzono tego, co chciano sprawdzić”, i wymaga powtórzenia.
+
+**Druga, symetryczna pułapka Fazy 3 — bramka progu też stoi przed RLS.** W
+`src/pages/api/teams/[id].ts` przed `updateTeam` jest jeszcze `gateTeamSubmission` (linie 77-81).
+Spreparowany POST z ładunkiem, który nie parsuje się albo nie domyka progu, kończy się
+przekierowaniem z `?error=Invalid team payload` albo `?error=Every competency needs at least
+2 points…` — i **RLS nie jest wołane w ogóle**. Skutek jest nie do odróżnienia od zielonego:
+drużyna A nietknięta, odpowiedź nie jest 403, więc strażnik z akapitu wyżej się nie zapala.
+Rozróżnia je komunikat: odcięcie przez RLS daje `?error=Could not save the team`
+(`SAVE_FAILED_MESSAGE`, `src/pages/api/teams/[id].ts:31`) i log `No team row to update` (linia 91)
+— nic innego nie daje tego tekstu. **Ładunek kroku 3.7 musi więc być poprawnym składem
+domykającym próg**, skopiowanym z własnej drużyny konta B.
+
+**Gdzie odczytać ten komunikat.** Po przekierowaniu strona `/teams/<id_A>` renderuje ekran 404
+z Fazy 1, a `?error=` **nie jest tam wyświetlane** — slot błędu żyje wyłącznie w gałęzi sukcesu
+(`src/pages/teams/[id].astro:114`). Komunikat trzeba odczytać z nagłówka `Location` odpowiedzi 302
+w zakładce Network devtools, a nie z ekranu. To samo dotyczy kroku 3.8.
 
 **Cykl życia Fazy 3 — potwierdzanie adresu jest na produkcji WŁĄCZONE** (`prd.md` FR-001,
 `AGENTS.md`). Oba konta wymagają klikniętego linku z poczty, zanim cokolwiek zapiszą; kliknięcie
@@ -294,6 +318,13 @@ tu konieczne, bo migracje opisują w prozie dokładnie te konstrukcje, których 
 Wzorce kotwiczone na składni, nie na słowie (lekcja z S-06): żadna migracja nie zawiera
 `alter table … public.teams … disable row level security` ani `drop policy … on … public.teams`.
 
+Umowa strażnika `drop policy` musi nazwać **furtkę**, bo inaczej jest sprzeczna z §Uwagi dotyczące
+migracji („odpowiedzią na rozjazd jest nowa migracja"): korekta istniejącej polityki idzie przez
+`alter policy` — ta forma strażnika nie zapala. `drop policy` zostaje zarezerwowane na świadome
+zdjęcie bariery, które **wymaga zdjęcia tego strażnika w tej samej zmianie**, z uzasadnieniem
+w komentarzu testu. Ta furtka ma być zapisana w komentarzu przy asercji, nie tylko tutaj: bez niej
+pierwsza uzasadniona korekta polityki zobaczy czerwony test i osłabi strażnika pod presją.
+
 ### Kryteria sukcesu:
 
 #### Automatyczna weryfikacja:
@@ -308,10 +339,16 @@ Wzorce kotwiczone na składni, nie na słowie (lekcja z S-06): żadna migracja n
 
 #### Ręczna weryfikacja:
 
-- **Kontrola mutacyjna** — zakomentować lokalnie `enable row level security`
-  w `20260905185700_teams_schema.sql`, uruchomić `npm test`, potwierdzić **czerwony** wynik,
-  cofnąć zmianę (`git checkout -- supabase/`). Test, który po rozbrojeniu migracji zostaje zielony,
-  nie jest kotwicą i wymaga poprawienia wzorca.
+- **Kontrola mutacyjna** — **usunąć** lokalnie linię `alter table public.teams enable row level
+  security;` z `20260905185700_teams_schema.sql`, uruchomić `npm test`, potwierdzić **czerwony**
+  wynik, cofnąć zmianę (`git checkout -- supabase/`). **Usunięcie, nie zakomentowanie**: asercje
+  pozytywne biegną po `latestMigration()`, które zwraca surowy tekst pliku — komentarze strzyże
+  wyłącznie `allMigrationsWithoutComments()`, używany przez strażników negatywnych. Zakomentowana
+  linia dalej trafia w `toContain(...)` i test zostałby zielony, a kontrola dałaby fałszywy werdykt
+  „wzorzec do poprawy" na poprawnym teście (lekcja z S-06 odwrócona). Zakomentowanie zastosowanej
+  migracji i tak nie odzwierciedla zagrożenia: dla bazy jest no-op — realną klasą jest przyszła
+  migracja z `disable row level security`, pilnowana przez strażnika negatywnego. Test, który po
+  usunięciu linii zostaje zielony, nie jest kotwicą i wymaga poprawienia wzorca.
 - Ta sama kontrola dla polityki `owner can read teams` — usunąć ją lokalnie, potwierdzić czerwień, cofnąć
 - `git status` po obu kontrolach jest czysty w `supabase/`
 
@@ -352,9 +389,12 @@ migracji. `supabase config push` nie jest wołane nigdy.
 **Cel**: Zapisać wynik przebiegu tam, gdzie działa cały łańcuch — `/10x-implement` odhacza,
 `/10x-impl-review` weryfikuje.
 
-**Umowa**: Każdy krok macierzy odnotowuje przy odhaczeniu **kod odpowiedzi HTTP**. To jest jedyne
-zabezpieczenie przed fałszywie zielonym wynikiem: `403` z `checkOrigin` znaczy, że żądanie nie
-dotarło do RLS i krok trzeba powtórzyć z origin aplikacji (patrz §Krytyczne szczegóły implementacji).
+**Umowa**: Każdy krok macierzy odnotowuje przy odhaczeniu **kod odpowiedzi HTTP**, a kroki 3.7
+i 3.8 dodatkowo **komunikat z nagłówka `Location`**. To są dwa zabezpieczenia przed fałszywie
+zielonym wynikiem, oba opisane w §Krytyczne szczegóły implementacji: `403` z `checkOrigin` znaczy,
+że żądanie nie dotarło do RLS; komunikat inny niż `Could not save the team` /
+`Could not delete the team` znaczy, że zatrzymała je bramka stojąca przed RLS. Oba wymagają
+powtórzenia kroku, nie odhaczenia.
 
 ### Kryteria sukcesu:
 
@@ -370,13 +410,19 @@ dotarło do RLS i krok trzeba powtórzyć z origin aplikacji (patrz §Krytyczne 
 - **READ / adres**: konto B na `/teams/<id_A>` dostaje **404** i ekran „This team does not exist,
   or it is not yours.”; żadna nazwa-hash ani skład konta A nie pojawia się w źródle odpowiedzi
 - **READ / adres**: konto B na `/teams/<id_A>/embark` dostaje **404** i identyczny ekran
-- **UPDATE**: spreparowany `POST /api/teams/<id_A>` z poprawnym składem, wysłany z origin aplikacji
-  na sesji konta B, **nie zmienia** drużyny A — konto A po odświeżeniu widzi skład sprzed przebiegu.
-  Odpowiedź nie jest 403 (403 = zadziałał CSRF, nie RLS; powtórz krok)
+- **UPDATE**: spreparowany `POST /api/teams/<id_A>` ze składem **domykającym próg**, wysłany
+  z origin aplikacji na sesji konta B, **nie zmienia** drużyny A — konto A po odświeżeniu widzi
+  skład sprzed przebiegu. Przekierowanie 302 niesie `error=Could not save the team` (odczyt
+  z nagłówka `Location` w Network). Odpowiedź 403 = zadziałał CSRF, nie RLS; inny komunikat błędu
+  = zadziałała bramka progu, nie RLS — oba znaczą „powtórz krok”
 - **DELETE**: spreparowany `POST /api/teams/<id_A>/delete` z origin aplikacji na sesji konta B
-  **nie kasuje** drużyny A — konto A dalej widzi ją na liście. Odpowiedź nie jest 403
-- **CREATE**: drużyna zapisana przez konto B nie pojawia się na liście konta A ani przed, ani po
-  odświeżeniu
+  **nie kasuje** drużyny A — konto A dalej widzi ją na liście. Przekierowanie 302 niesie
+  `error=Could not delete the team`; odpowiedź 403 = zadziałał CSRF, nie RLS (powtórz krok).
+  Ta trasa nie czyta ciała żądania, więc bramki progu tu nie ma
+- **ODCZYT, druga strona**: drużyna zapisana przez konto B nie pojawia się na liście konta A ani
+  przed, ani po odświeżeniu. To jest asercja na polityce `select` — krok 3.4 odwrócony — a nie
+  test bariery `insert`; tej ostatniej nie da się z aplikacji naruszyć (patrz §Pożądany stan
+  końcowy), więc dowodzi jej test SQL z Fazy 2, nie ten krok
 - **Regresja ścieżki własnej**: konto A dalej otwiera, edytuje i usuwa własną drużynę bez zmian
   w zachowaniu — izolacja nie zablokowała właściciela
 - **F8 pochłonięty**: wszystkie powyższe kroki zielone **na produkcji** dowodzą, że produkcyjny
@@ -409,12 +455,13 @@ jest dowodem US-04 i nie wolno go za taki uznać.
 1. Otwórz `/teams/<losowy-uuid>` jako zalogowany gracz — oczekiwany 404 z ekranem i dwoma linkami.
 2. Otwórz `/teams/<ten-sam-uuid>/embark` — oczekiwany identyczny ekran i identyczny tytuł zakładki.
 3. Otwórz `/teams/not-a-uuid` — to samo, bez błędu Postgresa `22P02` w logach.
-4. Zakomentuj `enable row level security` w migracji schematu, uruchom `npm test`, potwierdź
-   czerwień, cofnij (`git checkout -- supabase/`).
+4. **Usuń** linię `enable row level security` z migracji schematu (nie komentuj — patrz Faza 2),
+   uruchom `npm test`, potwierdź czerwień, cofnij (`git checkout -- supabase/`).
 5. Wdróż (`npm run build && npx wrangler deploy`).
 6. Załóż konta A i B, potwierdź oba adresy, zapisz po jednej drużynie na każdym.
-7. Przejdź macierz z Fazy 3, notując kod odpowiedzi przy każdym kroku; każde `403` powtórz
-   z origin aplikacji.
+7. Przejdź macierz z Fazy 3, notując kod odpowiedzi przy każdym kroku, a przy 3.7 i 3.8 także
+   komunikat z nagłówka `Location`; każde `403` powtórz z origin aplikacji, a każdy komunikat inny
+   niż `Could not save/delete the team` powtórz z poprawnym ładunkiem.
 8. Zamknij przebieg sprawdzeniem regresji ścieżki własnej na koncie A.
 
 ## Uwagi dotyczące wydajności
@@ -452,23 +499,23 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 
 #### Automatyczne
 
-- [ ] 1.1 Testy przechodzą (`npm test`)
-- [ ] 1.2 Typy i lint przechodzą (`npx astro sync && npm run lint`)
-- [ ] 1.3 Build przechodzi (`npm run build`)
-- [ ] 1.4 Dokładnie 2 strony importują `TeamNotFound.astro`
-- [ ] 1.5 Dokładnie 2 strony ustawiają `Astro.response.status = 404`
-- [ ] 1.6 Treść komunikatu ma jedno źródło w `src/`
-- [ ] 1.7 Zero top-level `return` w trzech dotkniętych plikach `.astro`
-- [ ] 1.8 Obie trasy zapisu deklarują `id` przez `encodeURIComponent` (2 trafienia)
-- [ ] 1.9 `supabase/` nietknięte
+- [x] 1.1 Testy przechodzą (`npm test`)
+- [x] 1.2 Typy i lint przechodzą (`npx astro sync && npm run lint`)
+- [x] 1.3 Build przechodzi (`npm run build`)
+- [x] 1.4 Dokładnie 2 strony importują `TeamNotFound.astro`
+- [x] 1.5 Dokładnie 2 strony ustawiają `Astro.response.status = 404`
+- [x] 1.6 Treść komunikatu ma jedno źródło w `src/`
+- [x] 1.7 Zero top-level `return` w trzech dotkniętych plikach `.astro`
+- [x] 1.8 Obie trasy zapisu deklarują `id` przez `encodeURIComponent` (2 trafienia)
+- [x] 1.9 `supabase/` nietknięte
 
 #### Ręczne
 
-- [ ] 1.10 `/teams/<losowy-uuid>` pokazuje ekran z komunikatem i oboma linkami
-- [ ] 1.11 `/teams/<losowy-uuid>/embark` pokazuje identyczny ekran i identyczny tytuł zakładki
-- [ ] 1.12 Nie-UUID w adresie zachowuje się tak samo, bez błędu Postgresa
-- [ ] 1.13 Własna drużyna renderuje się bez zmian (skład, wykres, zapis, usuwanie)
-- [ ] 1.14 Gałąź awarii odczytu dalej pokazuje „Team is unavailable right now”
+- [x] 1.10 `/teams/<losowy-uuid>` pokazuje ekran z komunikatem i oboma linkami
+- [x] 1.11 `/teams/<losowy-uuid>/embark` pokazuje identyczny ekran i identyczny tytuł zakładki
+- [x] 1.12 Nie-UUID w adresie zachowuje się tak samo, bez błędu Postgresa
+- [x] 1.13 Własna drużyna renderuje się bez zmian (skład, wykres, zapis, usuwanie)
+- [x] 1.14 Gałąź awarii odczytu dalej pokazuje „Team is unavailable right now”
 
 ### Faza 2: Kotwice SQL dla bariery odczytu
 
@@ -482,7 +529,7 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 
 #### Ręczne
 
-- [ ] 2.6 Kontrola mutacyjna: zdjęcie `enable row level security` daje czerwony `npm test`
+- [ ] 2.6 Kontrola mutacyjna: usunięcie linii `enable row level security` daje czerwony `npm test`
 - [ ] 2.7 Kontrola mutacyjna: usunięcie polityki `owner can read teams` daje czerwony `npm test`
 - [ ] 2.8 `git status` czysty w `supabase/` po obu kontrolach
 
@@ -499,8 +546,8 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 - [ ] 3.4 READ/interfejs: konto B na `/teams` nie widzi drużyny konta A
 - [ ] 3.5 READ/adres: `/teams/<id_A>` na koncie B → 404 + ekran, zero danych konta A w źródle
 - [ ] 3.6 READ/adres: `/teams/<id_A>/embark` na koncie B → 404 + identyczny ekran
-- [ ] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (odpowiedź ≠ 403)
-- [ ] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (odpowiedź ≠ 403)
-- [ ] 3.9 CREATE: drużyna konta B nie pojawia się na liście konta A
+- [ ] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (302 z `error=Could not save the team` — nie 403, nie komunikat progu)
+- [ ] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (302 z `error=Could not delete the team`, nie 403)
+- [ ] 3.9 Odczyt (druga strona): drużyna konta B nie pojawia się na liście konta A
 - [ ] 3.10 Regresja: konto A dalej otwiera, edytuje i usuwa własną drużynę
 - [ ] 3.11 F8 zamknięty: zielony przebieg na produkcji dowodzi, że klucz nie omija RLS

@@ -1,7 +1,7 @@
 ---
 change_id: cross-account-team-isolation
 title: Cudza drużyna jest niedostępna każdą ścieżką
-status: planned
+status: implementing
 created: 2026-09-06
 updated: 2026-09-06
 ---
@@ -46,3 +46,16 @@ updated: 2026-09-06
     `disable row level security` i `drop policy`.
 - Nie wymaga migracji bazy: polityki są komplet od S-06, a zmiana asercji w teście nie dotyka
   `supabase/`.
+- Przegląd planu 2026-09-06 (`/10x-plan-review`, tryb głęboki): werdykt DO POPRAWY → SOLIDNY
+  po poprawkach. Cztery ustalenia, wszystkie naprawione w `plan.md`, raport nie zapisany osobno:
+  - F1 (krytyczne) — kontrola mutacyjna 2.6 kazała **zakomentować** `enable row level security`,
+    a asercje pozytywne biegną po surowym tekście migracji (`latestMigration`), więc test zostałby
+    zielony. Krok zmieniony na **usunięcie** linii, spójnie z 2.7.
+  - F2 (krytyczne) — obok pułapki `checkOrigin` (403 przed RLS) stoi druga, symetryczna:
+    `gateTeamSubmission` odrzuca ładunek przed `updateTeam`, też bez 403. Kroki 3.7/3.8 notują teraz
+    komunikat z nagłówka `Location`, nie sam kod odpowiedzi.
+  - F3 (ostrzeżenie) — macierz obejmuje trzy operacje × dwie ścieżki, nie cztery: bariery `insert`
+    nie da się z aplikacji naruszyć (`user_id` z sesji), więc dowodzi jej wyłącznie test SQL z Fazy 2.
+    Krok 3.9 przemianowany na to, czym jest.
+  - F4 (ostrzeżenie) — strażnik `drop policy` kolidował z zapisaną w planie ścieżką naprawczą
+    („nowa migracja"); furtka (`alter policy`) nazwana wprost w umowie strażnika.

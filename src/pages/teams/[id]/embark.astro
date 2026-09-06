@@ -1,4 +1,5 @@
 ---
+import TeamNotFound from "@/components/team/TeamNotFound.astro";
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
 import { getTeamSummary, type TeamSummary } from "@/lib/team-repo";
@@ -6,10 +7,11 @@ import { getTeamSummary, type TeamSummary } from "@/lib/team-repo";
 // Potwierdzenie zapisu (FR-019): nazwa jest **odczytana z bazy**, nie z adresu — dowód trwałości,
 // nie echo. Trasa chroniona prefiksem `/teams` w middleware.
 //
-// Gołe 404 idzie przez `Astro.response.status` i pustą gałąź szablonu, nie przez `return new
-// Response(...)` na szczycie frontmattera: typowana reguła `@typescript-eslint/no-misused-promises`
-// crashuje na top-level `return` (w zwykłym TS to błąd składni, więc reguła zakłada funkcję-przodka)
-// i wywraca `npm run lint`. Efekt dla klienta ten sam — 404 z pustym ciałem.
+// 404 idzie przez `Astro.response.status` i gałąź szablonu, nie przez `return new Response(...)`
+// na szczycie frontmattera: typowana reguła `@typescript-eslint/no-misused-promises` crashuje na
+// top-level `return` (w zwykłym TS to błąd składni, więc reguła zakłada funkcję-przodka) i wywraca
+// `npm run lint`. Mechanizm zostaje; S-07 zmienił wyłącznie ciało tej gałęzi — z pustego na
+// `<TeamNotFound />`, ten sam komponent co `/teams/[id]`.
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 let team: TeamSummary | null = null;
@@ -19,7 +21,9 @@ let failed = false;
 if (supabase) {
   try {
     // `null` zarówno dla nieznanego id, cudzej drużyny (RLS), jak i nie-UUID — bez rozróżnienia,
-    // żeby nie ujawniać istnienia cudzego rekordu. S-07 rozstrzyga docelowo (404 vs redirect).
+    // żeby nie ujawniać istnienia cudzego rekordu. S-07 rozstrzygnął: **404 z pełną stroną**,
+    // nie przekierowanie na listę, a treść odpowiedzi ma jedno źródło (`TeamNotFound.astro`)
+    // wspólne z `/teams/[id]` — dwie różne odpowiedzi na to samo id byłyby wyciekiem.
     team = await getTeamSummary(supabase, Astro.params.id);
   } catch (error) {
     // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
@@ -37,7 +41,9 @@ if (notFound) {
 ---
 
 {
-  notFound ? null : (
+  notFound ? (
+    <TeamNotFound />
+  ) : (
     <Layout title={team ? `Team ${team.name} saved` : "Team unavailable"}>
       <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
         {team ? (

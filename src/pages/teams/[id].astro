@@ -2,6 +2,7 @@
 import { ServerError } from "@/components/auth/ServerError";
 import DeleteTeamDialog from "@/components/team/DeleteTeamDialog";
 import TeamComposer from "@/components/team/TeamComposer";
+import TeamNotFound from "@/components/team/TeamNotFound.astro";
 import Layout from "@/layouts/Layout.astro";
 import { getCharacterPool } from "@/lib/character-pool-repo";
 import type { PoolCharacter, TeamComposition } from "@/lib/domain";
@@ -12,9 +13,11 @@ import { resolveSavedTeam } from "@/lib/team-view";
 // Zapisana drużyna na jednym ekranie do oglądania i edycji (FR-008 + FR-009) — ten sam
 // `TeamComposer` co kompletowanie, różniący się wyłącznie celem zapisu, który niesie `teamId`.
 //
-// Gołe 404 idzie przez `Astro.response.status` i gałąź szablonu renderującą `null`, nigdy przez
-// top-level `return`: typowana reguła `@typescript-eslint/no-misused-promises` crashuje na nim
-// i wywraca `npm run lint` (lekcja z S-03).
+// 404 idzie przez `Astro.response.status` i gałąź szablonu, nigdy przez top-level `return`:
+// typowana reguła `@typescript-eslint/no-misused-promises` crashuje na nim i wywraca `npm run lint`
+// (lekcja z S-03). Mechanizm zostaje; S-07 zmienił wyłącznie **ciało** tej gałęzi — z pustego na
+// `<TeamNotFound />`, wspólny z `/teams/[id]/embark`, żeby obie trasy odpowiadały na cudze id
+// identycznie co do tytułu, treści i nawigacji.
 
 // `POST /api/teams/[id]` wraca tu z `?saved=1` po udanym zapisie albo z `?error=` przy odrzuceniu.
 const saved = Astro.url.searchParams.has("saved");
@@ -82,7 +85,9 @@ if (notFound) {
 ---
 
 {
-  notFound ? null : (
+  notFound ? (
+    <TeamNotFound />
+  ) : (
     <Layout title={team ? `Team ${team.name}` : "Team unavailable"}>
       <div class="bg-cosmic min-h-screen p-4 text-white">
         <div class="mx-auto w-full max-w-6xl">
@@ -138,7 +143,7 @@ if (notFound) {
             Usuwanie żyje przy **każdym** istniejącym własnym wierszu — także gdy skład nie składa się
             z dzisiejszej puli (`inconsistent`) albo pula chwilowo nie doszła: usunięcie nie potrzebuje
             puli, a nagłówek wyżej i tak już nazywa drużynę. Przycisku nie ma tylko przy `notFound`
-            (cała strona to `null`) i `teamFailed` (`team === null`) — tam nie ma czego usuwać, a sam
+            (cała strona to `<TeamNotFound />`) i `teamFailed` (`team === null`) — tam nie ma czego usuwać, a sam
             przycisk zdradziłby, że wiersz istnieje (US-04).
           */}
           {team !== null && (
