@@ -72,7 +72,7 @@ export const POST: APIRoute = async (context) => {
 
     // Potwierdzenie musi trafić na listę, a nie na stronę drużyny: tamtej strony już nie ma.
     // Baner `?deleted=1` działa też wtedy, gdy zniknęła ostatnia drużyna i lista jest pusta.
-    return context.redirect("/teams?deleted=1");
+    return context.redirect("/?deleted=1");
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(`Failed to delete team for POST /api/teams/${id}/delete`, error);

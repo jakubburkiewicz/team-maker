@@ -513,36 +513,36 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 #### Automatyczne
 
-- [x] 1.1 Testy przechodzą: `npm test`
-- [x] 1.2 Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts`
-- [x] 1.3 Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts`
-- [x] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'`
-- [x] 1.5 Linting przechodzi: `npm run lint`
-- [x] 1.6 Build przechodzi: `npm run build`
+- [x] 1.1 Testy przechodzą: `npm test` — 0cf6af7
+- [x] 1.2 Moduł jest czysty: `! grep -nE '^import .* from "(astro:|@/lib/supabase)' src/lib/routes.ts` — 0cf6af7
+- [x] 1.3 Moduł nie zna usuwanych tras: `! grep -n '"/dashboard"' src/lib/routes.ts` — 0cf6af7
+- [x] 1.4 Moduł nie dopasowuje `/` przez prefiks: `! grep -vE '^\s*//' src/lib/routes.ts | grep -n 'startsWith("/")'` — 0cf6af7
+- [x] 1.5 Linting przechodzi: `npm run lint` — 0cf6af7
+- [x] 1.6 Build przechodzi: `npm run build` — 0cf6af7
 
 ### Faza 2: Przenosiny listy na stronę główną
 
 #### Automatyczne
 
-- [ ] 2.1 Pliki nie istnieją: `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro`
-- [ ] 2.2 Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro`
-- [ ] 2.3 Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro`
-- [ ] 2.4 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
-- [ ] 2.5 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
-- [ ] 2.6 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts`
-- [ ] 2.7 Testy przechodzą: `npm test`
-- [ ] 2.8 Linting przechodzi: `npm run lint`
-- [ ] 2.9 Build przechodzi: `npm run build`
+- [x] 2.1 Pliki nie istnieją: `! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && ! test -e src/components/Welcome.astro`
+- [x] 2.2 Strona główna czyta listę: `grep -qF "listTeams" src/pages/index.astro`
+- [x] 2.3 Strona główna ma wyjście z sesji: `grep -qF 'action="/api/auth/signout"' src/pages/index.astro`
+- [x] 2.4 Strona główna nie hydratuje niczego: `! grep -nE 'client:[a-z]+' src/pages/index.astro`
+- [x] 2.5 Middleware nie trzyma już własnej listy: `! grep -n "PROTECTED_ROUTES" src/middleware.ts && grep -qF "isProtectedRoute" src/middleware.ts`
+- [x] 2.6 Przekierowanie po usunięciu celuje w `/`: `grep -qF 'redirect("/?deleted=1")' src/pages/api/teams/\[id\]/delete.ts`
+- [x] 2.7 Testy przechodzą: `npm test`
+- [x] 2.8 Linting przechodzi: `npm run lint`
+- [x] 2.9 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 2.10 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]`
-- [ ] 2.11 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań
-- [ ] 2.12 Zalogowanie kończy się na `/` z listą
-- [ ] 2.13 Przycisk `Sign out` na `/` wylogowuje i kończy na ekranie logowania (przez 302 z `/`)
-- [ ] 2.14 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii
-- [ ] 2.15 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym
-- [ ] 2.16 `/dashboard` i `/teams` zwracają 404
+- [x] 2.10 Zalogowany widzi na `/` swoją listę drużyn, pozycje prowadzą do `/teams/[id]`
+- [x] 2.11 Niezalogowany na `/` ląduje na `/auth/signin` bez pętli przekierowań
+- [x] 2.12 Zalogowanie kończy się na `/` z listą
+- [x] 2.13 Przycisk `Sign out` na `/` wylogowuje i kończy na ekranie logowania (przez 302 z `/`)
+- [x] 2.14 Konto bez drużyn widzi na `/` stan pusty z CTA, nie kartę awarii
+- [x] 2.15 Usunięcie drużyny wraca na `/` z banerem „Team deleted."; usunięcie ostatniej pokazuje baner nad stanem pustym
+- [x] 2.16 `/dashboard` i `/teams` zwracają 404
 
 ### Faza 3: Odwołania do usuniętych tras
 
