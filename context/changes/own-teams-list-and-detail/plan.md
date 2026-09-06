@@ -441,30 +441,30 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 
 #### Automatyczne
 
-- [x] 1.1 Testy przechodzą, w tym nowy plik `team-view.test.ts`: `npm test`
-- [x] 1.2 Linting przechodzi: `npm run lint`
-- [x] 1.3 Build przechodzi: `npm run build`
-- [x] 1.4 Testy `src/lib/team-submission.test.ts` przechodzą bez żadnej edycji
+- [x] 1.1 Testy przechodzą, w tym nowy plik `team-view.test.ts`: `npm test` — 5471447
+- [x] 1.2 Linting przechodzi: `npm run lint` — 5471447
+- [x] 1.3 Build przechodzi: `npm run build` — 5471447
+- [x] 1.4 Testy `src/lib/team-submission.test.ts` przechodzą bez żadnej edycji — 5471447
 
 #### Ręczne
 
-- [x] 1.5 `src/lib/team-view.ts` nie importuje `astro:*` ani `@/lib/supabase`
+- [x] 1.5 `src/lib/team-view.ts` nie importuje `astro:*` ani `@/lib/supabase` — 5471447
 
 ### Faza 2: Lista własnych drużyn pod `/teams`
 
 #### Automatyczne
 
-- [ ] 2.1 Linting przechodzi: `npm run lint`
-- [ ] 2.2 Testy przechodzą: `npm test`
-- [ ] 2.3 Build przechodzi: `npm run build`
+- [x] 2.1 Linting przechodzi: `npm run lint`
+- [x] 2.2 Testy przechodzą: `npm test`
+- [x] 2.3 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 2.4 Świeże konto na `/teams` widzi wyjaśnienie i wezwanie, nie „0 results"
-- [ ] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja jest linkiem do `/teams/<id>`
-- [ ] 2.6 Drugie konto nie widzi drużyny pierwszego konta
-- [ ] 2.7 Wylogowany na `/teams` ląduje na `/auth/signin`
-- [ ] 2.8 Dashboard ma widoczne wejście na listę
+- [x] 2.4 Świeże konto na `/teams` widzi wyjaśnienie i wezwanie, nie „0 results"
+- [x] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja jest linkiem do `/teams/<id>`
+- [x] 2.6 Drugie konto nie widzi drużyny pierwszego konta
+- [x] 2.7 Wylogowany na `/teams` ląduje na `/auth/signin`
+- [x] 2.8 Dashboard ma widoczne wejście na listę
 
 ### Faza 3: Widok zapisanej drużyny pod `/teams/[id]`
 
