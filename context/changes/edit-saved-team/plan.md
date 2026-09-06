@@ -559,20 +559,20 @@ Istniejące wiersze `teams` nie wymagają backfillu — zmienia się wyłącznie
 
 #### Automatyczne
 
-- [x] 3.1 Lint i typy przechodzą (`npx astro sync && npm run lint`)
-- [x] 3.2 Testy przechodzą (`npm test`)
-- [x] 3.3 Build przechodzi (`npm run build`)
-- [x] 3.4 Prop `readOnly` nie istnieje nigdzie w `src/`
-- [x] 3.5 Nazwa `EmbarkGate` nie została nigdzie w `src/`
-- [x] 3.6 Oba renderowania `TeamComposer` mają dyrektywę hydratacji
-- [x] 3.7 Cała faza weszła jednym commitem (cztery pliki razem)
+- [x] 3.1 Lint i typy przechodzą (`npx astro sync && npm run lint`) — 1d5b152
+- [x] 3.2 Testy przechodzą (`npm test`) — 1d5b152
+- [x] 3.3 Build przechodzi (`npm run build`) — 1d5b152
+- [x] 3.4 Prop `readOnly` nie istnieje nigdzie w `src/` — 1d5b152
+- [x] 3.5 Nazwa `EmbarkGate` nie została nigdzie w `src/` — 1d5b152
+- [x] 3.6 Oba renderowania `TeamComposer` mają dyrektywę hydratacji — 1d5b152
+- [x] 3.7 Cała faza weszła jednym commitem (cztery pliki razem) — 1d5b152
 
 #### Ręczne
 
-- [x] 3.8 `/teams/<własne-id>` pokazuje edytowalny skład z przyciskiem „Save changes"
-- [x] 3.9 Usunięcie członka blokuje zapis, ponowne domknięcie progu odblokowuje (dwukierunkowość)
-- [x] 3.10 Zapis wraca na `/teams/<id>` z potwierdzeniem, a odświeżenie pokazuje nowy skład
-- [x] 3.11 Nazwa-hash jest identyczna przed i po zapisie
-- [x] 3.12 Wyjście bez zapisu nie utrwala zmian
-- [x] 3.13 Drugie konto dalej dostaje 404 na `/teams/<cudze-id>`
-- [x] 3.14 Wykres aktualizuje się w czasie nieodczuwalnym (< 200 ms)
+- [x] 3.8 `/teams/<własne-id>` pokazuje edytowalny skład z przyciskiem „Save changes" — 1d5b152
+- [x] 3.9 Usunięcie członka blokuje zapis, ponowne domknięcie progu odblokowuje (dwukierunkowość) — 1d5b152
+- [x] 3.10 Zapis wraca na `/teams/<id>` z potwierdzeniem, a odświeżenie pokazuje nowy skład — 1d5b152
+- [x] 3.11 Nazwa-hash jest identyczna przed i po zapisie — 1d5b152
+- [x] 3.12 Wyjście bez zapisu nie utrwala zmian — 1d5b152
+- [x] 3.13 Drugie konto dalej dostaje 404 na `/teams/<cudze-id>` — 1d5b152
+- [x] 3.14 Wykres aktualizuje się w czasie nieodczuwalnym (< 200 ms) — 1d5b152
