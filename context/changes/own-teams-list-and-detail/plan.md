@@ -96,7 +96,7 @@ niedostępna". Jedno miejsce, jedna reguła, jeden test.
 
 Drugą decyzją jest **jedna wyspa w dwóch trybach** (FR-008: „jeden widok obsługujący oba
 przypadki"). `TeamComposer` dostaje skład startowy i flagę trybu; w trybie odczytu sloty nie mają
-akcji, a `EmbarkGate` ustępuje miejsca nagłówkowi z nazwą-hashem. S-05 zdejmie flagę i podłączy
+akcji, a `EmbarkGate` znika — nazwę-hash niesie nagłówek strony. S-05 zdejmie flagę i podłączy
 zapis, zamiast budować trzeci ekran.
 
 ## Krytyczne szczegóły implementacji
@@ -258,8 +258,8 @@ istnieje, ale nikt na nią nie trafia.
 
 - Świeże konto na `/teams` widzi wyjaśnienie i wezwanie do utworzenia pierwszej drużyny, nie pustą
   tabelę ani „0 results"
-- Po zapisaniu drużyny `/teams` pokazuje ją z nazwą-hashem i datą; kliknięcie pozycji prowadzi pod
-  `/teams/<id>`
+- Po zapisaniu drużyny `/teams` pokazuje ją z nazwą-hashem i datą; pozycja jest linkiem do
+  `/teams/<id>` (przejście kliknięciem weryfikuje Faza 3 — trasa powstaje dopiero tam)
 - Drugie konto na `/teams` nie widzi drużyny pierwszego konta
 - Wylogowany na `/teams` ląduje na `/auth/signin`
 - Dashboard ma widoczne wejście na listę
@@ -288,12 +288,24 @@ bez możliwości zmiany czegokolwiek — i tak, żeby S-05 zdejmował flagę, a 
 - `TeamComposer` przyjmuje dodatkowo `initialComposition?: TeamComposition` (wartość początkowa
   `useState`, **nie** przez `useEffect`) oraz `readOnly?: boolean`, oba domyślnie zachowujące
   dzisiejsze zachowanie `/teams/new` (pusty skład, pełna interaktywność).
-- Przy `readOnly`: puste sloty nie renderują przycisku „Recruit", zajęte nie renderują „Remove",
-  a przełączniki perków pokazują stan wyboru bez możliwości zmiany (perk niewybrany pozostaje
-  widoczny — to część zapisanego wyboru „2 z 3", FR-014). `MemberPickerDialog` nie jest montowany.
+- Przy `readOnly` w slocie **nie istnieje żaden element akcji** — nie `<button disabled>`, tylko
+  brak przycisku (krok 4 testów ręcznych, kryterium 3.5). Konkretnie:
+  - **Perki** renderują się jako `<li>`/`<span>`, nie `<button>`. Wybrane zachowują dzisiejsze
+    wyróżnienie (`border-purple-400/60 bg-purple-500/20`), niewybrane pozostają w pełni widoczne
+    w neutralnym wariancie — **bez** `disabled:opacity-40` z `RosterSlot.tsx:74`. To istotne, nie
+    kosmetyczne: przy zapisanych dwóch perkach dzisiejsza gałąź `disabled={!selected &&
+    limitReached}` wyszarzyłaby trzeci perk na „niedostępny", podczas gdy FR-014 wymaga odczytu
+    „niewybrany" — trzeci perk jest częścią zapisanego wyboru „2 z 3", a nie brakiem możliwości.
+  - **Puste sloty** renderują nieinteraktywny placeholder (ta sama przerywana ramka, bez `onClick`,
+    bez hovera i bez etykiety „Recruit") — sześć slotów zostaje, żeby wykres i skład czytały się
+    tak samo jak przy kompletowaniu.
+  - **Zajęte sloty** nie renderują „Remove".
+  - **Licznik `Members: N/6`** zostaje bez zmian — jest odczytem, nie akcją.
+  `MemberPickerDialog` nie jest montowany.
 - Przy `readOnly` `EmbarkGate` nie jest renderowany — formularz `POST /api/teams` nie może istnieć
-  na ekranie istniejącej drużyny. W jego miejsce wchodzi statyczna informacja o nazwie-hashu
-  drużyny; nazwę wyspa przyjmuje propem (`teamName?: string`), a nie zgaduje.
+  na ekranie istniejącej drużyny. **W jego miejsce nie wchodzi nic**: nazwę-hash niesie nagłówek
+  strony (`.astro`, pkt 2), więc wyspa nie dostaje propu `teamName` — powielałby tę samą wartość
+  na jednym ekranie, a S-05 i tak wstawi w to miejsce przycisk zapisu.
 - `RosterSlot` dostaje wariant nieinteraktywny — sygnatura zmienia się tak, by tryb odczytu nie
   musiał przekazywać pustych funkcji-atrap. Kontrakt komponentu zostaje bezstanowy i sterowany
   propsami, jak dziś.
@@ -314,8 +326,20 @@ z logiem; następnie `resolveSavedTeam`. Cztery wyniki:
   szablonu renderująca `null` — nigdy jako top-level `return` (lekcja z S-03, wywraca `npm run lint`);
 - błąd odczytu drużyny albo puli → stan „niedostępna teraz" z powrotem do listy;
 - `resolveSavedTeam` odrzuca → stan „drużyna nie da się złożyć z aktualną pulą" z powrotem do listy;
-  komunikat mówi, że skład jest niespójny, i nie renderuje żadnej części składu;
-- sukces → `TeamComposer` z `client:load`, `pool`, `initialComposition`, `teamName` i `readOnly`.
+  komunikat mówi, że skład jest niespójny, i nie renderuje żadnej części składu. Ta gałąź
+  **musi logować** (`console.error` z `id` drużyny i listą `violations`, wzorem `new.astro:26-28`):
+  awaria zapytania jest przemijająca i zgłosi się sama, a odrzucony skład oznacza rekord w bazie
+  nie do złożenia z pulą — jedyny stan w tym fragmencie, którego bez logu nie da się zdiagnozować
+  w Workerze;
+- sukces → `TeamComposer` z `pool`, `initialComposition` i `readOnly`, **bez żadnej dyrektywy
+  `client:*`**.
+
+Brak hydratacji jest tu decyzją, nie przeoczeniem: w trybie odczytu wyspa nie ma ani jednej
+interakcji (`MemberPickerDialog` niemontowany, `EmbarkGate` nierenderowany, sloty bez akcji),
+`useState` służy wyłącznie za wartość początkową, a `CompetencyRadar` to statyczny SVG — więc
+render serwerowy daje ten sam ekran przy zerowym JS. Dzięki temu kryterium 3.5 („nie da się nic
+zmienić") wynika z braku runtime'u, a nie z poprawnie przekazanej flagi. **Nota dla S-05**:
+podłączając zapis, trzeba dopisać `client:load` z powrotem.
 
 Nagłówek strony niesie nazwę-hash i link „← Your teams". Trasa jest już chroniona prefiksem
 `/teams`; nie dotykamy `PROTECTED_ROUTES`.
@@ -344,7 +368,7 @@ nietknięte.
 - `/teams/<własne-id>` pokazuje dokładnie zapisany skład: te same postacie i te same perki co przy
   zapisie, wykres zgodny ze składem
 - Na `/teams/<id>` nie da się dodać, usunąć ani przełączyć niczego; nie ma przycisku „Embark",
-  a widoczna jest nazwa-hash drużyny
+  a widoczna jest nazwa-hash drużyny — strona renderuje się bez wyspy (brak `client:*`)
 - `/teams/<cudze-id>` i `/teams/<losowy-uuid>` dają 404 nierozróżnialnie; `/teams/abc` (nie-UUID)
   też
 - `/teams/new` nadal działa jak dotąd: pusty skład, pełna interaktywność, bramka „Embark" odblokowuje
@@ -437,7 +461,7 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 #### Ręczne
 
 - [ ] 2.4 Świeże konto na `/teams` widzi wyjaśnienie i wezwanie, nie „0 results"
-- [ ] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja prowadzi pod `/teams/<id>`
+- [ ] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja jest linkiem do `/teams/<id>`
 - [ ] 2.6 Drugie konto nie widzi drużyny pierwszego konta
 - [ ] 2.7 Wylogowany na `/teams` ląduje na `/auth/signin`
 - [ ] 2.8 Dashboard ma widoczne wejście na listę
@@ -453,7 +477,7 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 #### Ręczne
 
 - [ ] 3.4 `/teams/<własne-id>` pokazuje dokładnie zapisany skład i zgodny wykres
-- [ ] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash
+- [ ] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash, brak `client:*`
 - [ ] 3.6 Cudze id, losowy UUID i nie-UUID dają 404 nierozróżnialnie
 - [ ] 3.7 `/teams/new` nadal kompletuje i zapisuje drużynę bez regresji
 - [ ] 3.8 Strona potwierdzenia prowadzi do widoku drużyny i do listy

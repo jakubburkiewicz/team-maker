@@ -1,7 +1,7 @@
 ---
 change_id: own-teams-list-and-detail
 title: Lista własnych drużyn i widok zapisanej drużyny
-status: planned
+status: plan_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---
