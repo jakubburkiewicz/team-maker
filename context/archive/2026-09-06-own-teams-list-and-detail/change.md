@@ -1,9 +1,10 @@
 ---
 change_id: own-teams-list-and-detail
 title: Lista własnych drużyn i widok zapisanej drużyny
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-06
+archived_at: 2026-09-06T06:07:00Z
 ---
 
 ## Notes

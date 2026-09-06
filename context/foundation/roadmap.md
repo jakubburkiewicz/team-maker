@@ -62,7 +62,7 @@ projektu; dopóki ten fragment nie działa, reszta pętli CRUD nie ma nad czym p
 | S-01 | `team-roster-composition`          | dobrać do sześciu różnych postaci i zobaczyć swój skład                   | F-02              | US-01, FR-006, FR-012, FR-013, FR-015            | done        |
 | S-02 | `competency-radar-gate`            | wybrać perki i zobaczyć na wykresie werdykt progu                         | S-01              | US-01, FR-014, FR-016, FR-018                    | done        |
 | S-03 | `first-saved-team`                 | zapisać domkniętą drużynę i zobaczyć potwierdzenie zapisu                 | S-02              | US-01, FR-007, FR-011, FR-018, FR-019            | done        |
-| S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | in-progress |
+| S-04 | `own-teams-list-and-detail`        | zobaczyć listę wyłącznie własnych drużyn i otworzyć jedną z nich          | S-03              | US-01, FR-004, FR-005, FR-008                    | done        |
 | S-05 | `edit-saved-team`                  | zmienić skład zapisanej drużyny i zapisać zmiany                          | S-04              | US-02, FR-009, FR-018                            | proposed |
 | S-06 | `delete-team-confirmed`            | usunąć własną drużynę po potwierdzeniu w oknie dialogowym                 | S-04              | US-03, FR-010                                    | proposed |
 | S-07 | `cross-account-team-isolation`     | mieć pewność, że cudza drużyna jest niedostępna każdą ścieżką             | S-05, S-06        | US-04, FR-004                                    | proposed |
@@ -262,7 +262,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   puli na pusty slot (`charactersById.get(...) ?? null`) — w S-01 nieosiągalne, ale gdy skład
   przyjdzie z bazy, a pula z osobnego zapytania, taki członek zniknie ze slotów, choć licznik go
   policzy. Plan S-04 ma rozstrzygnąć, co robić z nieznanym `characterId`.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-05: Gracz zmienia skład zapisanej drużyny
 
@@ -420,3 +420,7 @@ użytkownika). Poniższe fundamenty zakładają, że te elementy są obecne i NI
   komunikat, który najpierw wprost potwierdza zapis drużyny pod automatycznie wygenerowaną
   nazwą-hashem, a dopiero potem informuje „Work in Progress"** — Zarchiwizowano 2026-09-05 →
   `context/archive/2026-09-05-first-saved-team/`. Lekcja: —.
+- **S-04: Gracz może zobaczyć listę wyłącznie własnych zapisanych drużyn — a przy braku
+  jakiejkolwiek drużyny wyjaśnienie i wezwanie do utworzenia pierwszej, nie zero wyników — oraz
+  otworzyć wybraną drużynę i zobaczyć jej skład, perki i wykres kompetencji** — Zarchiwizowano
+  2026-09-06 → `context/archive/2026-09-06-own-teams-list-and-detail/`. Lekcja: —.
