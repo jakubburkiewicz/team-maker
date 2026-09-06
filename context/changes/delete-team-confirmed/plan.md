@@ -62,8 +62,15 @@ Na `/teams/<id>` obok kompozytora stoi przycisk „Delete team". Kliknięcie otw
 cofnąć. „Cancel" zamyka okno i nie robi nic. „Delete team" wysyła natywny formularz na
 `POST /api/teams/<id>/delete`; po udanym usunięciu gracz ląduje na `/teams?deleted=1` z zielonym
 banerem — nad listą, jeśli zostały inne drużyny, albo nad stanem pustym z wezwaniem „Assemble your
-first team", jeśli to była ostatnia. Odmowa wraca na `/teams/<id>?error=…` i wpada w istniejący
-`<ServerError>`.
+first team", jeśli to była ostatnia. Odmowa wraca na `/teams/<id>?error=…`.
+
+**Komunikat odmowy widzi wyłącznie gałąź `throw` na własnym, istniejącym wierszu.** `[id].astro:78-81`
+liczy `notFound = !teamFailed && team === null`, a szablon (`:82`) renderuje wtedy `null` — całą
+stronę, nie tylko baner; slot `<ServerError>` (`:113`) żyje dopiero w gałęzi sukcesu (`:102`). Więc
+`deleteTeam` → `null` (cudze id, nieznane id, nie-UUID) i `createClient` → `null` kończą się **gołym
+404 bez tekstu**. Jest to przyjęte świadomie: dokładnie to samo daje dziś GET na cudze id, więc nie
+powstaje nowy kanał enumeracji (US-04), a z interfejsu ta ścieżka jest nieosiągalna — przycisk stoi
+tylko przy własnym wierszu. Rozstrzygnięcie „404 vs redirect" należy do S-07.
 
 Weryfikacja: dwa konta, drużyna każdego. Usunięcie własnej znika z listy i nie wraca po odświeżeniu;
 `POST` na id drużyny drugiego konta nie zmienia niczego u tamtego konta i daje ten sam komunikat
@@ -99,7 +106,8 @@ co awaria; `npm test` przechodzi z przepisanym `teams-policy-sql.test.ts`.
 - **Zmian w `TeamComposer`, `CompositionGate` i bramce progu** — usuwanie nie dotyka reguły domenowej
   ani `gateTeamSubmission`.
 - **Slotu `<ServerError>` na liście `/teams`** — odmowa wraca na stronę szczegółów, która taki slot
-  już ma. Lista dostaje wyłącznie baner sukcesu.
+  już ma dla gałęzi `throw`; dla gałęzi `null` odmowa kończy się gołym 404 i to jest zamierzone
+  (§Pożądany stan końcowy). Lista dostaje wyłącznie baner sukcesu.
 - **Wydzielenia `src/lib/team-composition.ts`** — follow-up F7 z przeglądu S-04 zostaje follow-upem:
   trasa usuwania nie konsumuje kształtu składu, więc trzeci importer `toTeamComposition` nadal nie
   powstaje.
@@ -130,7 +138,18 @@ Druga decyzja: **usuwanie nie wchodzi do `TeamComposer`**. Ta wyspa dopiero co p
 okna przez portal do `document.body`, więc `<form>` owinięty wokół `<AlertDialog>` w drzewie React
 **nie obejmie** przycisku potwierdzenia w DOM — submit nigdy nie wystartuje, a awaria jest cicha:
 przycisk zamknie okno i nic się nie stanie. `<form method="post" action="/api/teams/<id>/delete">`
-idzie do `AlertDialogFooter`, a `AlertDialogAction` bierze `asChild` i owija `<button type="submit">`.
+idzie do `AlertDialogFooter`.
+
+**Przycisk potwierdzenia nie może być `AlertDialogAction`.** Ten prymityw jest zbudowany na
+`DialogPrimitive.Close` (`@radix-ui/react-alert-dialog/dist/index.mjs:81-86`), a `DialogClose` ma
+bezwarunkowe `onClick: () => context.onOpenChange(false)`
+(`@radix-ui/react-dialog/dist/index.mjs:272-286`). Klik zamyka okno w tym samym zdarzeniu, w którym
+przeglądarka miałaby uruchomić submit — odłączony przycisk nie ma właściciela formularza i POST nie
+wychodzi. Awaria jest cicha i **tej samej klasy** co pułapka portalu powyżej. Jedyne, co ją dziś
+maskuje, to animacja wyjścia trzymana przez `Presence` do `animationend` — czyli klasa CSS w pliku
+generowanym przez CLI. Potwierdzenie jest więc zwykłym `<Button type="submit">` wewnątrz formularza;
+okno zamyka nawigacja po 302, nie handler Radiksa. `AlertDialogCancel` zostaje bez zmian —
+zamknięcie jest jego jedynym zadaniem.
 
 **`delete … returning` przechodzi przez politykę `select`.** Kontrakt `TeamSummary | null` opiera się
 na tym, że skasowany wiersz wraca — a wraca tylko dlatego, że polityka `owner can read teams`
@@ -174,7 +193,9 @@ using (user_id = (select auth.uid()));` plus `grant delete on public.teams to au
 `with check` (Postgres go tu nie przyjmuje). Nagłówek komentarza w stylu
 `20260906090000_teams_update_policy.sql`: co nadaje, dlaczego grant jest tabelowy (brak kolumnowej
 granulacji dla `delete`), że `delete … returning` przechodzi przez politykę `select`, oraz czego plik
-**nie** nadaje (`truncate` zostaje cofnięty, nic dla `anon`).
+**nie** nadaje (`truncate` zostaje cofnięty, nic dla `anon`). W tej prozie nie może paść dosłowny
+ciąg `grant … truncate` — kryterium 1.9 grepuje **surowe** pliki, więc zdanie o przywileju
+wywróciłoby własną bramkę.
 
 #### 2. `deleteTeam` w repozytorium drużyn
 
@@ -202,6 +223,13 @@ i postawić na jej miejscu bariery, których nie widzi ani lint, ani typy.
 `for delete to authenticated` oraz `using (user_id = (select auth.uid()))`; (b) ta sama migracja
 zawiera `grant delete on public.teams to authenticated`; (c) na `allMigrationsWithoutComments()` —
 żadna migracja nie nadaje `truncate` na `public.teams` ani niczego dla `anon` na tej tabeli.
+
+**Obie asercje z (c) muszą być zakotwiczone na `grant\s`**, wzorem `grantsUpdateOnWholeTable`
+(`:73`). Helper strzyże wyłącznie komentarze — `revoke` w korpusie **zostaje**, a są tam dokładnie
+dwa zdania, które naiwny wzorzec złapie jako fałszywe trafienie:
+`revoke update, delete, truncate on public.teams from authenticated;` (`20260905185700:46`) oraz
+`revoke all on public.teams from anon;` (`:44`). Bez kotwicy na `grant` nowy strażnik idzie na
+czerwono natychmiast — na migracji, której właśnie pilnuje.
 Zaktualizuj tytuł `describe` i nagłówkowy docstring pliku, bo przedmiotem testu nie jest już sam
 `update`. Test dalej czyta wyłącznie przez `node:fs` — bez Supabase, bez `astro:*`.
 
@@ -220,7 +248,10 @@ Zaktualizuj tytuł `describe` i nagłówkowy docstring pliku, bo przedmiotem tes
 - Repo nadal nie importuje warstwy Astro/Supabase: `! grep -nE 'from "astro|@/lib/supabase' src/lib/team-repo.ts`
 - Nieaktualna granica zakresu zniknęła: `! grep -n "to S-06" src/lib/teams-policy-sql.test.ts`
 - Żaden przywilej usuwania nie wyciekł poza tabelowy `delete`:
-  `! grep -rn "grant all\|truncate on public.teams to" supabase/migrations/`
+  `! grep -rn "grant all\|grant.*truncate" supabase/migrations/`
+  (kotwica na `grant`, nie na samym `truncate`: `grep` biegnie po **surowych** plikach, a nagłówek
+  nowej migracji ma w prozie wyjaśnić, że `truncate` zostaje cofnięty — wzorzec na samym słowie
+  trafiłby we własny komentarz i w `revoke … truncate` ze `20260905185700:46`)
 - Żadna trasa ani komponent nie woła jeszcze `deleteTeam`:
   `! grep -rn "deleteTeam" src/pages/ src/components/`
 
@@ -283,8 +314,9 @@ enumeracji).
   `test "$(grep -c 'return ' 'src/pages/api/teams/[id]/delete.ts')" = "$(grep -c 'context.redirect' 'src/pages/api/teams/[id]/delete.ts')"`
 - Trasa nie zna reguły domenowej ani składu:
   `! grep -nE "gateTeamSubmission|COMPOSITION_FIELD|evaluateTeam|COMPETENCY_THRESHOLD|formData" 'src/pages/api/teams/[id]/delete.ts'`
-- Jeden komunikat, dwie gałęzie (deklaracja + dwa użycia = 3 wystąpienia):
-  `test "$(grep -c 'DELETE_FAILED_MESSAGE' 'src/pages/api/teams/[id]/delete.ts')" = "3"`
+- Jeden komunikat, dwie gałęzie odmowy — mierzone na użyciach, nie na wystąpieniach nazwy, żeby
+  docstring mógł stałą nazwać po imieniu:
+  `test "$(grep -c 'reject(DELETE_FAILED_MESSAGE)' 'src/pages/api/teams/[id]/delete.ts')" = "2"`
 - Cel przekierowania sukcesu jest dokładnie jeden:
   `grep -q '"/teams?deleted=1"' 'src/pages/api/teams/[id]/delete.ts'`
 - Middleware nietknięty: `git diff --name-only HEAD -- src/middleware.ts` nie zwraca nic
@@ -295,7 +327,9 @@ enumeracji).
 - Zalogowany `curl -i -X POST --cookie <sesja> http://localhost:4321/api/teams/<własne-id>/delete`
   odpowiada 302 na `/teams?deleted=1`, a wiersz znika z `/teams`
 - To samo żądanie na id drużyny **drugiego konta** odpowiada 302 na `/teams/<id>?error=…`, a drużyna
-  drugiego konta jest po nim nadal widoczna na jego liście (US-04, FR-010)
+  drugiego konta jest po nim nadal widoczna na jego liście (US-04, FR-010). Strona pod tym adresem
+  to **puste 404 bez komunikatu** — `?error=` jest tam celowo martwy, bo `<ServerError>` żyje tylko
+  w gałęzi sukcesu; to nie jest regres
 - To samo żądanie na id, które nie jest UUID (`.../api/teams/not-a-uuid/delete`) daje ten sam
   komunikat co wyżej — bez 500 i bez błędu Postgresa w logach
 - Żądanie bez ciasteczka sesji kończy się przekierowaniem na `/auth/signin`
@@ -336,14 +370,21 @@ wprost, że operacji nie da się cofnąć. Osobny komponent, żeby `TeamComposer
 o usuwaniu.
 
 **Umowa**: `export default function DeleteTeamDialog({ teamId, teamName }: { teamId: string;
-teamName: string })`. Stan otwarcia w `useState`. Trigger: `<Button variant="destructive">`.
+teamName: string })`. Stan otwarcia w `useState`. Trigger: `<Button variant="destructive">`
+z nadpisującym `className` w stylu `MemberPickerDialog.tsx:33` — wariant `destructive` siedzi na
+tokenie `bg-destructive` (`button.tsx:11-22`), a `/teams/[id]` jest w całości ręcznym „cosmic"
+(`bg-cosmic`, `border-white/10`, `bg-white/5`), więc goły token odstaje od ekranu tak samo jak
+jasne tło `DialogContent`. Ten sam przycisk jest potwierdzeniem w stopce okna (patrz niżej).
 `AlertDialogContent` dostaje nadpisujący `className="border-white/10 bg-[#0f1529] text-white"` —
 prymityw shadcn wchodzi z jasnymi tokenami `bg-background`, tak samo jak `DialogContent`
 w `MemberPickerDialog.tsx:33`. W `AlertDialogFooter`: `AlertDialogCancel` z tekstem „Cancel" oraz
 `<form method="post" action={\`/api/teams/${teamId}/delete\`}>` zawierający
-`<AlertDialogAction asChild><button type="submit">Delete team</button></AlertDialogAction>`.
-Formularz **wewnątrz** treści okna — Radix portuje ją do `document.body`, więc formularz owinięty
-wokół `<AlertDialog>` nie objąłby przycisku w DOM. Zero `fetch`, zero `onSubmit`.
+`<Button type="submit" variant="destructive">Delete team</Button>`.
+**Bez `AlertDialogAction`** — jest zbudowany na `DialogPrimitive.Close`, więc zamknąłby okno w tym
+samym zdarzeniu, w którym miałby wystartować submit (§Krytyczne szczegóły implementacji); okno
+zamyka nawigacja po 302. Formularz **wewnątrz** treści okna — Radix portuje ją do `document.body`,
+więc formularz owinięty wokół `<AlertDialog>` nie objąłby przycisku w DOM. Zero `fetch`,
+zero `onSubmit`.
 
 #### 3. Osadzenie na stronie szczegółów
 
@@ -384,7 +425,9 @@ warunkowym, nie w gałęzi `teams === null`. Strona zostaje czystym SSR: żadnej
 - Konfiguracja shadcn i style nietknięte:
   `git diff --name-only HEAD~1 -- components.json src/styles/global.css` nie zwraca nic
 - Formularz, nie `fetch`: `! grep -rnE "fetch\(|onSubmit" src/components/team/DeleteTeamDialog.tsx`
-  oraz `grep -q 'method="post"' src/components/team/DeleteTeamDialog.tsx`
+  oraz `grep -q 'method="post"' src/components/team/DeleteTeamDialog.tsx`;
+  submit nie przechodzi przez `Close`:
+  `! grep -n "AlertDialogAction" src/components/team/DeleteTeamDialog.tsx`
 - `TeamComposer` nie wie o usuwaniu:
   `! grep -nE "delete|Delete" src/components/team/TeamComposer.tsx`
 - Strona szczegółów ma dokładnie dwie wyspy:
@@ -520,7 +563,7 @@ produkcji gracze mogą trwale kasować własne rekordy.
 - [ ] 2.4 Zero JSON w odpowiedziach trasy
 - [ ] 2.5 Każdy `return` w trasie to `context.redirect`
 - [ ] 2.6 Trasa nie zna bramki progu, składu ani `formData`
-- [ ] 2.7 `DELETE_FAILED_MESSAGE` występuje dokładnie 3× (deklaracja + dwie gałęzie)
+- [ ] 2.7 `reject(DELETE_FAILED_MESSAGE)` występuje dokładnie 2× (obie gałęzie odmowy, jeden tekst)
 - [ ] 2.8 Cel przekierowania sukcesu to dokładnie `"/teams?deleted=1"`
 - [ ] 2.9 `src/middleware.ts` nietknięty
 - [ ] 2.10 Żaden komponent nie woła jeszcze trasy usuwania
@@ -528,7 +571,7 @@ produkcji gracze mogą trwale kasować własne rekordy.
 #### Ręczne
 
 - [ ] 2.11 POST na własne id → 302 na `/teams?deleted=1`, wiersz znika z listy
-- [ ] 2.12 POST na id drugiego konta → 302 na `?error=`, drużyna drugiego konta nietknięta (US-04)
+- [ ] 2.12 POST na id drugiego konta → 302 na `?error=`, strona docelowa to puste 404, drużyna drugiego konta nietknięta (US-04)
 - [ ] 2.13 POST na id niebędące UUID → ten sam komunikat, bez 500 i bez `22P02` w logach
 - [ ] 2.14 POST bez ciasteczka sesji → przekierowanie na `/auth/signin`
 
@@ -543,7 +586,7 @@ produkcji gracze mogą trwale kasować własne rekordy.
 - [ ] 3.5 `@radix-ui/react-alert-dialog` w `dependencies`
 - [ ] 3.6 `package-lock.json` wolny od `radix-ui` i `cn`
 - [ ] 3.7 `components.json` i `src/styles/global.css` nietknięte
-- [ ] 3.8 `DeleteTeamDialog` używa natywnego formularza, nie `fetch`/`onSubmit`
+- [ ] 3.8 `DeleteTeamDialog` używa natywnego formularza — bez `fetch`/`onSubmit` i bez `AlertDialogAction`
 - [ ] 3.9 `TeamComposer` nie wie o usuwaniu
 - [ ] 3.10 `/teams/[id].astro` ma dokładnie dwie dyrektywy `client:load`
 - [ ] 3.11 `/teams/index.astro` zostaje czystym SSR (zero `client:*`)

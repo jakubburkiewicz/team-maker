@@ -1,7 +1,7 @@
 ---
 change_id: delete-team-confirmed
 title: Usunięcie drużyny po potwierdzeniu w oknie dialogowym
-status: planned
+status: plan_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 ---
