@@ -548,19 +548,19 @@ Zmiana nie wymaga `supabase db push` ani żadnej operacji na hostowanym projekci
 
 #### Automatyczne
 
-- [x] 3.1 Brak odwołań w kodzie: `! grep -rn 'href="/dashboard"' src/ && ! grep -rn 'href="/teams"' src/`
-- [x] 3.2 README nie dokumentuje usuniętej trasy: ``! grep -n '^| `/dashboard`' README.md``
-- [x] 3.3 Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md`
-- [x] 3.4 Testy przechodzą: `npm test`
-- [x] 3.5 Linting przechodzi: `npm run lint`
-- [x] 3.6 Build przechodzi: `npm run build`
-- [x] 3.7 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro`
+- [x] 3.1 Brak odwołań w kodzie: `! grep -rn 'href="/dashboard"' src/ && ! grep -rn 'href="/teams"' src/` — f50b65b
+- [x] 3.2 README nie dokumentuje usuniętej trasy: ``! grep -n '^| `/dashboard`' README.md`` — f50b65b
+- [x] 3.3 Dokumentacja nie wskazuje skasowanego mechanizmu: `! grep -n "PROTECTED_ROUTES" AGENTS.md README.md` — f50b65b
+- [x] 3.4 Testy przechodzą: `npm test` — f50b65b
+- [x] 3.5 Linting przechodzi: `npm run lint` — f50b65b
+- [x] 3.6 Build przechodzi: `npm run build` — f50b65b
+- [x] 3.7 Bramka dla zmiany siostrzanej jest zielona: `! test -e src/components/Welcome.astro && ! test -e src/pages/dashboard.astro && ! test -e src/pages/teams/index.astro && grep -qF "listTeams" src/pages/index.astro` — f50b65b
 
 #### Ręczne
 
-- [x] 3.8 Link powrotny z `/teams/new` prowadzi na `/`
-- [x] 3.9 Link powrotny z `/teams/[id]` prowadzi na `/`
-- [x] 3.10 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów
-- [x] 3.11 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/`
-- [x] 3.12 Karty awarii (sonda: tymczasowy `throw` w `getCharacterPool` i `getTeamSummary`) mają przyciski celujące w `/`
-- [x] 3.13 Sonda cofnięta przed commitem: `git diff src/lib/` czysty
+- [x] 3.8 Link powrotny z `/teams/new` prowadzi na `/` — f50b65b
+- [x] 3.9 Link powrotny z `/teams/[id]` prowadzi na `/` — f50b65b
+- [x] 3.10 Wszystkie linki z `/teams/[id]/embark` prowadzą do istniejących ekranów — f50b65b
+- [x] 3.11 Ekran „Team not found" (404, identyczny dla obu tras) ma działający link na `/` — f50b65b
+- [x] 3.12 Karty awarii (sonda: tymczasowy `throw` w `getCharacterPool` i `getTeamSummary`) mają przyciski celujące w `/` — f50b65b
+- [x] 3.13 Sonda cofnięta przed commitem: `git diff src/lib/` czysty — f50b65b
