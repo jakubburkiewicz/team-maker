@@ -454,30 +454,30 @@ zapisane przez S-03 są czytane w tym samym kształcie, w jakim je zapisano.
 
 #### Automatyczne
 
-- [x] 2.1 Linting przechodzi: `npm run lint`
-- [x] 2.2 Testy przechodzą: `npm test`
-- [x] 2.3 Build przechodzi: `npm run build`
+- [x] 2.1 Linting przechodzi: `npm run lint` — 2bfb8d0
+- [x] 2.2 Testy przechodzą: `npm test` — 2bfb8d0
+- [x] 2.3 Build przechodzi: `npm run build` — 2bfb8d0
 
 #### Ręczne
 
-- [x] 2.4 Świeże konto na `/teams` widzi wyjaśnienie i wezwanie, nie „0 results"
-- [x] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja jest linkiem do `/teams/<id>`
-- [x] 2.6 Drugie konto nie widzi drużyny pierwszego konta
-- [x] 2.7 Wylogowany na `/teams` ląduje na `/auth/signin`
-- [x] 2.8 Dashboard ma widoczne wejście na listę
+- [x] 2.4 Świeże konto na `/teams` widzi wyjaśnienie i wezwanie, nie „0 results" — 2bfb8d0
+- [x] 2.5 Zapisana drużyna widoczna z nazwą-hashem i datą; pozycja jest linkiem do `/teams/<id>` — 2bfb8d0
+- [x] 2.6 Drugie konto nie widzi drużyny pierwszego konta — 2bfb8d0
+- [x] 2.7 Wylogowany na `/teams` ląduje na `/auth/signin` — 2bfb8d0
+- [x] 2.8 Dashboard ma widoczne wejście na listę — 2bfb8d0
 
 ### Faza 3: Widok zapisanej drużyny pod `/teams/[id]`
 
 #### Automatyczne
 
-- [ ] 3.1 Linting przechodzi, w tym reguły typowane na nowych stronach `.astro`: `npm run lint`
-- [ ] 3.2 Testy przechodzą: `npm test`
-- [ ] 3.3 Build przechodzi: `npm run build`
+- [x] 3.1 Linting przechodzi, w tym reguły typowane na nowych stronach `.astro`: `npm run lint`
+- [x] 3.2 Testy przechodzą: `npm test`
+- [x] 3.3 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 3.4 `/teams/<własne-id>` pokazuje dokładnie zapisany skład i zgodny wykres
-- [ ] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash, brak `client:*`
-- [ ] 3.6 Cudze id, losowy UUID i nie-UUID dają 404 nierozróżnialnie
-- [ ] 3.7 `/teams/new` nadal kompletuje i zapisuje drużynę bez regresji
-- [ ] 3.8 Strona potwierdzenia prowadzi do widoku drużyny i do listy
+- [x] 3.4 `/teams/<własne-id>` pokazuje dokładnie zapisany skład i zgodny wykres
+- [x] 3.5 Na `/teams/<id>` nie da się nic zmienić; brak „Embark", widoczna nazwa-hash, brak `client:*`
+- [x] 3.6 Cudze id, losowy UUID i nie-UUID dają 404 nierozróżnialnie
+- [x] 3.7 `/teams/new` nadal kompletuje i zapisuje drużynę bez regresji
+- [x] 3.8 Strona potwierdzenia prowadzi do widoku drużyny i do listy

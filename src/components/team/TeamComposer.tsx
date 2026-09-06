@@ -3,7 +3,7 @@ import { useState } from "react";
 import { CompetencyRadar } from "@/components/team/CompetencyRadar";
 import { EmbarkGate } from "@/components/team/EmbarkGate";
 import { MemberPickerDialog } from "@/components/team/MemberPickerDialog";
-import { RosterSlot, type RosterMember } from "@/components/team/RosterSlot";
+import { RosterSlot, type RosterMember, type RosterSlotHandlers } from "@/components/team/RosterSlot";
 import {
   COMPETENCY_THRESHOLD,
   MAX_TEAM_SIZE,
@@ -17,6 +17,19 @@ import {
 
 interface Props {
   pool: readonly PoolCharacter[];
+  /**
+   * Skład, od którego wyspa startuje — **wartość początkowa `useState`**, nie synchronizowana
+   * przez `useEffect`. Wyspa zostaje jedynym właścicielem stanu, więc S-05, dodając zapis, nie
+   * odziedziczy dwóch źródeł prawdy.
+   */
+  initialComposition?: TeamComposition;
+  /**
+   * Tryb tylko do odczytu (FR-008: jeden widok obsługujący kompletowanie i podgląd zapisanej
+   * drużyny). Sloty nie dostają akcji, `MemberPickerDialog` nie jest montowany, a `EmbarkGate`
+   * nie jest renderowany — formularz `POST /api/teams` nie może istnieć na ekranie istniejącej
+   * drużyny. W jego miejsce nie wchodzi nic: nazwę-hash niesie nagłówek strony.
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -31,9 +44,12 @@ interface Props {
  * Wykres i bramka żyją w tej samej wyspie, bo dwie wyspy nie dzielą stanu. `evaluateTeam` jest
  * liczone przy każdym renderze, bez memoizacji — react-compiler robi to sam, a koszt to siedem
  * liczników nad ≤ 6 członkami (NFR 200 ms z zapasem).
+ *
+ * Domyślne wartości `initialComposition` i `readOnly` zachowują zachowanie `/teams/new` sprzed
+ * S-04: pusty skład i pełna interaktywność.
  */
-export default function TeamComposer({ pool }: Props) {
-  const [composition, setComposition] = useState<TeamComposition>([]);
+export default function TeamComposer({ pool, initialComposition = [], readOnly = false }: Props) {
+  const [composition, setComposition] = useState<TeamComposition>(initialComposition);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const charactersById = new Map(pool.map((character) => [character.id, character]));
@@ -65,13 +81,21 @@ export default function TeamComposer({ pool }: Props) {
     });
   }
 
-  // Nieznany `characterId` → pusty slot, jak w S-01; co z nim robić rozstrzyga S-04.
+  // Nieznany `characterId` → pusty slot. Na `/teams/new` stan nieosiągalny (skład powstaje przez
+  // `roster.ts` z tej samej puli), a skład z bazy odcina `resolveSavedTeam` (`src/lib/team-view.ts`)
+  // zanim tu dotrze — strona szczegółów pokazuje wtedy stan awarii zamiast częściowego składu.
   const slots = Array.from({ length: MAX_TEAM_SIZE }, (_, index): RosterMember | null => {
     const selection = composition.at(index);
     if (selection === undefined) return null;
     const character = charactersById.get(selection.characterId);
     return character === undefined ? null : { character, selection };
   });
+
+  // Jedna grupa albo nic: `undefined` znaczy „ten slot nie ma żadnego elementu akcji". Bez tego
+  // tryb odczytu musiałby wstrzykiwać puste funkcje-atrapy pod klikalne przyciski.
+  const handlers: RosterSlotHandlers | undefined = readOnly
+    ? undefined
+    : { onRecruit: handleRecruit, onRemove: handleRemove, onTogglePerk: handleTogglePerk };
 
   return (
     <section className="grid w-full gap-6 text-white lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -85,12 +109,7 @@ export default function TeamComposer({ pool }: Props) {
         <ul className="grid grid-cols-2 gap-4">
           {slots.map((member, index) => (
             <li key={member?.character.id ?? `empty-${index}`}>
-              <RosterSlot
-                member={member}
-                onRecruit={handleRecruit}
-                onRemove={handleRemove}
-                onTogglePerk={handleTogglePerk}
-              />
+              <RosterSlot member={member} handlers={handlers} />
             </li>
           ))}
         </ul>
@@ -107,15 +126,17 @@ export default function TeamComposer({ pool }: Props) {
         ) : (
           <p className="text-sm text-red-200">The roster breaks a team limit, so the chart cannot be shown.</p>
         )}
-        <EmbarkGate ready={evaluation.isValid} composition={composition} />
+        {readOnly ? null : <EmbarkGate ready={evaluation.isValid} composition={composition} />}
       </aside>
-      <MemberPickerDialog
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        pool={pool}
-        memberIds={memberIds}
-        onAdd={handleAdd}
-      />
+      {readOnly ? null : (
+        <MemberPickerDialog
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          pool={pool}
+          memberIds={memberIds}
+          onAdd={handleAdd}
+        />
+      )}
     </section>
   );
 }

@@ -1,0 +1,128 @@
+---
+import TeamComposer from "@/components/team/TeamComposer";
+import Layout from "@/layouts/Layout.astro";
+import { getCharacterPool } from "@/lib/character-pool-repo";
+import type { PoolCharacter, TeamComposition } from "@/lib/domain";
+import { createClient } from "@/lib/supabase";
+import { getTeamDetail, type TeamDetail } from "@/lib/team-repo";
+import { resolveSavedTeam } from "@/lib/team-view";
+
+// Widok zapisanej drużyny (FR-008) — ten sam `TeamComposer` co kompletowanie, w trybie odczytu.
+//
+// Gołe 404 idzie przez `Astro.response.status` i gałąź szablonu renderującą `null`, nigdy przez
+// top-level `return`: typowana reguła `@typescript-eslint/no-misused-promises` crashuje na nim
+// i wywraca `npm run lint` (lekcja z S-03).
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+let team: TeamDetail | null = null;
+let pool: readonly PoolCharacter[] | null = null;
+let failed = false;
+
+// Gałąź `!supabase` jest obroną w głąb: bez kluczy Supabase middleware przekierował na logowanie.
+if (supabase) {
+  // Oba odczyty naraz — drużyna i pula nie zależą od siebie, więc nie ma powodu na dwa
+  // round-tripy po kolei. `allSettled`, bo każda awaria ma własny log.
+  const [teamResult, poolResult] = await Promise.allSettled([
+    getTeamDetail(supabase, Astro.params.id),
+    getCharacterPool(supabase),
+  ]);
+
+  if (teamResult.status === "fulfilled") {
+    team = teamResult.value;
+  } else {
+    // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
+    // eslint-disable-next-line no-console
+    console.error(`Failed to load team for /teams/${Astro.params.id ?? ""}`, teamResult.reason);
+    failed = true;
+  }
+
+  if (poolResult.status === "fulfilled") {
+    pool = poolResult.value;
+  } else {
+    // eslint-disable-next-line no-console
+    console.error("Failed to load character pool for /teams/[id]", poolResult.reason);
+    failed = true;
+  }
+}
+
+// `null` nierozróżnialnie dla nieznanego id, cudzej drużyny (RLS) i nie-UUID — istnienie cudzego
+// rekordu nie może wyciec różnicą w odpowiedzi.
+const notFound = !failed && team === null;
+
+let composition: TeamComposition | null = null;
+let inconsistent = false;
+
+if (team !== null && pool !== null) {
+  const resolved = resolveSavedTeam(team.composition, pool);
+
+  if (resolved.ok) {
+    composition = resolved.composition;
+  } else {
+    inconsistent = true;
+    // Ta gałąź **musi** logować: awaria zapytania jest przemijająca i zgłosi się sama, a odrzucony
+    // skład oznacza rekord w bazie nie do złożenia z pulą — jedyny stan tego fragmentu, którego
+    // bez logu nie da się zdiagnozować w Workerze.
+    // eslint-disable-next-line no-console
+    console.error(`Saved team ${team.id} cannot be composed from the current character pool`, resolved.violations);
+  }
+}
+
+if (notFound) {
+  Astro.response.status = 404;
+}
+---
+
+{
+  notFound ? null : (
+    <Layout title={team ? `Team ${team.name}` : "Team unavailable"}>
+      <div class="bg-cosmic min-h-screen p-4 text-white">
+        <div class="mx-auto w-full max-w-6xl">
+          <div class="mb-6 flex items-center justify-between">
+            <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+              {team ? (
+                <Fragment>
+                  Team <code class="font-mono">{team.name}</code>
+                </Fragment>
+              ) : (
+                "Team"
+              )}
+            </h1>
+            <a href="/teams" class="text-sm text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+              ← Your teams
+            </a>
+          </div>
+          {composition !== null && pool !== null ? (
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+              {/*
+                Brak `client:*` jest decyzją, nie przeoczeniem: w trybie odczytu wyspa nie ma ani
+                jednej interakcji (dialog niemontowany, bramka nierenderowana, sloty bez akcji),
+                `useState` służy wyłącznie za wartość początkową, a `CompetencyRadar` to statyczny
+                SVG — render serwerowy daje ten sam ekran przy zerowym JS. Dzięki temu „nie da się
+                nic zmienić" wynika z braku runtime'u, a nie z poprawnie przekazanej flagi.
+                **Nota dla S-05**: podłączając zapis, trzeba dopisać `client:load` z powrotem.
+              */}
+              <TeamComposer pool={pool} initialComposition={composition} readOnly />
+            </div>
+          ) : (
+            <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">
+              <h2 class="text-xl font-semibold text-red-200">
+                {inconsistent ? "This team no longer matches the character pool" : "Team is unavailable right now"}
+              </h2>
+              <p class="mx-auto mt-2 max-w-md text-sm text-blue-100/70">
+                {inconsistent
+                  ? "Its saved roster cannot be assembled from the characters available today, so none of it is shown — a partial roster would not be the team you saved."
+                  : "Please try again in a moment."}
+              </p>
+              <a
+                href="/teams"
+                class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+              >
+                Back to your teams
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </Layout>
+  )
+}
