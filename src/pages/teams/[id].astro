@@ -16,7 +16,9 @@ const supabase = createClient(Astro.request.headers, Astro.cookies);
 
 let team: TeamDetail | null = null;
 let pool: readonly PoolCharacter[] | null = null;
-let failed = false;
+// Flaga dotyczy **wyłącznie** odczytu drużyny: 404 nie może zależeć od zapytania niezwiązanego
+// z istnieniem wiersza. Awarię puli niesie już `pool === null`, więc nie ma tu drugiej flagi.
+let teamFailed = false;
 
 // Gałąź `!supabase` jest obroną w głąb: bez kluczy Supabase middleware przekierował na logowanie.
 if (supabase) {
@@ -33,7 +35,7 @@ if (supabase) {
     // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
     // eslint-disable-next-line no-console
     console.error(`Failed to load team for /teams/${Astro.params.id ?? ""}`, teamResult.reason);
-    failed = true;
+    teamFailed = true;
   }
 
   if (poolResult.status === "fulfilled") {
@@ -41,13 +43,12 @@ if (supabase) {
   } else {
     // eslint-disable-next-line no-console
     console.error("Failed to load character pool for /teams/[id]", poolResult.reason);
-    failed = true;
   }
 }
 
 // `null` nierozróżnialnie dla nieznanego id, cudzej drużyny (RLS) i nie-UUID — istnienie cudzego
 // rekordu nie może wyciec różnicą w odpowiedzi.
-const notFound = !failed && team === null;
+const notFound = !teamFailed && team === null;
 
 let composition: TeamComposition | null = null;
 let inconsistent = false;

@@ -37,3 +37,23 @@
   top-level `return Astro.redirect(...)`. Plan fazy ma nazywać ten mechanizm wprost, nie „zwróć 404".
 - **Applies to**: `/10x-plan` przy każdej stronie `.astro` z gałęzią 404/403 lub redirectem (S-04 lista
   i szczegóły, S-07 izolacja); `/10x-implement` i `/10x-impl-review` przy `src/pages/**/*.astro`.
+
+## Wyspa bez `client:*` i flaga trybu odczytu to jedna zmiana, nie dwie
+
+- **Context**: `src/pages/teams/[id].astro:96-104` (S-04, commit 94fee01) —
+  `<TeamComposer pool={pool} initialComposition={composition} readOnly />` renderowany serwerowo,
+  bez dyrektywy `client:*`, z notą „S-05: dopisać `client:load` z powrotem".
+- **Problem**: „Tryb odczytu" jest wyrażony dwoma niezależnymi przełącznikami w dwóch różnych
+  warstwach: propem `readOnly` w wyspie i **brakiem** `client:*` w `.astro`. Muszą się zgadzać, ale
+  nic ich nie wiąże. Rozjechanie ich daje awarię cichą w obie strony: `client:load` bez zdjęcia
+  `readOnly` to ekran hydratowany i martwy (JS ładowany bez powodu), a zdjęcie `readOnly` bez
+  `client:load` to ekran z przyciskami, które nic nie robią. Ani lint, ani testy, ani typy tego nie
+  łapią — `readOnly` jest poprawnym propem, a brak `client:*` poprawnym Astro.
+- **Rule**: Gdy strona `.astro` renderuje wyspę bez `client:*`, bo jej tryb czyni ją
+  nieinteraktywną, traktuj parę (dyrektywa hydratacji, flaga trybu) jako **jeden przełącznik**:
+  plan fazy zmieniającej którykolwiek z nich ma wymieniać oba w tym samym punkcie „Wymagane zmiany",
+  a implementacja zmieniać je w tym samym commicie. Nigdy nie zostawiaj `readOnly` przy dopisanym
+  `client:*` ani odwrotnie.
+- **Applies to**: `/10x-plan` przy każdej fazie dokładającej lub zdejmującej interaktywność
+  istniejącej wyspy (S-05 `edit-saved-team` w pierwszej kolejności); `/10x-implement`
+  i `/10x-impl-review` przy `src/pages/**/*.astro` renderujących `src/components/**` bez `client:*`.

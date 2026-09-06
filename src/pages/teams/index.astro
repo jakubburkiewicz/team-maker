@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { createClient } from "@/lib/supabase";
-import { listTeams, type TeamListItem } from "@/lib/team-repo";
+import { listTeams } from "@/lib/team-repo";
 
 // Lista **wyłącznie własnych** drużyn (FR-005): własność odcina polityka `select` (RLS), więc
 // strona niczego nie filtruje. Trasa mieści się w prefiksie `/teams` z `PROTECTED_ROUTES`, więc
@@ -9,7 +9,22 @@ import { listTeams, type TeamListItem } from "@/lib/team-repo";
 //
 // `null` znaczy „awaria odczytu", `[]` znaczy „nowe konto" — dwa różne ekrany, więc dwie różne
 // wartości; `listTeams` celowo nie rzuca przy zerze wierszy.
-let teams: readonly TeamListItem[] | null = null;
+//
+// Data przychodzi już sformatowana, bo `Intl.DateTimeFormat.format` rzuca `RangeError` na
+// `Invalid Date` — w szablonie taki wyjątek jest poza `try` niżej i wywróciłby cały render, czyli
+// 500 w Workerze. Formatowanie przy odczycie wpina go w tę samą gałąź awarii co błąd zapytania.
+interface TeamRow {
+  id: string;
+  name: string;
+  savedAt: string;
+}
+
+let teams: readonly TeamRow[] | null = null;
+
+// Stała lokalizacja i stała strefa: data zapisu ma czytać się tak samo niezależnie od ustawień
+// przeglądarki. Strona jest czystym SSR (zero `client:*`), więc formatowanie tutaj nie ma się
+// z czym rozjechać.
+const savedAtFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 
@@ -17,18 +32,17 @@ const supabase = createClient(Astro.request.headers, Astro.cookies);
 // zanim ten frontmatter się wykonał.
 if (supabase) {
   try {
-    teams = await listTeams(supabase);
+    teams = (await listTeams(supabase)).map((team) => ({
+      id: team.id,
+      name: team.name,
+      savedAt: savedAtFormat.format(new Date(team.createdAt)),
+    }));
   } catch (error) {
     // W Workerze log jest jedyną diagnostyką; do gracza idzie komunikat ogólny.
     // eslint-disable-next-line no-console
     console.error("Failed to list teams for /teams", error);
   }
 }
-
-// Stała lokalizacja i stała strefa: data zapisu ma czytać się tak samo niezależnie od ustawień
-// przeglądarki. Strona jest czystym SSR (zero `client:*`), więc formatowanie tutaj nie ma się
-// z czym rozjechać.
-const savedAtFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 ---
 
 <Layout title="Your teams">
@@ -89,9 +103,7 @@ const savedAtFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", ti
                         class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl transition-colors hover:border-purple-400/60 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
                       >
                         <code class="font-mono font-semibold">{team.name}</code>
-                        <span class="shrink-0 text-sm text-blue-100/60">
-                          Saved {savedAtFormat.format(new Date(team.createdAt))}
-                        </span>
+                        <span class="shrink-0 text-sm text-blue-100/60">Saved {team.savedAt}</span>
                       </a>
                     </li>
                   ))}

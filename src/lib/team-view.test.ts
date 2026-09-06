@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { TEST_POOL, member, thresholdClosingComposition } from "@/lib/domain/test-fixtures";
-import type { RuleViolation } from "@/lib/domain";
+import { MAX_TEAM_SIZE, type RuleViolation } from "@/lib/domain";
 import { resolveSavedTeam, type SavedTeamResolution } from "@/lib/team-view";
 
 /**
@@ -38,6 +38,20 @@ describe("resolveSavedTeam", () => {
     const result = resolveSavedTeam([], TEST_POOL);
 
     expect(result).toEqual({ ok: true, composition: [] });
+  });
+
+  it("odrzuca skład ponad limit sześciu członków — odmowa nie jest zawężona do `unknown-*`", () => {
+    // Ten przypadek trzyma umowę „dowolne naruszenie odmawia": zawężenie implementacji do
+    // `violations.filter((violation) => violation.kind.startsWith("unknown"))` przeszłoby bez niego
+    // na zielono, a siedmiu członków nie zmieści się w sześciu slotach wyspy.
+    const composition = TEST_POOL.slice(0, MAX_TEAM_SIZE + 1).map((character) => member(character.id));
+
+    expect(composition).toHaveLength(MAX_TEAM_SIZE + 1);
+
+    const violations = violationsOf(resolveSavedTeam(composition, TEST_POOL));
+
+    expect(violations).toContainEqual({ kind: "too-many-members", count: composition.length });
+    expect(violations.every((violation) => !violation.kind.startsWith("unknown"))).toBe(true);
   });
 
   it("odrzuca skład z `characterId` spoza puli", () => {
