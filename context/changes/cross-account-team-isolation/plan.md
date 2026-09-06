@@ -499,39 +499,39 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 
 #### Automatyczne
 
-- [x] 1.1 Testy przechodzą (`npm test`)
-- [x] 1.2 Typy i lint przechodzą (`npx astro sync && npm run lint`)
-- [x] 1.3 Build przechodzi (`npm run build`)
-- [x] 1.4 Dokładnie 2 strony importują `TeamNotFound.astro`
-- [x] 1.5 Dokładnie 2 strony ustawiają `Astro.response.status = 404`
-- [x] 1.6 Treść komunikatu ma jedno źródło w `src/`
-- [x] 1.7 Zero top-level `return` w trzech dotkniętych plikach `.astro`
-- [x] 1.8 Obie trasy zapisu deklarują `id` przez `encodeURIComponent` (2 trafienia)
-- [x] 1.9 `supabase/` nietknięte
+- [x] 1.1 Testy przechodzą (`npm test`) — 7347a2e
+- [x] 1.2 Typy i lint przechodzą (`npx astro sync && npm run lint`) — 7347a2e
+- [x] 1.3 Build przechodzi (`npm run build`) — 7347a2e
+- [x] 1.4 Dokładnie 2 strony importują `TeamNotFound.astro` — 7347a2e
+- [x] 1.5 Dokładnie 2 strony ustawiają `Astro.response.status = 404` — 7347a2e
+- [x] 1.6 Treść komunikatu ma jedno źródło w `src/` — 7347a2e
+- [x] 1.7 Zero top-level `return` w trzech dotkniętych plikach `.astro` — 7347a2e
+- [x] 1.8 Obie trasy zapisu deklarują `id` przez `encodeURIComponent` (2 trafienia) — 7347a2e
+- [x] 1.9 `supabase/` nietknięte — 7347a2e
 
 #### Ręczne
 
-- [x] 1.10 `/teams/<losowy-uuid>` pokazuje ekran z komunikatem i oboma linkami
-- [x] 1.11 `/teams/<losowy-uuid>/embark` pokazuje identyczny ekran i identyczny tytuł zakładki
-- [x] 1.12 Nie-UUID w adresie zachowuje się tak samo, bez błędu Postgresa
-- [x] 1.13 Własna drużyna renderuje się bez zmian (skład, wykres, zapis, usuwanie)
-- [x] 1.14 Gałąź awarii odczytu dalej pokazuje „Team is unavailable right now”
+- [x] 1.10 `/teams/<losowy-uuid>` pokazuje ekran z komunikatem i oboma linkami — 7347a2e
+- [x] 1.11 `/teams/<losowy-uuid>/embark` pokazuje identyczny ekran i identyczny tytuł zakładki — 7347a2e
+- [x] 1.12 Nie-UUID w adresie zachowuje się tak samo, bez błędu Postgresa — 7347a2e
+- [x] 1.13 Własna drużyna renderuje się bez zmian (skład, wykres, zapis, usuwanie) — 7347a2e
+- [x] 1.14 Gałąź awarii odczytu dalej pokazuje „Team is unavailable right now” — 7347a2e
 
 ### Faza 2: Kotwice SQL dla bariery odczytu
 
 #### Automatyczne
 
-- [ ] 2.1 Wszystkie testy przechodzą, w tym pięć nowych (`npm test`)
-- [ ] 2.2 Plik testu ma 11 przypadków `it(`
-- [ ] 2.3 Typy i lint przechodzą (`npx astro sync && npm run lint`)
-- [ ] 2.4 Zero zmian w `supabase/`
-- [ ] 2.5 Test nie importuje `astro:*` ani `@/lib/supabase`
+- [x] 2.1 Wszystkie testy przechodzą, w tym pięć nowych (`npm test`)
+- [x] 2.2 Plik testu ma 11 przypadków `it(`
+- [x] 2.3 Typy i lint przechodzą (`npx astro sync && npm run lint`)
+- [x] 2.4 Zero zmian w `supabase/`
+- [x] 2.5 Test nie importuje `astro:*` ani `@/lib/supabase`
 
 #### Ręczne
 
-- [ ] 2.6 Kontrola mutacyjna: usunięcie linii `enable row level security` daje czerwony `npm test`
-- [ ] 2.7 Kontrola mutacyjna: usunięcie polityki `owner can read teams` daje czerwony `npm test`
-- [ ] 2.8 `git status` czysty w `supabase/` po obu kontrolach
+- [x] 2.6 Kontrola mutacyjna: usunięcie linii `enable row level security` daje czerwony `npm test`
+- [x] 2.7 Kontrola mutacyjna: usunięcie polityki `owner can read teams` daje czerwony `npm test`
+- [x] 2.8 `git status` czysty w `supabase/` po obu kontrolach
 
 ### Faza 3: Dowód dwukontowy na produkcji
 

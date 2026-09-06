@@ -12,8 +12,14 @@ import { describe, expect, it } from "vitest";
  * `grant delete` (FR-010 — bez nich usunięcie przechodzi bez błędu i kasuje zero wierszy), a obok
  * nich strażnik tego, czego nadać **nie** wolno — `truncate` i cokolwiek dla roli `anon`.
  *
+ * Dla izolacji między kontami (S-07): bariera **odczytu** i **tworzenia** plus samo włączenie RLS.
+ * Odczyt dostaje tu kotwicę z konkretnego powodu — `src/lib/team-repo.ts` celowo **nie** filtruje po
+ * `user_id` (patrz jego docstring, linie 11-14), więc polityka `select` nie jest drugą barierą obok
+ * warunku w kodzie, tylko **jedyną**, jaka istnieje. Na niej stoją `listTeams`, `getTeamDetail`
+ * i `getTeamSummary`, czyli rdzeń US-04.
+ *
  * Kod aplikacji wysyła wyłącznie to, co powinien, ale to jest pierwsza bariera; te są drugą,
- * niezależną — i to one obowiązują poza interfejsem.
+ * niezależną — i to one obowiązują poza interfejsem. Dla odczytu nawet ta pierwsza nie istnieje.
  *
  * Test czyta pliki migracji przez `node:fs` — to nie jest stos Supabase ani runtime Astro, więc
  * mieści się w twardej regule czystości testów (wzorzec: `src/lib/domain/character-pool-sql.test.ts`).
@@ -51,7 +57,49 @@ function allMigrationsWithoutComments(): string {
     .replace(/--[^\n]*/g, "");
 }
 
-describe("polityki zapisu na teams — bariery, których pilnuje wyłącznie baza", () => {
+describe("polityki RLS na teams — bariery, których pilnuje wyłącznie baza", () => {
+  it("RLS jest włączone na teams", () => {
+    // Pojedynczy punkt, na którym stoją **wszystkie cztery** polityki naraz. Bez tej linii Postgres
+    // ich nie stosuje: polityki dalej istnieją w katalogu systemowym, `\dp` dalej je pokazuje,
+    // a każdy `authenticated` czyta i pisze cudze wiersze. Awaria cicha w najgorszym możliwym
+    // sensie — nie rusza kodu aplikacji, nie rusza typów, nie zapala lintera.
+    //
+    // **Redundancja świadoma**: `src/lib/team-schema.test.ts:61` kotwiczy tę samą linię (kontrola
+    // mutacyjna S-07 zaczerwieniła oba testy naraz). Zostaje tutaj, bo ten plik ma być kompletną
+    // macierzą barier RLS na `teams` — insert, select, update, delete i fundament, na którym stoją.
+    // Dziura w tej narracji kosztowałaby więcej niż druga asercja na jedną linię tekstu. Tamten test
+    // pilnuje kształtu migracji schematu, ten — kompletności izolacji; przy rozdzieleniu plików
+    // każdy zabiera swoją asercję.
+    const migration = latestMigration("_teams_schema.sql");
+
+    expect(migration).toContain("alter table public.teams enable row level security");
+  });
+
+  it("polityka insert przypina nowy wiersz do właściciela przez `with check`", () => {
+    // `for insert` nie przyjmuje `using` — przy wstawianiu nie ma starego wiersza do wybrania —
+    // więc cała bariera stoi w `with check`. Z aplikacji tej bariery nie da się naruszyć
+    // (`createTeam` dostaje `user_id` z sesji, formularz niesie sam skład), więc ten test jest
+    // jej **jedynym** dowodem: Faza 3 planu S-07 nie ma jak jej dotknąć.
+    const migration = latestMigration("_teams_schema.sql");
+
+    expect(migration).toContain('create policy "owner can insert teams" on public.teams');
+    expect(migration).toContain("for insert to authenticated");
+    expect(migration).toContain("with check (user_id = (select auth.uid()))");
+  });
+
+  it("polityka select wybiera wyłącznie własne wiersze", () => {
+    // Jedyna bariera odczytu, jaka w ogóle istnieje: repo świadomie nie dokłada `.eq("user_id", …)`,
+    // żeby drugi warunek nie maskował awarii polityki. Zdjęcie tej polityki nie wywraca niczego
+    // widocznego — `select` bez polityki zwraca zero wierszy, więc właściciel przestałby widzieć
+    // własne drużyny i usterka zgłosiłaby się sama. Groźna jest odwrotna mutacja: rozluźnienie
+    // `using` do `true`, po którym każdy widzi wszystko, a testy zachowania dalej są zielone.
+    const migration = latestMigration("_teams_schema.sql");
+
+    expect(migration).toContain('create policy "owner can read teams" on public.teams');
+    expect(migration).toContain("for select to authenticated");
+    expect(migration).toContain("using (user_id = (select auth.uid()))");
+  });
+
   it("polityka update ma `with check`, nie sam `using`", () => {
     // Sam `using` wybiera wiersze do zmiany, ale nie blokuje przepisania `user_id` na cudze konto.
     // Bez `with check` Guardrail US-04 dla zapisu opierałby się wyłącznie na tym, że aplikacja
@@ -118,5 +166,28 @@ describe("polityki zapisu na teams — bariery, których pilnuje wyłącznie baz
     expect(sql).not.toMatch(grantsTruncateOnTeams);
     expect(sql).not.toMatch(grantsAllOnTeams);
     expect(sql).not.toMatch(grantsAnythingToAnonOnTeams);
+  });
+
+  it("żadna migracja nie wyłącza RLS na teams", () => {
+    // Strażnicy wyżej pilnują, żeby nikt nie **dodał** przywileju. Ten i następny pilnują drugiej,
+    // groźniejszej strony: żeby nikt nie **odjął** bariery. Jedna linia w przyszłej migracji
+    // rozbraja wszystkie cztery polityki naraz i nie zostawia śladu nigdzie poza `supabase/`.
+    const disablesRlsOnTeams = /alter\s+table\b[^;]*\bpublic\.teams\b[^;]*disable\s+row\s+level\s+security/i;
+
+    expect(allMigrationsWithoutComments()).not.toMatch(disablesRlsOnTeams);
+  });
+
+  it("żadna migracja nie kasuje polityki na teams", () => {
+    // Furtka, żeby ten strażnik nie zapalał się na uzasadnionej pracy: **korekta** istniejącej
+    // polityki idzie przez `alter policy`, którego ten wzorzec nie widzi. Migracja raz zastosowana
+    // na produkcji jest niezmienna, więc poprawka i tak musi być nową migracją — `alter policy`
+    // jest jej właściwym kształtem.
+    //
+    // `drop policy` zostaje zarezerwowane na **świadome zdjęcie bariery**. Taka zmiana wymaga
+    // zdjęcia tego strażnika w tym samym commicie, z uzasadnieniem tutaj. Czerwony test jest wtedy
+    // pytaniem „czy na pewno", nie przeszkodą do obejścia — nie osłabiaj wzorca, żeby przeszedł.
+    const dropsPolicyOnTeams = /drop\s+policy\b[^;]*\bon\s+(?:table\s+)?public\.teams\b/i;
+
+    expect(allMigrationsWithoutComments()).not.toMatch(dropsPolicyOnTeams);
   });
 });
