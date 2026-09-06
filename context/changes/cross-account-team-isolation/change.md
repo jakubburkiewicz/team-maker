@@ -44,6 +44,16 @@ updated: 2026-09-06
     `sb_secret_` i tym samym pochłania F8.
   - **Testy SQL domykają macierz czterech operacji** plus strażnicy negatywni na
     `disable row level security` i `drop policy`.
+- **Pochodzenie dowodu Fazy 3 (2026-09-06).** Kroki 3.1 i 3.2 wykonane i zaobserwowane w sesji
+  implementacyjnej: pełny łańcuch CI zielony, `npx wrangler deploy` zakończony (Version ID
+  `a6fc4019-0f4e-4dea-98ad-3895ab7be2e5`, `https://team-maker.jakub-e9b.workers.dev`), smoke-test
+  curl-em potwierdził, że `/teams` i `/teams/<uuid>` bez sesji dają 302 na `/auth/signin`.
+  Kroki 3.3-3.11 — macierz dwukontowa — wykonał **operator**, nie agent: wymagają dwóch skrzynek
+  pocztowych i dwóch sesji przeglądarkowych. Agent dostarczył ładunki dla 3.7/3.8 (fetch
+  z `credentials: "include"` i formularzowym `Content-Type`, z konsoli otwartej na origin aplikacji)
+  wraz z tabelą rozróżniającą trzy bariery po `status` i `url`. Odhaczenie opiera się na
+  potwierdzeniu operatora; **kody odpowiedzi HTTP nie zostały przechwycone w transkrypcie sesji**,
+  wbrew Umowie kroku 2 Fazy 3. Kto będzie to audytował, ma tu jedyny ślad.
 - Nie wymaga migracji bazy: polityki są komplet od S-06, a zmiana asercji w teście nie dotyka
   `supabase/`.
 - Przegląd planu 2026-09-06 (`/10x-plan-review`, tryb głęboki): werdykt DO POPRAWY → SOLIDNY

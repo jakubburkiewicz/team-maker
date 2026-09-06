@@ -521,33 +521,33 @@ nie jest wołane nigdy — wysłałoby localhostowe `site_url` na produkcję.
 
 #### Automatyczne
 
-- [x] 2.1 Wszystkie testy przechodzą, w tym pięć nowych (`npm test`)
-- [x] 2.2 Plik testu ma 11 przypadków `it(`
-- [x] 2.3 Typy i lint przechodzą (`npx astro sync && npm run lint`)
-- [x] 2.4 Zero zmian w `supabase/`
-- [x] 2.5 Test nie importuje `astro:*` ani `@/lib/supabase`
+- [x] 2.1 Wszystkie testy przechodzą, w tym pięć nowych (`npm test`) — 5941a5b
+- [x] 2.2 Plik testu ma 11 przypadków `it(` — 5941a5b
+- [x] 2.3 Typy i lint przechodzą (`npx astro sync && npm run lint`) — 5941a5b
+- [x] 2.4 Zero zmian w `supabase/` — 5941a5b
+- [x] 2.5 Test nie importuje `astro:*` ani `@/lib/supabase` — 5941a5b
 
 #### Ręczne
 
-- [x] 2.6 Kontrola mutacyjna: usunięcie linii `enable row level security` daje czerwony `npm test`
-- [x] 2.7 Kontrola mutacyjna: usunięcie polityki `owner can read teams` daje czerwony `npm test`
-- [x] 2.8 `git status` czysty w `supabase/` po obu kontrolach
+- [x] 2.6 Kontrola mutacyjna: usunięcie linii `enable row level security` daje czerwony `npm test` — 5941a5b
+- [x] 2.7 Kontrola mutacyjna: usunięcie polityki `owner can read teams` daje czerwony `npm test` — 5941a5b
+- [x] 2.8 `git status` czysty w `supabase/` po obu kontrolach — 5941a5b
 
 ### Faza 3: Dowód dwukontowy na produkcji
 
 #### Automatyczne
 
-- [ ] 3.1 CI zielone przed wdrożeniem (`astro sync && lint && test && build`)
+- [x] 3.1 CI zielone przed wdrożeniem (`astro sync && lint && test && build`)
 
 #### Ręczne
 
-- [ ] 3.2 Wdrożenie (`npx wrangler deploy`) zakończone, aplikacja odpowiada
-- [ ] 3.3 Konta A i B założone i potwierdzone, każde z zapisaną drużyną
-- [ ] 3.4 READ/interfejs: konto B na `/teams` nie widzi drużyny konta A
-- [ ] 3.5 READ/adres: `/teams/<id_A>` na koncie B → 404 + ekran, zero danych konta A w źródle
-- [ ] 3.6 READ/adres: `/teams/<id_A>/embark` na koncie B → 404 + identyczny ekran
-- [ ] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (302 z `error=Could not save the team` — nie 403, nie komunikat progu)
-- [ ] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (302 z `error=Could not delete the team`, nie 403)
-- [ ] 3.9 Odczyt (druga strona): drużyna konta B nie pojawia się na liście konta A
-- [ ] 3.10 Regresja: konto A dalej otwiera, edytuje i usuwa własną drużynę
-- [ ] 3.11 F8 zamknięty: zielony przebieg na produkcji dowodzi, że klucz nie omija RLS
+- [x] 3.2 Wdrożenie (`npx wrangler deploy`) zakończone, aplikacja odpowiada
+- [x] 3.3 Konta A i B założone i potwierdzone, każde z zapisaną drużyną
+- [x] 3.4 READ/interfejs: konto B na `/teams` nie widzi drużyny konta A
+- [x] 3.5 READ/adres: `/teams/<id_A>` na koncie B → 404 + ekran, zero danych konta A w źródle
+- [x] 3.6 READ/adres: `/teams/<id_A>/embark` na koncie B → 404 + identyczny ekran
+- [x] 3.7 UPDATE: spreparowany POST z origin aplikacji nie zmienia drużyny A (302 z `error=Could not save the team` — nie 403, nie komunikat progu)
+- [x] 3.8 DELETE: spreparowany POST z origin aplikacji nie kasuje drużyny A (302 z `error=Could not delete the team`, nie 403)
+- [x] 3.9 Odczyt (druga strona): drużyna konta B nie pojawia się na liście konta A
+- [x] 3.10 Regresja: konto A dalej otwiera, edytuje i usuwa własną drużynę
+- [x] 3.11 F8 zamknięty: zielony przebieg na produkcji dowodzi, że klucz nie omija RLS
