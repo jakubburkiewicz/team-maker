@@ -1,5 +1,5 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import TeamComposer from "@/components/team/TeamComposer";
 // Komponent mieszka w `auth/`, bo tam powstał; przenosiny poza zakresem S-03. Renderowany
 // statycznie (bez `client:*`) — nie ma stanu.
@@ -30,17 +30,12 @@ if (supabase) {
 }
 ---
 
-<Layout title="New team">
-  <div class="bg-cosmic min-h-screen p-4 text-white">
+<AppLayout title="New team">
+  <div class="p-4">
     <div class="mx-auto w-full max-w-6xl">
-      <div class="mb-6 flex items-center justify-between">
-        <h1 class="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-          Assemble your team
-        </h1>
-        <a href="/" class="text-sm text-purple-300 transition-colors hover:text-purple-100 hover:underline">
-          ← Your teams
-        </a>
-      </div>
+      <h1 class="mb-6 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+        Assemble your team
+      </h1>
       {
         pool ? (
           <div class="flex flex-col gap-4">
@@ -53,15 +48,9 @@ if (supabase) {
           <div class="rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center backdrop-blur-xl">
             <h2 class="text-xl font-semibold text-red-200">Character pool is unavailable right now</h2>
             <p class="mt-2 text-sm text-blue-100/70">Please try again in a moment.</p>
-            <a
-              href="/"
-              class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-            >
-              Back to your teams
-            </a>
           </div>
         )
       }
     </div>
   </div>
-</Layout>
+</AppLayout>

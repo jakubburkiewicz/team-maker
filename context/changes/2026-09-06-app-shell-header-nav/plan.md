@@ -537,45 +537,45 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [x] 2.1 `src/components/Topbar.astro` nie istnieje
-- [x] 2.2 Nikt nie importuje `components/Topbar`
-- [x] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav`
-- [x] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu
-- [x] 2.5 `TeamNotFound.astro` importuje `AppLayout`
-- [x] 2.6 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams`
-- [x] 2.7 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07)
-- [x] 2.8 Testy przechodzą: `npm test`
-- [x] 2.9 Linting przechodzi: `npm run lint`
-- [x] 2.10 Build przechodzi: `npm run build`
+- [x] 2.1 `src/components/Topbar.astro` nie istnieje — f6f5266
+- [x] 2.2 Nikt nie importuje `components/Topbar` — f6f5266
+- [x] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav` — f6f5266
+- [x] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu — f6f5266
+- [x] 2.5 `TeamNotFound.astro` importuje `AppLayout` — f6f5266
+- [x] 2.6 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams` — f6f5266
+- [x] 2.7 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07) — f6f5266
+- [x] 2.8 Testy przechodzą: `npm test` — f6f5266
+- [x] 2.9 Linting przechodzi: `npm run lint` — f6f5266
+- [x] 2.10 Build przechodzi: `npm run build` — f6f5266
 
 #### Ręczne
 
-- [x] 2.11 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu
-- [x] 2.12 Karta 404 wyśrodkowana i widoczna bez przewijania; brak paska przewijania; brak szwu tła
-- [x] 2.13 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`)
-- [x] 2.14 `Sign out` z nagłówka wylogowuje i kończy przekierowaniem `/` → `/auth/signin`
-- [x] 2.15 Na ekranie 404 żadna pozycja menu nie jest wyróżniona
-- [x] 2.16 Odpowiedź dla nieistniejącego id to nadal 404
+- [x] 2.11 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu — f6f5266
+- [x] 2.12 Karta 404 wyśrodkowana i widoczna bez przewijania; brak paska przewijania; brak szwu tła — f6f5266
+- [x] 2.13 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`) — f6f5266
+- [x] 2.14 `Sign out` z nagłówka wylogowuje i kończy przekierowaniem `/` → `/auth/signin` — f6f5266
+- [x] 2.15 Na ekranie 404 żadna pozycja menu nie jest wyróżniona — f6f5266
+- [x] 2.16 Odpowiedź dla nieistniejącego id to nadal 404 — f6f5266
 
 ### Faza 3: Migracja stron domenowych
 
 #### Automatyczne
 
-- [ ] 3.1 Brak `href="/dashboard"` i `href="/teams"` w całym `src/`
-- [ ] 3.2 Żadna strona domenowa nie importuje `Layout.astro` bezpośrednio
-- [ ] 3.3 Wszystkie pięć plików importuje `AppLayout.astro`
-- [ ] 3.4 `/auth/*` nie weszło do powłoki
-- [ ] 3.5 404 nadal idzie przez `Astro.response.status`, nie przez top-level `return`
-- [ ] 3.6 Testy przechodzą: `npm test`
-- [ ] 3.7 Linting przechodzi: `npm run lint`
-- [ ] 3.8 Build przechodzi: `npm run build`
+- [x] 3.1 Brak `href="/dashboard"` i `href="/teams"` w całym `src/`
+- [x] 3.2 Żadna strona domenowa nie importuje `Layout.astro` bezpośrednio
+- [x] 3.3 Wszystkie pięć plików importuje `AppLayout.astro`
+- [x] 3.4 `/auth/*` nie weszło do powłoki
+- [x] 3.5 404 nadal idzie przez `Astro.response.status`, nie przez top-level `return`
+- [x] 3.6 Testy przechodzą: `npm test`
+- [x] 3.7 Linting przechodzi: `npm run lint`
+- [x] 3.8 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 3.9 Nagłówek identyczny na wszystkich pięciu ekranach
-- [ ] 3.10 Wyróżnienie aktywnej pozycji zgodne: `/` → `Your teams`, `/teams/new` → `New team`, reszta bez wyróżnienia
-- [ ] 3.11 Żaden link powrotny nie został na żadnym z pięciu ekranów
-- [ ] 3.12 Ekran potwierdzenia zapisu ma dokładnie jeden link kontekstowy „View this team"
-- [ ] 3.13 Gałęzie awarii (Supabase wyłączony) renderują się w powłoce i mają wyjście
-- [ ] 3.14 Pełna pętla CRUD bez regresji (zapis → embark → edycja → usunięcie)
-- [ ] 3.15 Wylogowanie z nagłówka z każdego z pięciu ekranów kończy się na `/auth/signin`
+- [x] 3.9 Nagłówek identyczny na wszystkich pięciu ekranach
+- [x] 3.10 Wyróżnienie aktywnej pozycji zgodne: `/` → `Your teams`, `/teams/new` → `New team`, reszta bez wyróżnienia
+- [x] 3.11 Żaden link powrotny nie został na żadnym z pięciu ekranów
+- [x] 3.12 Ekran potwierdzenia zapisu ma dokładnie jeden link kontekstowy „View this team"
+- [x] 3.13 Gałęzie awarii (Supabase wyłączony) renderują się w powłoce i mają wyjście
+- [x] 3.14 Pełna pętla CRUD bez regresji (zapis → embark → edycja → usunięcie)
+- [x] 3.15 Wylogowanie z nagłówka z każdego z pięciu ekranów kończy się na `/auth/signin`

@@ -1,6 +1,6 @@
 ---
 import TeamNotFound from "@/components/team/TeamNotFound.astro";
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 import { createClient } from "@/lib/supabase";
 import { getTeamSummary, type TeamSummary } from "@/lib/team-repo";
 
@@ -53,8 +53,8 @@ if (notFound) {
   notFound ? (
     <TeamNotFound />
   ) : (
-    <Layout title={team ? `Team ${team.name} saved` : "Team unavailable"}>
-      <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <AppLayout title={team ? `Team ${team.name} saved` : "Team unavailable"}>
+      <div class="flex flex-1 items-center justify-center p-4">
         {team ? (
           <div class="w-full max-w-sm rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
             <div class="mb-4 text-5xl">🚀</div>
@@ -70,15 +70,14 @@ if (notFound) {
                 Missions are not part of this build — this is where the job ends for now.
               </p>
             </div>
+            {/*
+              Jedyny link, który **nie** duplikuje nagłówka powłoki: celuje w konkretną, właśnie
+              zapisaną drużynę, więc nie ma odpowiednika w menu. „Your teams" i „Assemble another
+              team" stąd znikły — daje je nagłówek.
+            */}
             <div class="flex flex-col gap-2 text-sm">
               <a href={`/teams/${team.id}`} class="text-purple-300 hover:underline">
                 View this team
-              </a>
-              <a href="/" class="text-purple-300 hover:underline">
-                Your teams
-              </a>
-              <a href="/teams/new" class="text-purple-300 hover:underline">
-                Assemble another team
               </a>
             </div>
           </div>
@@ -86,15 +85,9 @@ if (notFound) {
           <div class="w-full max-w-sm rounded-2xl border border-red-400/30 bg-red-500/10 p-8 text-center text-white backdrop-blur-xl">
             <h1 class="text-xl font-semibold text-red-200">Team is unavailable right now</h1>
             <p class="mt-2 text-sm text-blue-100/70">Please try again in a moment.</p>
-            <a
-              href="/"
-              class="mt-6 inline-block rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
-            >
-              Back to your teams
-            </a>
           </div>
         )}
       </div>
-    </Layout>
+    </AppLayout>
   )
 }
