@@ -641,50 +641,50 @@ zostają nietknięte. Nie ma stanu do przeniesienia i nie ma czego wycofywać po
 
 #### Automatyczne
 
-- [x] 2.1 Typy, linting i testy: `npx astro sync && npm run lint && npm test`
-- [x] 2.2 Nowe komponenty istnieją (`TeamActions.tsx`, `DeleteTeamButton.tsx`)
-- [x] 2.3 Okno jest sterowane z zewnątrz (strażnik czerwony na bazie)
-- [x] 2.4 Okno nie jest właścicielem stanu otwarcia (strażnik czerwony na bazie, linia 43)
-- [x] 2.5 Adresy akcji nie są literałami w `TeamActions.tsx`
-- [x] 2.6 Przycisk usuwania zniknął spod siatki na stronie edycji (strażnik czerwony na bazie)
-- [x] 2.7 `/teams/new` nie dostał ani grupy akcji, ani usuwania
+- [x] 2.1 Typy, linting i testy: `npx astro sync && npm run lint && npm test` — 2ccfa43
+- [x] 2.2 Nowe komponenty istnieją (`TeamActions.tsx`, `DeleteTeamButton.tsx`) — 2ccfa43
+- [x] 2.3 Okno jest sterowane z zewnątrz (strażnik czerwony na bazie) — 2ccfa43
+- [x] 2.4 Okno nie jest właścicielem stanu otwarcia (strażnik czerwony na bazie, linia 43) — 2ccfa43
+- [x] 2.5 Adresy akcji nie są literałami w `TeamActions.tsx` — 2ccfa43
+- [x] 2.6 Przycisk usuwania zniknął spod siatki na stronie edycji (strażnik czerwony na bazie) — 2ccfa43
+- [x] 2.7 `/teams/new` nie dostał ani grupy akcji, ani usuwania — 2ccfa43
 
 #### Ręczne
 
-- [x] 2.8 Kolejność Save / Embark / Delete w kolumnie bocznej; nic nie wisi pod siatką
-- [x] 2.9 Bez zmian składu Embark aktywny i prowadzi na ekran wyruszenia tej drużyny
-- [x] 2.10 Po zmianie składu Embark gaśnie z powodem; po zapisie wraca
-- [x] 2.11 Zdjęcie i ponowny wybór tego samego perka odblokowuje Embark
-- [x] 2.12 Poniżej progu Save nieaktywny; stan Embark niezależny od progu
-- [x] 2.13 Delete otwiera okno z nazwą drużyny; Cancel nie zmienia nic, potwierdzenie odsyła na `/`
-- [x] 2.14 Drużyna w stanie `inconsistent` nadal ma przycisk usuwania i daje się skasować
-- [x] 2.15 Cudze `<id>` nadal daje 404 bez nowych przycisków
-- [x] 2.16 `/teams/new` działa dokładnie jak przed zmianą
+- [x] 2.8 Kolejność Save / Embark / Delete w kolumnie bocznej; nic nie wisi pod siatką — 2ccfa43
+- [x] 2.9 Bez zmian składu Embark aktywny i prowadzi na ekran wyruszenia tej drużyny — 2ccfa43
+- [x] 2.10 Po zmianie składu Embark gaśnie z powodem; po zapisie wraca — 2ccfa43
+- [x] 2.11 Zdjęcie i ponowny wybór tego samego perka odblokowuje Embark — 2ccfa43
+- [x] 2.12 Poniżej progu Save nieaktywny; stan Embark niezależny od progu — 2ccfa43
+- [x] 2.13 Delete otwiera okno z nazwą drużyny; Cancel nie zmienia nic, potwierdzenie odsyła na `/` — 2ccfa43
+- [x] 2.14 Drużyna w stanie `inconsistent` nadal ma przycisk usuwania i daje się skasować — 2ccfa43
+- [x] 2.15 Cudze `<id>` nadal daje 404 bez nowych przycisków — 2ccfa43
+- [x] 2.16 `/teams/new` działa dokładnie jak przed zmianą — 2ccfa43
 
 ### Faza 3: Ikonowe akcje w wierszu listy na `/`
 
 #### Automatyczne
 
-- [ ] 3.1 Typy, linting, testy i build: `npx astro sync && npm run lint && npm test && npm run build`
-- [ ] 3.2 Wyspa listy istnieje: `test -f src/components/team/TeamList.tsx`
-- [ ] 3.3 Strona główna hydratuje listę (strażnik czerwony na bazie)
-- [ ] 3.4 Żadnego adresu drużyny w `src/pages/index.astro` (strażnik czerwony na bazie)
-- [ ] 3.5 Trzy akcje biorą nazwy dostępne i dymki z modułu (odczyty `.ariaLabel` ≥ 6)
-- [ ] 3.6 Treść nazw dostępnych związana asercją w `team-actions.test.ts`, nie licznikiem
-- [ ] 3.7 Adresy akcji nie są literałami w `TeamList.tsx`
-- [ ] 3.8 Stan pusty i baner usunięcia zostały w `.astro`
+- [x] 3.1 Typy, linting, testy i build: `npx astro sync && npm run lint && npm test && npm run build`
+- [x] 3.2 Wyspa listy istnieje: `test -f src/components/team/TeamList.tsx`
+- [x] 3.3 Strona główna hydratuje listę (strażnik czerwony na bazie)
+- [x] 3.4 Żadnego adresu drużyny w `src/pages/index.astro` (strażnik czerwony na bazie)
+- [x] 3.5 Trzy akcje biorą nazwy dostępne i dymki z modułu (odczyty `.ariaLabel` ≥ 6)
+- [x] 3.6 Treść nazw dostępnych związana asercją w `team-actions.test.ts`, nie licznikiem
+- [x] 3.7 Adresy akcji nie są literałami w `TeamList.tsx`
+- [x] 3.8 Stan pusty i baner usunięcia zostały w `.astro`
 
 #### Ręczne
 
-- [ ] 3.9 Wiersz pokazuje nazwę jako link, datę i trzy ikony bez tekstu
-- [ ] 3.10 Dymek każdej z trzech ikon nazywa akcję wraz z nazwą drużyny
-- [ ] 3.11 Kolejność Tab: nazwa → Embark → Edit → Delete, z widocznym fokusem
-- [ ] 3.12 Ikona Embark prowadzi na ekran wyruszenia tej drużyny
-- [ ] 3.13 Ikona Edit prowadzi na `/teams/<id>`, tak jak kliknięcie nazwy
-- [ ] 3.14 Okno usuwania nazywa **kliknięty** wiersz — sprawdzone na dwóch różnych pod rząd
-- [ ] 3.15 Cancel zostawia drużynę; potwierdzenie usuwa właściwą i pokazuje baner
-- [ ] 3.16 Usunięcie ostatniej drużyny przywraca stan pusty z wezwaniem
-- [ ] 3.17 Konto bez drużyn widzi stan pusty z wyjaśnieniem
-- [ ] 3.18 Awaria odczytu pokazuje ekran „unavailable" bez banera usunięcia
-- [ ] 3.19 Zaznaczanie tekstu nazwy-hasza myszą działa
-- [ ] 3.20 Nieudane usunięcie z listy zachowuje się zgodnie z przyjętym ryzykiem; drużyna zostaje
+- [x] 3.9 Wiersz pokazuje nazwę jako link, datę i trzy ikony bez tekstu
+- [x] 3.10 Dymek każdej z trzech ikon nazywa akcję wraz z nazwą drużyny
+- [x] 3.11 Kolejność Tab: nazwa → Embark → Edit → Delete, z widocznym fokusem
+- [x] 3.12 Ikona Embark prowadzi na ekran wyruszenia tej drużyny
+- [x] 3.13 Ikona Edit prowadzi na `/teams/<id>`, tak jak kliknięcie nazwy
+- [x] 3.14 Okno usuwania nazywa **kliknięty** wiersz — sprawdzone na dwóch różnych pod rząd
+- [x] 3.15 Cancel zostawia drużynę; potwierdzenie usuwa właściwą i pokazuje baner
+- [x] 3.16 Usunięcie ostatniej drużyny przywraca stan pusty z wezwaniem
+- [x] 3.17 Konto bez drużyn widzi stan pusty z wyjaśnieniem
+- [x] 3.18 Awaria odczytu pokazuje ekran „unavailable" bez banera usunięcia
+- [x] 3.19 Zaznaczanie tekstu nazwy-hasza myszą działa
+- [x] 3.20 Nieudane usunięcie z listy zachowuje się zgodnie z przyjętym ryzykiem; drużyna zostaje

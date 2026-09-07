@@ -1,4 +1,5 @@
 ---
+import TeamList, { type TeamListRow } from "@/components/team/TeamList";
 import AppLayout from "@/layouts/AppLayout.astro";
 import { createClient } from "@/lib/supabase";
 import { listTeams } from "@/lib/team-repo";
@@ -13,21 +14,25 @@ import { listTeams } from "@/lib/team-repo";
 // Data przychodzi już sformatowana, bo `Intl.DateTimeFormat.format` rzuca `RangeError` na
 // `Invalid Date` — w szablonie taki wyjątek jest poza `try` niżej i wywróciłby cały render, czyli
 // 500 w Workerze. Formatowanie przy odczycie wpina go w tę samą gałąź awarii co błąd zapytania.
-interface TeamRow {
-  id: string;
-  name: string;
-  savedAt: string;
-}
+//
+// Kształt wiersza jest **jeden**, wzięty z wyspy (`TeamListRow`): strona składa dokładnie to, co
+// wyspa konsumuje, więc rozjazd między nimi jest błędem typów, a nie pustym miejscem na ekranie.
+//
+// Strona **przestała być czystym SSR**: gałąź niepustej listy jest wyspą `client:load`, bo
+// usunięcie prowadzi przez okno potwierdzenia (FR-010), a to wymaga JavaScriptu. Hydratacja jest
+// jedna niezależnie od liczby drużyn — okno stoi nad całą listą, nie w wierszu (FR-006 nie stawia
+// limitu drużyn na konto). Reszta strony — gałąź awarii, stan pusty, baner usunięcia i link
+// „Assemble a new team" — zostaje statycznym markupem i do wyspy nie wchodzi.
 
 // `POST /api/teams/[id]/delete` wraca tu z `?deleted=1` po udanym usunięciu. Baner jest jedynym
 // potwierdzeniem, gdy zniknęła ostatnia drużyna — lista nie ma wtedy czego pokazać jako dowodu.
 const deleted = Astro.url.searchParams.has("deleted");
 
-let teams: readonly TeamRow[] | null = null;
+let teams: readonly TeamListRow[] | null = null;
 
 // Stała lokalizacja i stała strefa: data zapisu ma czytać się tak samo niezależnie od ustawień
-// przeglądarki. Strona jest czystym SSR (zero `client:*`), więc formatowanie tutaj nie ma się
-// z czym rozjechać.
+// przeglądarki. Formatowanie zostaje po stronie serwera i wchodzi do wyspy gotowym łańcuchem, więc
+// hydratacja nie ma się z czym rozjechać — wyspa daty nie formatuje.
 const savedAtFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -98,19 +103,7 @@ if (supabase) {
                     Assemble a new team
                   </a>
                 </div>
-                <ul class="flex flex-col gap-3">
-                  {teams.map((team) => (
-                    <li>
-                      <a
-                        href={`/teams/${team.id}`}
-                        class="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl transition-colors hover:border-purple-400/60 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-                      >
-                        <code class="font-mono font-semibold">{team.name}</code>
-                        <span class="shrink-0 text-sm text-blue-100/60">Saved {team.savedAt}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <TeamList teams={teams} client:load />
               </div>
             )}
           </Fragment>
