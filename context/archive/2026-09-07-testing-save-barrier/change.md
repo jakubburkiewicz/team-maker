@@ -1,10 +1,10 @@
 ---
 change_id: 2026-09-07-testing-save-barrier
 title: Bariera serwerowa zapisu drużyny (test-plan, faza 1)
-status: complete
+status: archived
 created: 2026-09-07
 updated: 2026-09-07
-archived_at: null
+archived_at: 2026-09-07T16:50:12Z
 ---
 
 ## Notes
