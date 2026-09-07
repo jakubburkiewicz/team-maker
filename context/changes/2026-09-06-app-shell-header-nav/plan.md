@@ -561,21 +561,21 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [x] 3.1 Brak `href="/dashboard"` i `href="/teams"` w całym `src/`
-- [x] 3.2 Żadna strona domenowa nie importuje `Layout.astro` bezpośrednio
-- [x] 3.3 Wszystkie pięć plików importuje `AppLayout.astro`
-- [x] 3.4 `/auth/*` nie weszło do powłoki
-- [x] 3.5 404 nadal idzie przez `Astro.response.status`, nie przez top-level `return`
-- [x] 3.6 Testy przechodzą: `npm test`
-- [x] 3.7 Linting przechodzi: `npm run lint`
-- [x] 3.8 Build przechodzi: `npm run build`
+- [x] 3.1 Brak `href="/dashboard"` i `href="/teams"` w całym `src/` — dbcc40e
+- [x] 3.2 Żadna strona domenowa nie importuje `Layout.astro` bezpośrednio — dbcc40e
+- [x] 3.3 Wszystkie pięć plików importuje `AppLayout.astro` — dbcc40e
+- [x] 3.4 `/auth/*` nie weszło do powłoki — dbcc40e
+- [x] 3.5 404 nadal idzie przez `Astro.response.status`, nie przez top-level `return` — dbcc40e
+- [x] 3.6 Testy przechodzą: `npm test` — dbcc40e
+- [x] 3.7 Linting przechodzi: `npm run lint` — dbcc40e
+- [x] 3.8 Build przechodzi: `npm run build` — dbcc40e
 
 #### Ręczne
 
-- [x] 3.9 Nagłówek identyczny na wszystkich pięciu ekranach
-- [x] 3.10 Wyróżnienie aktywnej pozycji zgodne: `/` → `Your teams`, `/teams/new` → `New team`, reszta bez wyróżnienia
-- [x] 3.11 Żaden link powrotny nie został na żadnym z pięciu ekranów
-- [x] 3.12 Ekran potwierdzenia zapisu ma dokładnie jeden link kontekstowy „View this team"
-- [x] 3.13 Gałęzie awarii (Supabase wyłączony) renderują się w powłoce i mają wyjście
-- [x] 3.14 Pełna pętla CRUD bez regresji (zapis → embark → edycja → usunięcie)
-- [x] 3.15 Wylogowanie z nagłówka z każdego z pięciu ekranów kończy się na `/auth/signin`
+- [x] 3.9 Nagłówek identyczny na wszystkich pięciu ekranach — dbcc40e
+- [x] 3.10 Wyróżnienie aktywnej pozycji zgodne: `/` → `Your teams`, `/teams/new` → `New team`, reszta bez wyróżnienia — dbcc40e
+- [x] 3.11 Żaden link powrotny nie został na żadnym z pięciu ekranów — dbcc40e
+- [x] 3.12 Ekran potwierdzenia zapisu ma dokładnie jeden link kontekstowy „View this team" — dbcc40e
+- [x] 3.13 Gałęzie awarii (Supabase wyłączony) renderują się w powłoce i mają wyjście — dbcc40e
+- [x] 3.14 Pełna pętla CRUD bez regresji (zapis → embark → edycja → usunięcie) — dbcc40e
+- [x] 3.15 Wylogowanie z nagłówka z każdego z pięciu ekranów kończy się na `/auth/signin` — dbcc40e
