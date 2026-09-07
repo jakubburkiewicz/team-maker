@@ -624,38 +624,38 @@ npm ani CI.
 
 #### Automatyczne
 
-- [x] 1.1 `npm test` zielone, 18 plików testowych
-- [x] 1.2 Plik testowy w `src/lib/`, nie w `src/pages/`
-- [x] 1.3 Test ładuje trasę dynamicznym importem (kotwica na wywołaniu)
-- [x] 1.4 Osprzęt czerwieni się na bazie sondy `a392c62` (plik tam nie istnieje)
-- [x] 1.5 `vitest.config.ts` i `ci.yml` nietknięte wobec `a392c62` (`git diff --quiet`)
-- [x] 1.6 Skrypt sondy wykonywalny, `trap` przed modyfikacją, łatka nakłada się (`git apply --check`)
-- [x] 1.7 `npm run lint` przechodzi
-- [x] 1.8 `npx astro check` przechodzi
+- [x] 1.1 `npm test` zielone, 18 plików testowych — 72a116a
+- [x] 1.2 Plik testowy w `src/lib/`, nie w `src/pages/` — 72a116a
+- [x] 1.3 Test ładuje trasę dynamicznym importem (kotwica na wywołaniu) — 72a116a
+- [x] 1.4 Osprzęt czerwieni się na bazie sondy `a392c62` (plik tam nie istnieje) — 72a116a
+- [x] 1.5 `vitest.config.ts` i `ci.yml` nietknięte wobec `a392c62` (`git diff --quiet`) — 72a116a
+- [x] 1.6 Skrypt sondy wykonywalny, `trap` przed modyfikacją, łatka nakłada się (`git apply --check`) — 72a116a
+- [x] 1.7 `npm run lint` przechodzi — 72a116a
+- [x] 1.8 `npx astro check` przechodzi — 72a116a
 
 #### Ręczne
 
-- [x] 1.9 Sonda uruchomiona dosłownie kończy się `0` i nazywa testy, które padły — pierwsze sondowanie wariantu kanonicznego
-- [x] 1.10 `git status --porcelain src/pages/api/teams/` puste po przebiegu sondy
-- [x] 1.11 Sonda przerwana `Ctrl-C` zostawia `src/pages/api/teams/` czyste
-- [x] 1.12 Atrapa klienta rzuca przy nieznanej tabeli
+- [x] 1.9 Sonda uruchomiona dosłownie kończy się `0` i nazywa testy, które padły — pierwsze sondowanie wariantu kanonicznego — 72a116a
+- [x] 1.10 `git status --porcelain src/pages/api/teams/` puste po przebiegu sondy — 72a116a
+- [x] 1.11 Sonda przerwana `Ctrl-C` zostawia `src/pages/api/teams/` czyste — 72a116a
+- [x] 1.12 Atrapa klienta rzuca przy nieznanej tabeli — 72a116a
 
 ### Faza 2: Komplet ryzyk #1 i #6 na obu trasach zapisu
 
 #### Automatyczne
 
-- [ ] 2.1 `npm test` zielone; tabela wiąże kardynalność asercją (`VIOLATION_CASES` = 6, `SAVE_ROUTES` = 2)
-- [ ] 2.2 Dwie eksportowane stałe komunikatów importowane, zero literału progu
-- [ ] 2.3 Wyrocznia nie pochodzi ze `scores`
-- [ ] 2.4 `npm run lint` przechodzi
-- [ ] 2.5 `npx astro check` przechodzi
+- [x] 2.1 `npm test` zielone; tabela wiąże kardynalność asercją (`VIOLATION_CASES` = 6, `SAVE_ROUTES` = 2)
+- [x] 2.2 Dwie eksportowane stałe komunikatów importowane, zero literału progu
+- [x] 2.3 Wyrocznia nie pochodzi ze `scores`
+- [x] 2.4 `npm run lint` przechodzi
+- [x] 2.5 `npx astro check` przechodzi
 
 #### Ręczne
 
-- [ ] 2.6 Sonda kończy się `0`, lista padających testów dłuższa niż po Fazie 1
-- [ ] 2.7 Mutacja na `[id].ts` daje niezależną czerwień
-- [ ] 2.8 Przegląd pod kątem lustra implementacji — każda wartość wskazywalna w PRD
-- [ ] 2.9 Sześć rodzajów naruszeń ma własny przypadek na obu trasach — przegląd listy testów
+- [x] 2.6 Sonda kończy się `0`, lista padających testów dłuższa niż po Fazie 1
+- [x] 2.7 Mutacja na `[id].ts` daje niezależną czerwień
+- [x] 2.8 Przegląd pod kątem lustra implementacji — każda wartość wskazywalna w PRD
+- [x] 2.9 Sześć rodzajów naruszeń ma własny przypadek na obu trasach — przegląd listy testów
 
 ### Faza 3: Glue trasy — siedem kroków domkniętych
 
