@@ -665,26 +665,26 @@ zostają nietknięte. Nie ma stanu do przeniesienia i nie ma czego wycofywać po
 
 #### Automatyczne
 
-- [x] 3.1 Typy, linting, testy i build: `npx astro sync && npm run lint && npm test && npm run build`
-- [x] 3.2 Wyspa listy istnieje: `test -f src/components/team/TeamList.tsx`
-- [x] 3.3 Strona główna hydratuje listę (strażnik czerwony na bazie)
-- [x] 3.4 Żadnego adresu drużyny w `src/pages/index.astro` (strażnik czerwony na bazie)
-- [x] 3.5 Trzy akcje biorą nazwy dostępne i dymki z modułu (odczyty `.ariaLabel` ≥ 6)
-- [x] 3.6 Treść nazw dostępnych związana asercją w `team-actions.test.ts`, nie licznikiem
-- [x] 3.7 Adresy akcji nie są literałami w `TeamList.tsx`
-- [x] 3.8 Stan pusty i baner usunięcia zostały w `.astro`
+- [x] 3.1 Typy, linting, testy i build: `npx astro sync && npm run lint && npm test && npm run build` — 76df061
+- [x] 3.2 Wyspa listy istnieje: `test -f src/components/team/TeamList.tsx` — 76df061
+- [x] 3.3 Strona główna hydratuje listę (strażnik czerwony na bazie) — 76df061
+- [x] 3.4 Żadnego adresu drużyny w `src/pages/index.astro` (strażnik czerwony na bazie) — 76df061
+- [x] 3.5 Trzy akcje biorą nazwy dostępne i dymki z modułu (odczyty `.ariaLabel` ≥ 6) — 76df061
+- [x] 3.6 Treść nazw dostępnych związana asercją w `team-actions.test.ts`, nie licznikiem — 76df061
+- [x] 3.7 Adresy akcji nie są literałami w `TeamList.tsx` — 76df061
+- [x] 3.8 Stan pusty i baner usunięcia zostały w `.astro` — 76df061
 
 #### Ręczne
 
-- [x] 3.9 Wiersz pokazuje nazwę jako link, datę i trzy ikony bez tekstu
-- [x] 3.10 Dymek każdej z trzech ikon nazywa akcję wraz z nazwą drużyny
-- [x] 3.11 Kolejność Tab: nazwa → Embark → Edit → Delete, z widocznym fokusem
-- [x] 3.12 Ikona Embark prowadzi na ekran wyruszenia tej drużyny
-- [x] 3.13 Ikona Edit prowadzi na `/teams/<id>`, tak jak kliknięcie nazwy
-- [x] 3.14 Okno usuwania nazywa **kliknięty** wiersz — sprawdzone na dwóch różnych pod rząd
-- [x] 3.15 Cancel zostawia drużynę; potwierdzenie usuwa właściwą i pokazuje baner
-- [x] 3.16 Usunięcie ostatniej drużyny przywraca stan pusty z wezwaniem
-- [x] 3.17 Konto bez drużyn widzi stan pusty z wyjaśnieniem
-- [x] 3.18 Awaria odczytu pokazuje ekran „unavailable" bez banera usunięcia
-- [x] 3.19 Zaznaczanie tekstu nazwy-hasza myszą działa
-- [x] 3.20 Nieudane usunięcie z listy zachowuje się zgodnie z przyjętym ryzykiem; drużyna zostaje
+- [x] 3.9 Wiersz pokazuje nazwę jako link, datę i trzy ikony bez tekstu — 76df061
+- [x] 3.10 Dymek każdej z trzech ikon nazywa akcję wraz z nazwą drużyny — 76df061
+- [x] 3.11 Kolejność Tab: nazwa → Embark → Edit → Delete, z widocznym fokusem — 76df061
+- [x] 3.12 Ikona Embark prowadzi na ekran wyruszenia tej drużyny — 76df061
+- [x] 3.13 Ikona Edit prowadzi na `/teams/<id>`, tak jak kliknięcie nazwy — 76df061
+- [x] 3.14 Okno usuwania nazywa **kliknięty** wiersz — sprawdzone na dwóch różnych pod rząd — 76df061
+- [x] 3.15 Cancel zostawia drużynę; potwierdzenie usuwa właściwą i pokazuje baner — 76df061
+- [x] 3.16 Usunięcie ostatniej drużyny przywraca stan pusty z wezwaniem — 76df061
+- [x] 3.17 Konto bez drużyn widzi stan pusty z wyjaśnieniem — 76df061
+- [x] 3.18 Awaria odczytu pokazuje ekran „unavailable" bez banera usunięcia — 76df061
+- [x] 3.19 Zaznaczanie tekstu nazwy-hasza myszą działa — 76df061
+- [x] 3.20 Nieudane usunięcie z listy zachowuje się zgodnie z przyjętym ryzykiem; drużyna zostaje — 76df061
