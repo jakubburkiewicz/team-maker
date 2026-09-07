@@ -221,3 +221,31 @@
   `/10x-implement` przed każdym `[x]` w Progress — komenda ma zostać uruchomiona **dosłownie**,
   a jej wynik przeczytany, nie założony; `/10x-impl-review` — sonduj wariantem rozbrajającym
   i sprawdzaj, czy narzędzie w komendzie w ogóle zna użytą składnię wzorca.
+
+## Linię bazową strażnika kotwicz na jawnym SHA, nie na `HEAD`
+
+- **Context**: `context/changes/2026-09-07-test-plan-refresh/plan.md` — kryteria 4.5 i 4.6
+  (przegląd implementacji 2026-09-07, ustalenie F4). Piąte wystąpienie klasy „strażnik nie
+  wiąże", po §„Kryteria grepowe kotwicz na składni, nie na słowach", §„Strażnik grepowy nad
+  SQL-em ma pokrywać legalne warianty zapisu", §„Strażnik, który jest zielony na commicie
+  bazowym, nie wiąże niczego" i §„Strażnik musi mierzyć to, co deklaruje".
+- **Problem**: Oba kryteria miały udowodnić, że refresh przewodnika nie dotknął §1 ani §7,
+  i zapisały porównanie jako `git show HEAD:context/foundation/test-plan.md`. Uruchamiane
+  w Fazie 4 planu czterofazowego, `HEAD` wskazuje wtedy `f83fed7` — commit Fazy 3, który
+  zawiera już wszystkie edycje faz 1–3. Gdyby któraś z tych faz naruszyła §1 albo §7,
+  kryterium porównałoby stan naruszony ze stanem naruszonym i przeszło **na zielono**.
+  Tutaj wynik był poprawny wyłącznie dlatego, że żadna faza tych sekcji nie ruszyła —
+  strażnik nie zawiódł przypadkiem, a nie dlatego, że wiązał. Poprzednie lekcje mówią, jak
+  pisać wzorzec i jak potwierdzić czerwień na bazie; żadna nie mówi, że w planie
+  wielofazowym **sama baza jest ruchoma**.
+- **Rule**: Kryterium porównujące stan ze stanem „przed zmianą" kotwicz na **jawnym SHA
+  sprzed pierwszego commita zmiany** (`git show <base-sha>:<ścieżka>`), nigdy na `HEAD`,
+  `HEAD~1` ani `HEAD^`. W planie wielofazowym zapisz ten SHA raz — w sekcji odniesień — i cytuj
+  go w każdej fazie, bo `HEAD` przesuwa się o jeden commit na fazę. To samo dotyczy `git diff`
+  i `git grep` z rewizją: rewizja podana względnie znaczy w Fazie N co innego niż w Fazie 1.
+  Gdy plan powstaje przed pierwszym commitem, zapisz w nim `git rev-parse --short HEAD`
+  z chwili planowania jako `base-sha`.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna
+  weryfikacja" porównującym z linią bazową; `/10x-implement` przed odhaczeniem takiego
+  kryterium — sprawdź, na co `HEAD` faktycznie wskazuje w tej chwili; `/10x-impl-review` —
+  przelicz kryterium także wobec prawdziwej bazy zakresu, nie wobec `HEAD`.

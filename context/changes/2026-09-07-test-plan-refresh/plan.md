@@ -529,8 +529,11 @@ obalone twierdzenie. Nie zmieniaj statusu Fazy 1 w §3 (zostaje `researched`) an
   (licznik samych wystąpień `2026-09-07` jest bezużyteczny — plik miał ich 10 przed refreshem)
 - §8 ma linię o ostatnim refreshu z odwołaniem do commita `62a6f68`
 - Struktura nietknięta: liczba nagłówków `## ` = 8
-- §7 bit-w-bit niezmieniona — wytnij sekcję z obu wersji i porównaj:
-  `git show HEAD:context/foundation/test-plan.md | awk '/^## 7\./{f=1} /^## 8\./{f=0} f' > /tmp/s7-old`,
+- §7 bit-w-bit niezmieniona — bazą jest **jawny SHA sprzed pierwszego commita zmiany**
+  (`17d7aa3`), nigdy `HEAD`: w Fazie 4 `HEAD` to commit Fazy 3 i porównałby stan po
+  fazach 1–3 sam ze sobą (`lessons.md` §„Linię bazową strażnika kotwicz na jawnym SHA").
+  Wytnij sekcję z obu wersji i porównaj:
+  `git show 17d7aa3:context/foundation/test-plan.md | awk '/^## 7\./{f=1} /^## 8\./{f=0} f' > /tmp/s7-old`,
   to samo `awk` nad plikiem roboczym do `/tmp/s7-new`, następnie `diff /tmp/s7-old /tmp/s7-new` pusty
 - §1 niezmieniona — ta sama procedura dla zakresu `/^## 1\./` … `/^## 2\./`, `diff` pusty
 - `change.md` ma `status: planned`
@@ -599,6 +602,13 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 > Konwencja: `- [ ]` oczekujące, `- [x]` wykonane. Dodaj ` — <commit sha>` po zakończeniu kroku.
 > Nie zmieniaj nazw kroków.
+>
+> Korekta 2026-09-07 (przegląd implementacji, ustalenie F1): kryteria 1.4, 2.6, 3.6 i 4.8
+> brzmiały pierwotnie „`npx prettier --check context/foundation/test-plan.md` przechodzi".
+> Komenda pada również na commicie bazowym `17d7aa3` — plik nigdy nie był formatowany
+> prettierem, a `--write` przeformatowałby cały dokument i złamał 4.5/4.6. Zgodnie
+> z `lessons.md` §„Kryteria grepowe kotwicz na składni" wadliwe kryterium poprawia się
+> w planie, zamiast odhaczać z adnotacją — wymienione na to, co faktycznie wiąże i przechodzi.
 
 ### Faza 1: §4 Stack — reguła czystości i wiersz integration
 
@@ -607,7 +617,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [x] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4 — d3f70c2
 - [x] 1.2 Nowe kryterium runtime obecne w §4 — d3f70c2
 - [x] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto — d3f70c2
-- [x] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi (N/A — pada też na commicie bazowym; `--write` przeformatowałby cały plik i złamał 4.5/4.6. Zamiast tego zweryfikowano, że po znormalizowaniu prettierem obu stron dyff ogranicza się do zamierzonych edycji) — d3f70c2
+- [x] 1.4 Refresh nie wprowadza nowego odchylenia formatowania: po znormalizowaniu prettierem obu stron (baza `17d7aa3` i plik roboczy) dyff ogranicza się do zamierzonych edycji — d3f70c2
 - [x] 1.5 Tabela stosu §4 nadal ma 7 wierszy — d3f70c2
 
 #### Ręczne
@@ -626,7 +636,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [x] 2.4 Liczba wystąpień `| High | High |` = 2 — acf2a3e
 - [x] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach — acf2a3e
 - [x] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS) — acf2a3e
-- [x] 2.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza, że zmieniły się wyłącznie linie 47, 67, 68 i 72) — acf2a3e
+- [x] 2.6 Dyff wobec bazy ogranicza się do zamierzonych komórek §2 (`git diff -U0`: linie 47, 67, 68, 72) — acf2a3e
 
 #### Ręczne
 
@@ -646,7 +656,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [x] 3.3 Liczba linii pasujących do `^- TBD — see §3 Phase` = 5 — f83fed7
 - [x] 3.4 §3 ma 4 wiersze faz, statusy niezmienione — f83fed7
 - [x] 3.5 §5 ma 11 wierszy bramek (10 dotychczasowych + dym RLS) — f83fed7
-- [x] 3.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza pięć hunków dokładnie w §3, §5, §6.1 i §6.3) — f83fed7
+- [x] 3.6 Dyff wobec bazy ogranicza się do §3, §5, §6.1 i §6.3 (`git diff -U0`: pięć hunków) — f83fed7
 
 #### Ręczne
 
@@ -667,7 +677,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [x] 4.5 `git diff` nie pokazuje żadnej linii między `## 7.` a `## 8.` — 114a196
 - [x] 4.6 `git diff` nie pokazuje żadnej linii między `## 1.` a `## 2.` — 114a196
 - [x] 4.7 `change.md` ma `status: planned` (zaadaptowane — kryterium opisywało wyjście z etapu planowania i `planned` obowiązywał przed wejściem w implementację; cykl życia `/10x-implement` zastępuje je przez `implementing` → `implemented`) — 114a196
-- [x] 4.8 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego dyff wobec 17d7aa3 daje 12 hunków wyłącznie w zamierzonych komórkach, a §1 i §7 są bit-w-bit) — 114a196
+- [x] 4.8 Pełny dyff wobec `17d7aa3` daje 12 hunków, wszystkie w zamierzonych komórkach; §1 i §7 bit-w-bit — 114a196
 - [x] 4.9 `git status --short` pokazuje wyłącznie test-plan.md i pliki folderu zmiany — 114a196
 
 #### Ręczne
