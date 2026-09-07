@@ -5,6 +5,8 @@ import { CompositionGate } from "@/components/team/CompositionGate";
 import { MemberPickerDialog } from "@/components/team/MemberPickerDialog";
 import { MissingPointsList } from "@/components/team/MissingPointsList";
 import { RosterSlot, type RosterMember, type RosterSlotHandlers } from "@/components/team/RosterSlot";
+import { TeamActions } from "@/components/team/TeamActions";
+import { hasUnsavedChanges } from "@/lib/composition-changes";
 import {
   COMPETENCY_THRESHOLD,
   MAX_TEAM_SIZE,
@@ -15,6 +17,7 @@ import {
   type PoolCharacter,
   type TeamComposition,
 } from "@/lib/domain";
+import type { SavedTeamRef } from "@/lib/team-actions";
 
 interface Props {
   pool: readonly PoolCharacter[];
@@ -25,11 +28,15 @@ interface Props {
    */
   initialComposition?: TeamComposition;
   /**
-   * Cel zapisu, przekazywany **przelotowo** do `CompositionGate` — wyspa nie rozgałęzia się na nim
-   * ani razu. Brak znaczy „kompletowanie nowej drużyny", obecność znaczy „edycja tej zapisanej"
-   * (FR-008: jeden widok obsługujący oba przypadki, FR-009).
+   * Zapisana drużyna, którą wyspa edytuje. Brak znaczy „kompletowanie nowej drużyny", obecność
+   * znaczy „edycja tej zapisanej" (FR-008: jeden widok obsługujący oba przypadki, FR-009).
+   *
+   * Nośnik trybu pozostaje **jeden**: `CompositionGate` dostaje `team?.id` wyprowadzone stąd,
+   * a nie własny, niezależny prop. Grupa akcji potrzebuje też nazwy-hasza (okno potwierdzenia
+   * i nazwy dostępne), więc prop rozszerzył się do jednego obiektu zamiast do drugiego pola —
+   * „edycja bez nazwy" i „nazwa bez edycji" zostają niereprezentowalne.
    */
-  teamId?: string;
+  team?: SavedTeamRef;
 }
 
 /**
@@ -45,17 +52,23 @@ interface Props {
  * liczone przy każdym renderze, bez memoizacji — react-compiler robi to sam, a koszt to siedem
  * liczników nad ≤ 6 członkami (NFR 200 ms z zapasem).
  *
- * Oba ekrany, które renderują tę wyspę, są w pełni interaktywne i różnią się wyłącznie **celem**
- * zapisu — trybu tylko do odczytu nie ma. Domyślny `initialComposition` zachowuje zachowanie
- * `/teams/new`: pusty skład.
+ * Oba ekrany, które renderują tę wyspę, są w pełni interaktywne — trybu tylko do odczytu nie ma.
+ * Różni je obecność propu `team`: niesie on cel zapisu dla bramki i zarazem decyduje, czy
+ * w kolumnie bocznej stanie grupa akcji zapisanej drużyny. Domyślny `initialComposition` zachowuje
+ * zachowanie `/teams/new`: pusty skład.
  */
-export default function TeamComposer({ pool, initialComposition = [], teamId }: Props) {
+export default function TeamComposer({ pool, initialComposition = [], team }: Props) {
   const [composition, setComposition] = useState<TeamComposition>(initialComposition);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const charactersById = new Map(pool.map((character) => [character.id, character]));
   const memberIds = new Set(composition.map((member) => member.characterId));
   const evaluation = evaluateTeam(composition, pool);
+  // Liczone przy każdym renderze, bez memoizacji — dokładnie jak `evaluateTeam`: react-compiler
+  // robi to sam, a koszt to porównanie dwóch składów po ≤ 6 członkach (NFR 200 ms z zapasem).
+  // `initialComposition` jest tym, co stoi w bazie: wyspa nie synchronizuje go `useEffect`-em,
+  // więc pozostaje wiernym obrazem zapisanego składu przez całe życie wyspy.
+  const unsaved = hasUnsavedChanges(composition, initialComposition);
 
   function handleRecruit() {
     setPickerOpen(true);
@@ -137,7 +150,13 @@ export default function TeamComposer({ pool, initialComposition = [], teamId }: 
             The roster breaks a team limit, so neither the chart nor the missing-points list is shown.
           </p>
         )}
-        <CompositionGate ready={evaluation.isValid} composition={composition} teamId={teamId} />
+        <CompositionGate ready={evaluation.isValid} composition={composition} teamId={team?.id} />
+        {/*
+          Grupa akcji istnieje **wyłącznie** dla zapisanej drużyny: bez niej nie ma czego usuwać
+          ani z czym wyruszać, więc `/teams/new` zostaje przy jednym przycisku bramki, dokładnie
+          jak przed tą zmianą.
+        */}
+        {team !== undefined && <TeamActions team={team} hasUnsavedChanges={unsaved} />}
       </aside>
       <MemberPickerDialog
         open={pickerOpen}

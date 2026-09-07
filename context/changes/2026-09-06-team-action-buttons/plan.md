@@ -623,43 +623,43 @@ zostają nietknięte. Nie ma stanu do przeniesienia i nie ma czego wycofywać po
 
 #### Automatyczne
 
-- [x] 1.1 Typy wygenerowane: `npx astro sync`
-- [x] 1.2 Linting przechodzi: `npm run lint`
-- [x] 1.3 Testy przechodzą, łącznie z dwoma nowymi plikami: `npm test`
-- [x] 1.4 Oba moduły istnieją i są czyste (`test -f` + strażnik importów)
-- [x] 1.5 Oba pliki testowe istnieją
-- [x] 1.6 Ekran wyruszenia nie twierdzi już, że gracz właśnie zapisał (strażnik czerwony na bazie)
-- [x] 1.7 Blok „Work in Progress" przetrwał redakcję
+- [x] 1.1 Typy wygenerowane: `npx astro sync` — 82cc70f
+- [x] 1.2 Linting przechodzi: `npm run lint` — 82cc70f
+- [x] 1.3 Testy przechodzą, łącznie z dwoma nowymi plikami: `npm test` — 82cc70f
+- [x] 1.4 Oba moduły istnieją i są czyste (`test -f` + strażnik importów) — 82cc70f
+- [x] 1.5 Oba pliki testowe istnieją — 82cc70f
+- [x] 1.6 Ekran wyruszenia nie twierdzi już, że gracz właśnie zapisał (strażnik czerwony na bazie) — 82cc70f
+- [x] 1.7 Blok „Work in Progress" przetrwał redakcję — 82cc70f
 
 #### Ręczne
 
-- [x] 1.8 Ekran po zapisie orzeka o stanie (nie o czynności gracza), nazywa drużynę z bazy i pokazuje „Work in Progress"
-- [x] 1.9 Wejście na ekran wyruszenia bez uprzedniego zapisu daje tekst, który nie kłamie
-- [x] 1.10 Cudze i nieistniejące `<id>` nadal dają ekran 404
+- [x] 1.8 Ekran po zapisie orzeka o stanie (nie o czynności gracza), nazywa drużynę z bazy i pokazuje „Work in Progress" — 82cc70f
+- [x] 1.9 Wejście na ekran wyruszenia bez uprzedniego zapisu daje tekst, który nie kłamie — 82cc70f
+- [x] 1.10 Cudze i nieistniejące `<id>` nadal dają ekran 404 — 82cc70f
 
 ### Faza 2: Akcje w kolumnie bocznej edytora `/teams/[id]`
 
 #### Automatyczne
 
-- [ ] 2.1 Typy, linting i testy: `npx astro sync && npm run lint && npm test`
-- [ ] 2.2 Nowe komponenty istnieją (`TeamActions.tsx`, `DeleteTeamButton.tsx`)
-- [ ] 2.3 Okno jest sterowane z zewnątrz (strażnik czerwony na bazie)
-- [ ] 2.4 Okno nie jest właścicielem stanu otwarcia (strażnik czerwony na bazie, linia 43)
-- [ ] 2.5 Adresy akcji nie są literałami w `TeamActions.tsx`
-- [ ] 2.6 Przycisk usuwania zniknął spod siatki na stronie edycji (strażnik czerwony na bazie)
-- [ ] 2.7 `/teams/new` nie dostał ani grupy akcji, ani usuwania
+- [x] 2.1 Typy, linting i testy: `npx astro sync && npm run lint && npm test`
+- [x] 2.2 Nowe komponenty istnieją (`TeamActions.tsx`, `DeleteTeamButton.tsx`)
+- [x] 2.3 Okno jest sterowane z zewnątrz (strażnik czerwony na bazie)
+- [x] 2.4 Okno nie jest właścicielem stanu otwarcia (strażnik czerwony na bazie, linia 43)
+- [x] 2.5 Adresy akcji nie są literałami w `TeamActions.tsx`
+- [x] 2.6 Przycisk usuwania zniknął spod siatki na stronie edycji (strażnik czerwony na bazie)
+- [x] 2.7 `/teams/new` nie dostał ani grupy akcji, ani usuwania
 
 #### Ręczne
 
-- [ ] 2.8 Kolejność Save / Embark / Delete w kolumnie bocznej; nic nie wisi pod siatką
-- [ ] 2.9 Bez zmian składu Embark aktywny i prowadzi na ekran wyruszenia tej drużyny
-- [ ] 2.10 Po zmianie składu Embark gaśnie z powodem; po zapisie wraca
-- [ ] 2.11 Zdjęcie i ponowny wybór tego samego perka odblokowuje Embark
-- [ ] 2.12 Poniżej progu Save nieaktywny; stan Embark niezależny od progu
-- [ ] 2.13 Delete otwiera okno z nazwą drużyny; Cancel nie zmienia nic, potwierdzenie odsyła na `/`
-- [ ] 2.14 Drużyna w stanie `inconsistent` nadal ma przycisk usuwania i daje się skasować
-- [ ] 2.15 Cudze `<id>` nadal daje 404 bez nowych przycisków
-- [ ] 2.16 `/teams/new` działa dokładnie jak przed zmianą
+- [x] 2.8 Kolejność Save / Embark / Delete w kolumnie bocznej; nic nie wisi pod siatką
+- [x] 2.9 Bez zmian składu Embark aktywny i prowadzi na ekran wyruszenia tej drużyny
+- [x] 2.10 Po zmianie składu Embark gaśnie z powodem; po zapisie wraca
+- [x] 2.11 Zdjęcie i ponowny wybór tego samego perka odblokowuje Embark
+- [x] 2.12 Poniżej progu Save nieaktywny; stan Embark niezależny od progu
+- [x] 2.13 Delete otwiera okno z nazwą drużyny; Cancel nie zmienia nic, potwierdzenie odsyła na `/`
+- [x] 2.14 Drużyna w stanie `inconsistent` nadal ma przycisk usuwania i daje się skasować
+- [x] 2.15 Cudze `<id>` nadal daje 404 bez nowych przycisków
+- [x] 2.16 `/teams/new` działa dokładnie jak przed zmianą
 
 ### Faza 3: Ikonowe akcje w wierszu listy na `/`
 

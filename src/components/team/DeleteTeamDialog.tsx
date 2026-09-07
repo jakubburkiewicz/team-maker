@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -11,17 +10,32 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import type { SavedTeamRef } from "@/lib/team-actions";
 
 interface DeleteTeamDialogProps {
-  teamId: string;
-  /** Nazwa-hash drużyny (FR-011) — okno nazywa nią drużynę, żeby potwierdzenie dotyczyło konkretu. */
-  teamName: string;
+  /**
+   * Drużyna, której dotyczy potwierdzenie — **jeden obiekt**, nie dwa pola, żeby „id bez nazwy"
+   * i „nazwa bez id" pozostały niereprezentowalne (ta sama logika co `teamId`
+   * w `CompositionGate.tsx`). `null` znaczy „nie ma czego potwierdzać": okno nie renderuje wtedy
+   * treści i nie może się otworzyć, choćby `open` mówiło inaczej.
+   */
+  target: SavedTeamRef | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 /**
- * Usunięcie drużyny po potwierdzeniu (FR-010, US-03). Osobna wyspa, żeby `TeamComposer` nic nie
- * wiedział o usuwaniu: kompozytor ma od S-05 jeden tryb, a warunkowy przycisk, którego
- * `/teams/new` nigdy by nie użył, przywróciłby parę przełączników, które muszą się zgadzać.
+ * Usunięcie drużyny po potwierdzeniu (FR-010, US-03). Komponent jest **sterowany**: cel i widoczność
+ * przychodzą od rodzica, a własnego przycisku otwierającego nie renderuje. Rozdzielenie „co
+ * potwierdzamy" od „skąd otwarto" jest tym, co pozwala liście na `/` postawić **jedno** okno nad
+ * N wierszami — dopóki komponent trzymał `open` sam, jedynym sposobem na wiele wyzwalaczy było
+ * wiele okien. Wyzwalacze mają dziś dwóch właścicieli: `TeamActions` (kolumna boczna edytora)
+ * i `DeleteTeamButton` (gałąź awarii `/teams/[id]`).
+ *
+ * `submitting` zostaje **w środku**: to własność wysyłki, nie rodzica. Jak `CompositionGate`: po
+ * pierwszym kliknięciu oba przyciski gasną, bo drugi POST na już skasowany wiersz dostałby `null`
+ * z repo i odesłał na goły 404 zamiast na baner „Team deleted.". Nie `useFormStatus` — przy
+ * `action` będącym stringiem React trzyma `pending === false` na stałe.
  *
  * Okno stoi na prymitywie `alert-dialog`, nie na `dialog.tsx`: `role="alertdialog"` i brak
  * zamykania kliknięciem w tło są dla operacji nieodwracalnej właściwością, nie ozdobą — skoro
@@ -35,36 +49,20 @@ interface DeleteTeamDialogProps {
  * Formularz żyje **wewnątrz** treści okna, bo Radix portuje ją do `document.body`: owinięty wokół
  * `<AlertDialog>` nie objąłby przycisku w DOM, a awaria byłaby tej samej, cichej klasy.
  *
- * Prymityw wchodzi z jasnymi tokenami shadcn (`bg-background`, `bg-destructive`), a `/teams/[id]`
- * jest w całości ręcznym motywem cosmic — stąd nadpisujące `className`, wzorem
+ * Prymityw wchodzi z jasnymi tokenami shadcn (`bg-background`, `bg-destructive`), a oba ekrany,
+ * które go renderują, są w całości ręcznym motywem cosmic — stąd nadpisujące `className`, wzorem
  * `MemberPickerDialog.tsx:33`.
  */
-export default function DeleteTeamDialog({ teamId, teamName }: DeleteTeamDialogProps) {
-  const [open, setOpen] = useState(false);
-  // Jak `CompositionGate`: po pierwszym kliknięciu oba przyciski gasną, bo drugi POST na już
-  // skasowany wiersz dostałby `null` z repo i odesłał na goły 404 zamiast na baner „Team deleted."
-  // Nie `useFormStatus` — przy `action` będącym stringiem React trzyma `pending === false` na stałe.
+export default function DeleteTeamDialog({ target, open, onOpenChange }: DeleteTeamDialogProps) {
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="destructive"
-        onClick={() => {
-          setOpen(true);
-        }}
-        className="self-end border border-red-400/40 bg-red-500/15 text-red-100 hover:bg-red-500/25"
-      >
-        <Trash2 className="size-4" />
-        Delete team
-      </Button>
-
-      <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={open && target !== null} onOpenChange={onOpenChange}>
+      {target !== null && (
         <AlertDialogContent className="border-white/10 bg-[#0f1529] text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete team <code className="font-mono">{teamName}</code>?
+              Delete team <code className="font-mono">{target.name}</code>?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-blue-100/70">
               This cannot be undone. The roster and its perks are erased for good — there is no recycle bin and no way
@@ -78,7 +76,7 @@ export default function DeleteTeamDialog({ teamId, teamName }: DeleteTeamDialogP
             >
               Cancel
             </AlertDialogCancel>
-            <form method="post" action={`/api/teams/${teamId}/delete`}>
+            <form method="post" action={`/api/teams/${encodeURIComponent(target.id)}/delete`}>
               <Button
                 type="submit"
                 variant="destructive"
@@ -93,7 +91,7 @@ export default function DeleteTeamDialog({ teamId, teamName }: DeleteTeamDialogP
             </form>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
-    </>
+      )}
+    </AlertDialog>
   );
 }
