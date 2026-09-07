@@ -1,10 +1,10 @@
 ---
 change_id: 2026-09-06-team-action-buttons
 title: Ikonowe akcje na liście drużyn i uporządkowane akcje w edytorze
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-07
-archived_at: null
+archived_at: 2026-09-07T15:29:43Z
 ---
 
 ## Notes
