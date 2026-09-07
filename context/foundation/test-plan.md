@@ -226,6 +226,9 @@ leżące u ich podstaw.
 - Strategy (§1–§5) last reviewed: 2026-09-07
 - Stack versions last verified: 2026-09-07
 - AI-native tool references last verified: 2026-09-07
+- Ostatni refresh: 2026-09-07 — wyzwalacz: przepisanie reguły czystości testów w `AGENTS.md`
+  (commit `62a6f68`) z kryterium tekstowego na runtime; dotknięte sekcje: §2, §3, §4, §5, §6.1,
+  §6.3. Wpis jest jednorazowy — kolejny refresh nadpisuje tę linię, nie dopisuje kolejnej.
 
 Refresh (`/10x-test-plan --refresh`) when:
 
