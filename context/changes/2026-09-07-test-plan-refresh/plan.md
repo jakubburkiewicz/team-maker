@@ -620,41 +620,41 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [x] 2.1 Fraza o prawdziwym Postgresie zniknęła z §2 wiersza #2
-- [x] 2.2 Grep na `bez łamania czystości testów` i `jak pogodzić test wykonawczy` zwraca pusto
-- [x] 2.3 Risk Map ma 6 wierszy ryzyk, Response Guidance 6 wierszy
-- [x] 2.4 Liczba wystąpień `| High | High |` = 2
-- [x] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach
-- [x] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS)
-- [x] 2.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza, że zmieniły się wyłącznie linie 47, 67, 68 i 72)
+- [x] 2.1 Fraza o prawdziwym Postgresie zniknęła z §2 wiersza #2 — acf2a3e
+- [x] 2.2 Grep na `bez łamania czystości testów` i `jak pogodzić test wykonawczy` zwraca pusto — acf2a3e
+- [x] 2.3 Risk Map ma 6 wierszy ryzyk, Response Guidance 6 wierszy — acf2a3e
+- [x] 2.4 Liczba wystąpień `| High | High |` = 2 — acf2a3e
+- [x] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach — acf2a3e
+- [x] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS) — acf2a3e
+- [x] 2.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza, że zmieniły się wyłącznie linie 47, 67, 68 i 72) — acf2a3e
 
 #### Ręczne
 
-- [x] 2.7 Ryzyko #1 nadal scenariuszem użytkownika, bez kotwic plik:linia
-- [x] 2.8 Kolumna *Source* ryzyka #1 nieprzepisana (cytat PRD dosłowny)
-- [x] 2.9 Granica CI/ręczne czytelna z samego wiersza #2
-- [x] 2.9b Kolumna dowodu #2 nie obiecuje zapytania do bazy w CI, ale nadal wyklucza odczyt SQL-a
-- [x] 2.10 Trzy kopie anty-wzorca spójne treściowo
-- [x] 2.11 Kalibracja pod tabelą nadal prawdziwa
+- [x] 2.7 Ryzyko #1 nadal scenariuszem użytkownika, bez kotwic plik:linia — acf2a3e
+- [x] 2.8 Kolumna *Source* ryzyka #1 nieprzepisana (cytat PRD dosłowny) — acf2a3e
+- [x] 2.9 Granica CI/ręczne czytelna z samego wiersza #2 — acf2a3e
+- [x] 2.9b Kolumna dowodu #2 nie obiecuje zapytania do bazy w CI, ale nadal wyklucza odczyt SQL-a — acf2a3e
+- [x] 2.10 Trzy kopie anty-wzorca spójne treściowo — acf2a3e
+- [x] 2.11 Kalibracja pod tabelą nadal prawdziwa — acf2a3e
 
 ### Faza 3: Propagacja do §3, §5, §6.1 i §6.3
 
 #### Automatyczne
 
-- [ ] 3.1 Zero trafień na `prawdziwemu Postgresowi`, `prawdziwego Postgresa`, `real Postgres`
-- [ ] 3.2 Stara litera zniknęła z §6.1 — grep na `może importować` pusty w całym pliku
-- [ ] 3.3 Liczba linii pasujących do `^- TBD — see §3 Phase` = 5
-- [ ] 3.4 §3 ma 4 wiersze faz, statusy niezmienione
-- [ ] 3.5 §5 ma 11 wierszy bramek (10 dotychczasowych + dym RLS)
-- [ ] 3.6 `npx prettier --check` przechodzi
+- [x] 3.1 Zero trafień na `prawdziwemu Postgresowi`, `prawdziwego Postgresa`, `real Postgres`
+- [x] 3.2 Stara litera zniknęła z §6.1 — grep na `może importować` pusty w całym pliku
+- [x] 3.3 Liczba linii pasujących do `^- TBD — see §3 Phase` = 5
+- [x] 3.4 §3 ma 4 wiersze faz, statusy niezmienione
+- [x] 3.5 §5 ma 11 wierszy bramek (10 dotychczasowych + dym RLS)
+- [x] 3.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza pięć hunków dokładnie w §3, §5, §6.1 i §6.3)
 
 #### Ręczne
 
-- [ ] 3.7 §6.1 prowadzi do drogi zgodnej z `AGENTS.md:11`, nie zaleca rdzenia domyślnie
-- [ ] 3.8 §3 uzasadnienie broni tej samej kolejności, zmieniona tylko przyczyna
-- [ ] 3.9 §5 bramka izolacji nadal `required after §3 Phase 2`
-- [ ] 3.10 Dym RLS ma w §5 własny wiersz (lokalny stos, `recommended after §3 Phase 2`)
-- [ ] 3.11 Wiersz dymu produkcyjnego nietknięty
+- [x] 3.7 §6.1 prowadzi do drogi zgodnej z `AGENTS.md:11`, nie zaleca rdzenia domyślnie
+- [x] 3.8 §3 uzasadnienie broni tej samej kolejności, zmieniona tylko przyczyna
+- [x] 3.9 §5 bramka izolacji nadal `required after §3 Phase 2`
+- [x] 3.10 Dym RLS ma w §5 własny wiersz (lokalny stos, `recommended after §3 Phase 2`)
+- [x] 3.11 Wiersz dymu produkcyjnego nietknięty
 
 ### Faza 4: §8 stempel, kontrola spójności, odblokowanie Fazy 1 wdrożenia
 

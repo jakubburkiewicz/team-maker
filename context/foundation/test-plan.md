@@ -80,13 +80,14 @@ w miarę pojawiania się artefaktów na dysku.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
 | 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | researched | `context/changes/2026-09-07-testing-save-barrier/` |
-| 2 | Wykonywalny dowód izolacji i przepuszczania | Cudza drużyna jest niedostępna na wszystkich czterech operacjach, a bariera trasy przepuszcza wyłącznie sesję — sprawdzone wykonaniem, nie grepem | #2, #3 | integration (real Postgres, two identities), request-level integration | not started | — |
+| 2 | Wykonywalny dowód izolacji i przepuszczania | Cudza drużyna jest niedostępna na wszystkich czterech operacjach, a bariera trasy przepuszcza wyłącznie sesję — sprawdzone wykonaniem, nie grepem; bramka CI domyka tor żądania, a sam efekt polityk RLS zostaje dymem ręcznym na lokalnym stosie | #2, #3 | integration na poziomie żądania (dwie tożsamości, atrapa klienta), jawnie ręczny dym RLS na lokalnym stosie | not started | — |
 | 3 | Podpięcie wyspy: skład → wykres → werdykt | Reguła domenowa widoczna na ekranie odpowiada regule liczonej w module, w obie strony | #5 | component (DOM) | not started | — |
 | 4 | Ścieżka recenzenta e2e i bramki jakości | Persona główna przechodzi rejestracja → logowanie → zapisana drużyna w jednym przebiegu, a dolna granica zostaje zamknięta w CI | #4, cross-cutting | e2e, gates, AI-native review | not started | — |
 
 Uzasadnienie kolejności: Faza 1 domyka jedno z dwóch High × High najtańszą warstwą, jaka może
-je udowodnić, i przy okazji rozstrzyga strukturalne pytanie o pogodzenie testu wykonawczego
-z regułą czystości testów — czym odblokowuje Fazę 2. Faza 2 zamienia jedyną klasę strażników,
+je udowodnić. Strukturalne pytanie o pogodzenie testu wykonawczego z regułą czystości testów
+rozstrzygnęło się **w badaniu** Fazy 1, a nie w jej implementacji, i zostało utrwalone
+w `AGENTS.md` — Faza 2 wchodzi więc już na rozstrzygniętym gruncie. Faza 2 zamienia jedyną klasę strażników,
 która w tym repozytorium już raz zawiodła, na wykonanie. Faza 3 bierze najwyższą zmienność
 przy zerowym pokryciu warstwą tańszą niż e2e, więc idzie przed nim. Faza 4 kupuje jedyne,
 czego tańsze warstwy nie dają — całą ścieżkę persony głównej naraz — i dopiero wtedy zamyka
@@ -145,7 +146,8 @@ Supabase. Wynika z tego, że warstwy wykonawcze są dostępne bez wyjątku od re
 | `astro sync` + lint + typecheck | local + CI | required (wired) | dryf składniowy i typowy, brakujące typy generowane |
 | unit na czystych modułach | local + CI | required (wired) | regresje reguły domenowej i pomocników |
 | integration na torze zapisu | local + CI | required after §3 Phase 1 | utrwalenie składu łamiącego próg albo limity |
-| integration na izolacji i przepuszczaniu | local + CI | required after §3 Phase 2 | ujawnienie cudzej drużyny; przepuszczenie żądania bez sesji |
+| integration na izolacji i przepuszczaniu | local + CI | required after §3 Phase 2 | przepuszczenie żądania bez sesji; wypuszczenie przez trasę wiersza cudzego konta |
+| dym ręczny na politykach RLS (lokalny stos) | local (`npx supabase start`) | recommended after §3 Phase 2 | regresja polityki RLS niewidzialna dla CI — bramka integracyjna idzie na atrapie klienta, więc rozbrojenie polityki w migracji przejdzie w niej na zielono |
 | component na podpięciu wyspy | local + CI | required after §3 Phase 3 | rozjazd wykresu i werdyktu ze składem |
 | build | CI | required (wired) | awarie wyłącznie kompilacyjne i konfiguracyjne |
 | e2e na ścieżce persony głównej | CI on PR | required after §3 Phase 4 | zerwana ścieżka rejestracja → logowanie → zapisana drużyna |
@@ -162,8 +164,11 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 
 - **Lokalizacja**: obok modułu pod testem w `src/lib/` lub `src/lib/domain/`.
 - **Nazewnictwo**: `<moduł>.test.ts` — zakres Vitest obejmuje wyłącznie `src/**/*.test.ts`.
-- **Czystość**: moduł pod testem nie może importować `astro:*` ani `@/lib/supabase`
-  (`AGENTS.md`). Jeśli import jest potrzebny, wydziel czysty rdzeń.
+- **Czystość**: obowiązuje kryterium runtime opisane w §4 — liczy się, co **ewaluuje się**
+  w czasie testu, nie co mówi linia importu. Czysty moduł w `src/lib/` spełnia je bez żadnego
+  zabiegu. Gdy moduł pod testem sięga po `@/lib/supabase`, drogą zgodną z regułą jest podmiana
+  tego modułu w teście hoistowanym `vi.mock`; wydzielenie czystego rdzenia pozostaje
+  **dopuszczalnym wyborem pokrycia, nie wymogiem zgodności**.
 - **Test referencyjny**: `src/lib/domain/evaluate-team.test.ts`.
 - **Uruchomienie**: `npm test`.
 
@@ -174,7 +179,7 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 ### 6.3 Dodanie testu izolacji między kontami
 
 - TBD — see §3 Phase 2 (wzorzec „konto A na identyfikatorze konta B dostaje zero wierszy",
-  wykonywany przeciwko prawdziwemu Postgresowi, nie grepowany po SQL-u).
+  wykonywany, nie grepowany po SQL-u).
 
 ### 6.4 Dodanie testu bariery trasy
 
