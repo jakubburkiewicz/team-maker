@@ -1,0 +1,30 @@
+diff --git a/src/pages/api/teams/index.ts b/src/pages/api/teams/index.ts
+index 1b5f4f8..36bcf01 100644
+--- a/src/pages/api/teams/index.ts
++++ b/src/pages/api/teams/index.ts
+@@ -61,15 +61,18 @@ export const POST: APIRoute = async (context) => {
+   }
+ 
+   const gate = gateTeamSubmission(raw, pool);
+-  if (!gate.ok) {
+-    return rejectToComposer(
+-      context,
+-      gate.reason.kind === "invalid-payload" ? INVALID_PAYLOAD_MESSAGE : BELOW_THRESHOLD_MESSAGE,
+-    );
+-  }
+ 
+   try {
+-    const team = await createTeam(supabase, { userId: user.id, composition: gate.composition });
++    const team = await createTeam(supabase, {
++      userId: user.id,
++      composition: gate.ok ? gate.composition : [],
++    });
++    if (!gate.ok) {
++      return rejectToComposer(
++        context,
++        gate.reason.kind === "invalid-payload" ? INVALID_PAYLOAD_MESSAGE : BELOW_THRESHOLD_MESSAGE,
++      );
++    }
+     return context.redirect(`/teams/${team.id}/embark`);
+   } catch (error) {
+     // eslint-disable-next-line no-console
