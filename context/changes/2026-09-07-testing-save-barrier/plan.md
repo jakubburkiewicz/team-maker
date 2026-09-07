@@ -679,17 +679,17 @@ npm ani CI.
 
 #### Automatyczne
 
-- [x] 4.1 §6.2 nie jest już placeholderem
-- [x] 4.2 §6.2 wskazuje test referencyjny i skrypt sondy
-- [x] 4.3 Bramka integracyjna podniesiona na `required (wired)`
-- [x] 4.4 Wiersz §4 „integration (trasy, baza)" nie brzmi już `none yet`
-- [x] 4.5 `change.md` ma `status: complete`
-- [x] 4.6 §1 i §7 przewodnika nietknięte wobec `a392c62`
-- [x] 4.7 `npm test`, `npm run lint`, `npm run build` przechodzą
+- [x] 4.1 §6.2 nie jest już placeholderem — 4504601
+- [x] 4.2 §6.2 wskazuje test referencyjny i skrypt sondy — 4504601
+- [x] 4.3 Bramka integracyjna podniesiona na `required (wired)` — 4504601
+- [x] 4.4 Wiersz §4 „integration (trasy, baza)" nie brzmi już `none yet` — 4504601
+- [x] 4.5 `change.md` ma `status: complete` — 4504601
+- [x] 4.6 §1 i §7 przewodnika nietknięte wobec `a392c62` — 4504601
+- [x] 4.7 `npm test`, `npm run lint`, `npm run build` przechodzą — 4504601
 
 #### Ręczne
 
-- [x] 4.8 §6.2 wystarcza obcemu do dopisania testu toru zapisu
-- [x] 4.9 §6.7 nazywa dług `duplicate-character` / `unknown-perk` wprost
-- [x] 4.10 Kryteria porównujące §1 i §7 z bazą czerwienią się na naruszeniu
-- [x] 4.11 Sonda uruchomiona po raz ostatni: `0`, `src/pages/api/teams/` czyste
+- [x] 4.8 §6.2 wystarcza obcemu do dopisania testu toru zapisu — 4504601
+- [x] 4.9 §6.7 nazywa dług `duplicate-character` / `unknown-perk` wprost — 4504601
+- [x] 4.10 Kryteria porównujące §1 i §7 z bazą czerwienią się na naruszeniu — 4504601
+- [x] 4.11 Sonda uruchomiona po raz ostatni: `0`, `src/pages/api/teams/` czyste — 4504601
