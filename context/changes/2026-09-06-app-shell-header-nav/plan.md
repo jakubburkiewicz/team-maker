@@ -526,12 +526,12 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [ ] 1.1 Wymaganie wstępne `2026-09-06-teams-list-as-home` wdrożone (bramka)
-- [ ] 1.2 Testy przechodzą: `npm test`
-- [ ] 1.3 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`)
-- [ ] 1.4 Moduł nie zna usuwanych tras `/dashboard` i `/teams`
-- [ ] 1.5 Linting przechodzi: `npm run lint`
-- [ ] 1.6 Build przechodzi: `npm run build`
+- [x] 1.1 Wymaganie wstępne `2026-09-06-teams-list-as-home` wdrożone (bramka)
+- [x] 1.2 Testy przechodzą: `npm test`
+- [x] 1.3 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`)
+- [x] 1.4 Moduł nie zna usuwanych tras `/dashboard` i `/teams`
+- [x] 1.5 Linting przechodzi: `npm run lint`
+- [x] 1.6 Build przechodzi: `npm run build`
 
 ### Faza 2: Powłoka i pierwszy konsument
 

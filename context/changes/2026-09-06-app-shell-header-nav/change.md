@@ -1,9 +1,9 @@
 ---
 change_id: 2026-09-06-app-shell-header-nav
 title: Wspólny nagłówek z użytkownikiem i menu nawigacyjnym na każdej stronie
-status: plan_reviewed
+status: implementing
 created: 2026-09-06
-updated: 2026-09-06
+updated: 2026-09-07
 archived_at: null
 ---
 
