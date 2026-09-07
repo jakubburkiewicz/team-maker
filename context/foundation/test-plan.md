@@ -79,7 +79,7 @@ w miarę pojawiania się artefaktów na dysku.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | change opened | `context/changes/2026-09-07-testing-save-barrier/` |
+| 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | researched | `context/changes/2026-09-07-testing-save-barrier/` |
 | 2 | Wykonywalny dowód izolacji i przepuszczania | Cudza drużyna jest niedostępna na wszystkich czterech operacjach, a bariera trasy przepuszcza wyłącznie sesję — sprawdzone wykonaniem, nie grepem | #2, #3 | integration (real Postgres, two identities), request-level integration | not started | — |
 | 3 | Podpięcie wyspy: skład → wykres → werdykt | Reguła domenowa widoczna na ekranie odpowiada regule liczonej w module, w obie strony | #5 | component (DOM) | not started | — |
 | 4 | Ścieżka recenzenta e2e i bramki jakości | Persona główna przechodzi rejestracja → logowanie → zapisana drużyna w jednym przebiegu, a dolna granica zostaje zamknięta w CI | #4, cross-cutting | e2e, gates, AI-native review | not started | — |
