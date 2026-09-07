@@ -23,14 +23,14 @@ Dwa tryby:
 1. Argument wskazuje na zapisany plik przeglądu (zawiera `<!-- PLAN-REVIEW-REPORT -->`) → **wznów sortowanie** (przejdź do kroku 6)
 2. Argument to `<change-id>` i istnieje `context/changes/<change-id>/plan.md` → przejrzyj ten plan
 3. Podano ścieżkę planu (np. `@context/changes/<change-id>/plan.md`) → użyj jej
-4. Brak argumentu → wyświetl `context/changes/*/plan.md` (najnowszy według `change.md.updated`) za pomocą AskUserQuestion
+4. Brak argumentu → wyświetl listę `context/changes/*/plan.md` (najnowsze według `change.md.updated`) za pomocą AskUserQuestion
 5. Flaga `--quick` → tryb tylko dokumentu (pominięcie kroku 3)
 
-Jeśli rozwiązana ścieżka planu zaczyna się od `context/archive/`, odmów napisania przeglądu: wydrukuj "This change is archived. Reviews are not appended to archived plans." i ZATRZYMAJ.
+Jeśli rozwiązana ścieżka planu zaczyna się od `context/archive/`, odmów zapisania przeglądu: wydrukuj "This change is archived. Reviews are not appended to archived plans." i ZATRZYMAJ.
 
 ## Krok 1: Ładowanie i skanowanie spójności wewnętrznej
 
-W pełni odczytaj plik planu. Odczytaj również siostrzany plik `plan-brief.md` w tym samym folderze zmian, jeśli istnieje. Odczytaj `context/foundation/lessons.md`, jeśli jest obecny, i użyj zaakceptowanych reguł jako priorytetów podczas skanowania pod kątem problemów merytorycznych / wykonalności / naruszeń kontraktu — ustalenie, które powtarza znaną, powtarzającą się regułę, powinno mieć większą, a nie mniejszą wagę. Wyodrębnij:
+W pełni przeczytaj plik planu. Przeczytaj również siostrzany plik `plan-brief.md` w tym samym folderze zmian, jeśli istnieje. Przeczytaj `context/foundation/lessons.md`, jeśli jest obecny, i użyj zaakceptowanych reguł jako priorytetów podczas skanowania pod kątem problemów merytorycznych / wykonalności / naruszeń kontraktu — ustalenie, które powtarza znaną, powtarzającą się regułę, powinno mieć większą, a nie mniejszą wagę. Wyodrębnij:
 - **Pożądany stan końcowy** i **Kryteria sukcesu**
 - **Analiza stanu bieżącego** — udokumentowane ograniczenia i pułapki
 - **Granice zakresu** — „Czego NIE robimy”
@@ -41,14 +41,14 @@ W pełni odczytaj plik planu. Odczytaj również siostrzany plik `plan-brief.md`
 Przed jakąkolwiek weryfikacją kodu, sprawdź plan pod kątem jego wewnętrznej spójności. Te trzy skany często wychwytują najcenniejsze problemy — problemy, które autor planu odkrył, ale których nie doprowadził do końca:
 
 - **Sprzeczność**: czy analiza stanu bieżącego dokumentuje ograniczenie, które implementacja ignoruje? (np. „npm nie uruchamia preuninstall dla zależności”, a fazy na tym polegają) Czy elementy z „Czego NIE robimy” pojawiają się ponownie w fazach? Czy faza zakłada zachowanie, które gdzie indziej jest uznane za wadliwe?
-- **Luka w obietnicy**: każda zdolność obiecana w Pożądanym Stanie Końcowym / Kryteriach Sukcesu / Notatkach Migracyjnych powinna mieć fazę wspierającą. Jeśli kryteria sukcesu mówią „ograniczenie szybkości działa”, ale żadna faza tego nie buduje, implementator napotyka lukę w trakcie budowy.
-- **Naruszenia kontraktu** (gdy plan definiuje lub używa punktów końcowych API): śledź przepływ danych między punktami końcowymi — jeśli krok B potrzebuje tokena/ID z kroku A, czy odpowiedź A go zawiera? Zaznacz nierozwiązane decyzje projektowe, które implementator musiałby zgadywać (który punkt końcowy, która metoda uwierzytelniania, które przechowywanie dla stanu ograniczenia szybkości).
-- **Dotknięte powierzchnie kontraktu**: jeśli `docs/reference/contract-surfaces.md` istnieje w projekcie, odczytaj go i wyodrębnij listę nagłówków H2 jako nazwy powierzchni. Uruchom `grep -F` na tekście planu z jednym `-e <surface name>` dla każdego nagłówka. Dla każdego trafienia, odczytaj odpowiednią sekcję H2 `contract-surfaces.md` i zweryfikuj (a) czy plan dokładnie raportuje aktualny kształt powierzchni, oraz (b) czy jakakolwiek zmiana nazwy lub schematu jest oznaczona jako łamiąca z historią migracji dla konsumentów niższego szczebla. Jeśli plik nie istnieje, pomiń to sprawdzenie bezgłośnie — jest to konwencja opt-in, samoczynnie uruchamiana przy pierwszym użyciu przez `/10x-contract` lub gałąź sortowania `/10x-impl-review`. Lista grep pochodząca z H2 oznacza: gdy konsument dodaje nową powierzchnię do swojego pliku, następny przegląd planu automatycznie ją wykrywa — nie jest potrzebna edycja SKILL.md.
+- **Luka w obietnicy**: każda zdolność obiecana w Pożądanym Stanie Końcowym / Kryteriach Sukcesu / Notatkach Migracyjnych powinna mieć wspierającą fazę. Jeśli kryteria sukcesu mówią „ograniczenie szybkości działa”, ale żadna faza tego nie buduje, implementator napotyka lukę w trakcie budowy.
+- **Naruszenia kontraktu** (gdy plan definiuje lub używa punktów końcowych API): śledź przepływ danych między punktami końcowymi — jeśli krok B potrzebuje tokena/ID z kroku A, czy odpowiedź A go zawiera? Oznacz nierozwiązane decyzje projektowe, które implementator musiałby zgadywać (który punkt końcowy, która metoda uwierzytelniania, które przechowywanie dla stanu ograniczenia szybkości).
+- **Dotknięte powierzchnie kontraktu**: jeśli `docs/reference/contract-surfaces.md` istnieje w projekcie, przeczytaj go i wyodrębnij listę nagłówków H2 jako nazwy powierzchni. Uruchom `grep -F` na tekście planu z jednym `-e <surface name>` dla każdego nagłówka. Dla każdego trafienia, przeczytaj odpowiednią sekcję H2 `contract-surfaces.md` i zweryfikuj (a) czy plan dokładnie raportuje aktualny kształt powierzchni, oraz (b) czy jakakolwiek zmiana nazwy lub schematu jest oznaczona jako łamiąca z historią migracji dla konsumentów niższego poziomu. Jeśli plik nie istnieje, pomiń to sprawdzenie cicho — jest to konwencja opt-in, samoczynnie uruchamiana przy pierwszym użyciu przez `/10x-contract` lub gałąź sortowania `/10x-impl-review`. Lista grep pochodząca z H2 oznacza: gdy konsument dodaje nową powierzchnię do swojego pliku, następny przegląd planu automatycznie ją wykrywa — nie jest potrzebna edycja SKILL.md.
 - **Spójność Postęp↔Faza** (kontrakt mechaniczny — patrz `references/progress-format.md`):
   - Dokładnie jeden nagłówek `## Progress` na dole plan.md.
-  - Każda `## Phase N: <name>` w treści planu ma pasujący `### Phase N: <name>` w Progress.
-  - Każdy punkt kryteriów sukcesu (pod `#### Automated Verification:` / `#### Manual Verification:`) w bloku fazy ma pasujący `- [ ] N.M <title>` (lub `- [x]`) w odpowiedniej podsekcji Progress.
-  - Bloki fazy zawierają tylko zwykłe punkty `- ` — bez `- [ ]` lub `- [x]` poza sekcją Progress.
+  - Każda `## Phase N: <name>` w treści planu ma pasującą `### Phase N: <name>` w Progress.
+  - Każdy punkt kryteriów sukcesu (pod `#### Automated Verification:` / `#### Manual Verification:`) w bloku Fazy ma pasujący `- [ ] N.M <title>` (lub `- [x]`) w odpowiedniej podsekcji Progress.
+  - Bloki Fazy zawierają tylko zwykłe punkty `- ` — bez `- [ ]` lub `- [x]` poza sekcją Progress.
   Traktuj każdy z nich jako KRYTYCZNE ustalenie w ramach Kompletności Planu — `/10x-implement` nie będzie w stanie przetworzyć źle sformułowanej sekcji Progress.
 
 ## Krok 2: Ugruntowanie
@@ -76,8 +76,8 @@ Daj podagentowi ukierunkowane pytania z odpowiednimi ścieżkami plików — nie
 
 Przeanalizuj plan pod kątem pięciu wymiarów. Twórz ustalenia tylko dla rzeczywistych problemów — nie dodawaj „nie znaleziono problemów”.
 
-### Dopasowanie do stanu końcowego
-Czy, przechodząc fazy sekwencyjnie, system osiąga określony stan końcowy? Czy wszystkie kryteria sukcesu mogłyby zostać spełnione, podczas gdy cel pozostaje nieosiągnięty? Czy istnieje jakaś luka „ostatniej mili”, gdzie plan wykonuje 90% i zatrzymuje się?
+### Zgodność ze stanem końcowym
+Czy przechodząc fazy sekwencyjnie, system osiąga określony stan końcowy? Czy wszystkie kryteria sukcesu mogłyby zostać spełnione, podczas gdy cel pozostaje nieosiągnięty? Czy istnieje jakaś luka „ostatniej mili”, gdzie plan wykonuje 90% i zatrzymuje się?
 
 ### Oszczędna realizacja
 Dla każdej fazy: „gdybym to usunął, czy stan końcowy nadal byłby osiągalny?” Zwróć uwagę na przedwczesną abstrakcję, dodatki „skoro już tu jesteśmy”, framework-gdzie-funkcja-by-wystarczyła, sprzeczności zakresu (elementy „nie robimy” pojawiające się w fazach).
@@ -86,7 +86,7 @@ Dla każdej fazy: „gdybym to usunął, czy stan końcowy nadal byłby osiągal
 Czy to pasuje do istniejącego systemu? Nowe wzorce tam, gdzie istniejące by działały (proliferacja wzorców). Czyste granice modułów i prawidłowy kierunek zależności. Zmiany o dużym promieniu rażenia — fazy dotykające wielu plików w różnych modułach, zmiany w współdzielonych narzędziach. Niejasne „refaktoryzuj w razie potrzeby” lub „zaktualizuj odpowiednio”, które będą się rozprzestrzeniać.
 
 ### Martwe punkty
-Czego plan nie uwzględnił? Ścieżki błędów (opisana tylko ścieżka sukcesu?), historia wycofywania (faza 3 zawodzi — czy możemy cofnąć?), wpływ zasobów/kosztów (wywołania API, praca obliczeniowa — ile to kosztuje przy oczekiwanym użyciu?), zmiany wartości domyślnych (wartość domyślna, która potraja koszt lub czas, powinna być wskazana), luki w testowaniu, granice bezpieczeństwa.
+Czego plan nie wziął pod uwagę? Ścieżki błędów (opisana tylko ścieżka sukcesu?), historia wycofywania (faza 3 zawodzi — czy możemy cofnąć?), wpływ zasobów/kosztów (wywołania API, praca obliczeniowa — ile to kosztuje przy oczekiwanym użyciu?), zmiany wartości domyślnych (wartość domyślna, która potraja koszt lub czas, powinna być wskazana), luki w testowaniu, granice bezpieczeństwa.
 
 ### Kompletność planu
 Czy dokument jest wykonalny? Czy ścieżki plików są specyficzne (nie „gdzieś w src/")? Czy zmiany są na poziomie funkcji/metody? Czy kryteria sukcesu zawierają uruchamialne polecenia? Sekcje TBD, TODO lub sekcje zastępcze?
@@ -98,7 +98,7 @@ Każde ustalenie zawiera:
 - **ID**: F1, F2, F3…
 - **Waga**: KRYTYCZNE / OSTRZEŻENIE / OBSERWACJA (jak źle, jeśli zignorowane)
 - **Wpływ**: NISKI / ŚREDNI / WYSOKI (ile uwagi wymaga decyzja)
-- **Wymiar**: jeden z: Dopasowanie do stanu końcowego / Oszczędna realizacja / Dopasowanie architektoniczne / Martwe punkty / Kompletność planu
+- **Wymiar**: jeden z: Zgodność ze stanem końcowym / Oszczędna realizacja / Dopasowanie architektoniczne / Martwe punkty / Kompletność planu
 - **Tytuł**: jedna linia
 - **Lokalizacja**: sekcja planu lub faza
 - **Szczegóły**: co jest nie tak z dowodami — twierdzenie planu kontra to, co jest faktycznie prawdą, lub czego brakuje
@@ -233,9 +233,9 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
 
 ### Zasady formatowania raportu
 
-- **Linia tytułu ustalenia** zawiera tylko ID i krótki tytuł — nic więcej. Wszystko inne znajduje się poniżej jako oznaczone pola, dzięki czemu każdy wiersz jest krótki i łatwy do zeskanowania.
+- **Linia tytułu ustalenia** zawiera tylko ID i krótki tytuł — nic więcej. Wszystko inne znajduje się poniżej jako oznaczone pola, dzięki czemu każdy wiersz jest krótki i łatwy do skanowania.
 - **Zawsze łącz ikony ze słowem.** Nigdy nie używaj samej ikony jako jedynego sygnału — `❌ CRITICAL`, a nie tylko `❌`. Dzięki temu raport jest czytelny podczas szybkiego przeglądania i nie zmusza użytkownika do zapamiętywania znaczenia każdej ikony.
-- **Wpływ zawsze zawiera swoje jednoliniowe znaczenie** (skopiuj z tabeli Wpływ — „stawka architektoniczna; pomyśl dokładnie przed podjęciem decyzji” / „prawdziwy kompromis; zatrzymaj się, aby to przemyśleć” / „szybka decyzja; poprawka jest oczywista i wąsko zakrojona”). Dzięki temu NISKI/ŚREDNI/WYSOKI jest zrozumiały w miejscu użycia, zamiast polegać na tym, że użytkownik pamięta tabelę.
+- **Wpływ zawsze zawiera swoje jednowierszowe znaczenie** (skopiuj z tabeli Wpływ — „stawka architektoniczna; pomyśl dokładnie przed podjęciem decyzji” / „prawdziwy kompromis; zatrzymaj się, aby to przemyśleć” / „szybka decyzja; poprawka jest oczywista i wąsko zakrojona”). Dzięki temu NISKI/ŚREDNI/WYSOKI jest zrozumiały w miejscu użycia, zamiast polegać na tym, że użytkownik pamięta tabelę.
 - Waga, Wpływ, Wymiar, Lokalizacja znajdują się każda w osobnej linii z wyrównanymi etykietami. Szczegóły zaczynają się w osobnej linii pod etykietą `Detail:`, dzięki czemu mogą naturalnie zawijać się.
 
 Następnie zapytaj:
@@ -255,7 +255,7 @@ multiSelect: false
 
 ### Zapisywanie raportu
 
-Zapisz do `context/changes/<change-id>/reviews/plan-review.md` (jeden przegląd planu na folder zmian; ponowne uruchomienie nadpisuje). Zaktualizuj `change.md`: `status: plan_reviewed`, `updated: <today>`.
+Zapisz do `context/changes/<change-id>/reviews/plan-review.md` (jeden przegląd planu na folder zmiany; ponowne uruchomienie nadpisuje). Zaktualizuj `change.md`: `status: plan_reviewed`, `updated: <today>`.
 
 ```markdown
 <!-- PLAN-REVIEW-REPORT -->
@@ -321,7 +321,7 @@ Znacznik `<!-- PLAN-REVIEW-REPORT -->` i pola `Decision: PENDING` umożliwiają 
 
 ### Tryb wznowienia
 
-Jeśli wprowadzono za pomocą zapisanego pliku: odczytaj go, przeanalizuj nagłówki `### F`, filtruj do `Decision: PENDING`. Jeśli brak, powiedz „Wszystkie ustalenia posortowane” i zatrzymaj.
+Jeśli wprowadzono za pomocą zapisanego pliku: przeczytaj go, przeanalizuj nagłówki `### F`, filtruj do `Decision: PENDING`. Jeśli brak, powiedz „Wszystkie ustalenia posortowane” i zatrzymaj się.
 
 ### Pętla sortowania
 
@@ -380,5 +380,5 @@ Po każdej decyzji, jeśli pracujesz z zapisanego pliku, zaktualizuj jego pole `
 - Jeśli plan jest naprawdę dobry, powiedz to krótko i zakończ. Nie twórz ustaleń.
 - Wpływ dotyczy **wysiłku decyzyjnego**, a nie **wagi**. NISKI wpływ na KRYTYCZNE ustalenie oznacza, że poprawka jest oczywista; WYSOKI wpływ na OSTRZEŻENIE oznacza, że kompromis jest realny.
 - Dwie opcje naprawy tylko wtedy, gdy istnieje prawdziwy kompromis. Nie wymyślaj alternatyw dla trywialnych poprawek.
-- Podczas sortowania utrzymuj tempo. Użytkownik już przeczytał raport — przedstaw ustalenie, podejmij decyzję, idź dalej.
+- Podczas sortowania utrzymuj tempo. Użytkownik już przeczytał raport — przedstaw ustalenie, podejmij decyzję, przejdź dalej.
 - Podczas stosowania poprawki do planu, dokonuj minimalnych, ukierunkowanych edycji. Nie restrukturyzuj całego planu dla jednego ustalenia.
