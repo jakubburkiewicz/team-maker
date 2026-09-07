@@ -661,35 +661,35 @@ npm ani CI.
 
 #### Automatyczne
 
-- [x] 3.1 `npm test` zielone
-- [x] 3.2 Nazwa pola pochodzi ze stałej `COMPOSITION_FIELD`
-- [x] 3.3 Gałąź braku sesji pod testem, wzorzec toleruje końcowy ukośnik
-- [x] 3.4 `npm run lint` przechodzi
-- [x] 3.5 `npx astro check` przechodzi
-- [x] 3.6 `npm run build` przechodzi
+- [x] 3.1 `npm test` zielone — 25d209a
+- [x] 3.2 Nazwa pola pochodzi ze stałej `COMPOSITION_FIELD` — 25d209a
+- [x] 3.3 Gałąź braku sesji pod testem, wzorzec toleruje końcowy ukośnik — 25d209a
+- [x] 3.4 `npm run lint` przechodzi — 25d209a
+- [x] 3.5 `npx astro check` przechodzi — 25d209a
+- [x] 3.6 `npm run build` przechodzi — 25d209a
 
 #### Ręczne
 
-- [x] 3.7 Sonda kończy się `0`
-- [x] 3.8 Mutacja „usuń `try/catch` wokół `formData()`" daje czerwień
-- [x] 3.9 Mutacja „zdejmij `encodeURIComponent`" daje czerwień
-- [x] 3.10 Każdy z siedmiu kroków sekwencji ma nazwany przypadek — przegląd listy testów
+- [x] 3.7 Sonda kończy się `0` — 25d209a
+- [x] 3.8 Mutacja „usuń `try/catch` wokół `formData()`" daje czerwień — 25d209a
+- [x] 3.9 Mutacja „zdejmij `encodeURIComponent`" daje czerwień — 25d209a
+- [x] 3.10 Każdy z siedmiu kroków sekwencji ma nazwany przypadek — przegląd listy testów — 25d209a
 
 ### Faza 4: Książka kucharska i domknięcie bramek
 
 #### Automatyczne
 
-- [ ] 4.1 §6.2 nie jest już placeholderem
-- [ ] 4.2 §6.2 wskazuje test referencyjny i skrypt sondy
-- [ ] 4.3 Bramka integracyjna podniesiona na `required (wired)`
-- [ ] 4.4 Wiersz §4 „integration (trasy, baza)" nie brzmi już `none yet`
-- [ ] 4.5 `change.md` ma `status: complete`
-- [ ] 4.6 §1 i §7 przewodnika nietknięte wobec `a392c62`
-- [ ] 4.7 `npm test`, `npm run lint`, `npm run build` przechodzą
+- [x] 4.1 §6.2 nie jest już placeholderem
+- [x] 4.2 §6.2 wskazuje test referencyjny i skrypt sondy
+- [x] 4.3 Bramka integracyjna podniesiona na `required (wired)`
+- [x] 4.4 Wiersz §4 „integration (trasy, baza)" nie brzmi już `none yet`
+- [x] 4.5 `change.md` ma `status: complete`
+- [x] 4.6 §1 i §7 przewodnika nietknięte wobec `a392c62`
+- [x] 4.7 `npm test`, `npm run lint`, `npm run build` przechodzą
 
 #### Ręczne
 
-- [ ] 4.8 §6.2 wystarcza obcemu do dopisania testu toru zapisu
-- [ ] 4.9 §6.7 nazywa dług `duplicate-character` / `unknown-perk` wprost
-- [ ] 4.10 Kryteria porównujące §1 i §7 z bazą czerwienią się na naruszeniu
-- [ ] 4.11 Sonda uruchomiona po raz ostatni: `0`, `src/pages/api/teams/` czyste
+- [x] 4.8 §6.2 wystarcza obcemu do dopisania testu toru zapisu
+- [x] 4.9 §6.7 nazywa dług `duplicate-character` / `unknown-perk` wprost
+- [x] 4.10 Kryteria porównujące §1 i §7 z bazą czerwienią się na naruszeniu
+- [x] 4.11 Sonda uruchomiona po raz ostatni: `0`, `src/pages/api/teams/` czyste

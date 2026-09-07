@@ -79,7 +79,7 @@ w miarę pojawiania się artefaktów na dysku.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | researched | `context/changes/2026-09-07-testing-save-barrier/` |
+| 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | complete | `context/changes/2026-09-07-testing-save-barrier/` |
 | 2 | Wykonywalny dowód izolacji i przepuszczania | Cudza drużyna jest niedostępna na wszystkich czterech operacjach, a bariera trasy przepuszcza wyłącznie sesję — sprawdzone wykonaniem, nie grepem; bramka CI domyka tor żądania, a sam efekt polityk RLS zostaje dymem ręcznym na lokalnym stosie | #2, #3 | integration na poziomie żądania (dwie tożsamości, atrapa klienta), jawnie ręczny dym RLS na lokalnym stosie | not started | — |
 | 3 | Podpięcie wyspy: skład → wykres → werdykt | Reguła domenowa widoczna na ekranie odpowiada regule liczonej w module, w obie strony | #5 | component (DOM) | not started | — |
 | 4 | Ścieżka recenzenta e2e i bramki jakości | Persona główna przechodzi rejestracja → logowanie → zapisana drużyna w jednym przebiegu, a dolna granica zostaje zamknięta w CI | #4, cross-cutting | e2e, gates, AI-native review | not started | — |
@@ -107,8 +107,8 @@ Status vocabulary (fixed — parser literals): `not started` → `change opened`
 
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
-| unit (czyste moduły) | Vitest | ^4.1.11 | `npm test` = `vitest run`, zakres `src/**/*.test.ts`; 17 plików, wszystkie w `src/lib/` |
-| integration (trasy, baza) | none yet — see Phase 1 i Phase 2 | — | Rozstrzygnięte 2026-09-07: wykonanie trasy w Vitest jest zgodne z regułą czystości, gdy `@/lib/supabase` jest w teście podmieniony hoistowanym `vi.mock`; sonda w badaniu Fazy 1 przeprowadziła całą sekwencję `POST /api/teams` aż do redirectu, bez zmian w konfiguracji Vitest. Konsekwencja: warstwa nie potrzebuje ani nowego runnera, ani przegrody w `vitest.config.ts`, ani zmiany `ci.yml` — wybór konkretnej opcji wykonania należy do Fazy 1 |
+| unit (czyste moduły) | Vitest | ^4.1.11 | `npm test` = `vitest run`, zakres `src/**/*.test.ts`; 18 plików, wszystkie w `src/lib/` |
+| integration (trasy, baza) | Vitest (wzorzec §6.2) | ^4.1.11 | Rozstrzygnięte 2026-09-07: wykonanie trasy w Vitest jest zgodne z regułą czystości, gdy `@/lib/supabase` jest w teście podmieniony hoistowanym `vi.mock`; sonda w badaniu Fazy 1 przeprowadziła całą sekwencję `POST /api/teams` aż do redirectu, bez zmian w konfiguracji Vitest. Faza 1 to dowiozła: `src/lib/team-save-route.test.ts` wykonuje obie trasy zapisu, a `vitest.config.ts` i `ci.yml` pozostały nietknięte — warstwa nie potrzebuje ani nowego runnera, ani przegrody, ani osobnego kroku CI. Wzorzec: §6.2 |
 | component (DOM) | none yet — see Phase 3 | — | Brak środowiska DOM; zakres Vitest obejmuje `.ts`, nie `.tsx` |
 | e2e | none yet — see Phase 4 | — | Wzorzec dla Astro SSR: `webServer` uruchamiający `npm run preview`; `wrangler dev` jest w tym repozytorium zakazany |
 | lint + typecheck | ESLint + `astro sync` | ESLint ^9.29.0 | Już w CI; `astro sync` musi poprzedzać lint, inaczej reguły typowane padają |
@@ -145,7 +145,7 @@ Supabase. Wynika z tego, że warstwy wykonawcze są dostępne bez wyjątku od re
 |---|---|---|---|
 | `astro sync` + lint + typecheck | local + CI | required (wired) | dryf składniowy i typowy, brakujące typy generowane |
 | unit na czystych modułach | local + CI | required (wired) | regresje reguły domenowej i pomocników |
-| integration na torze zapisu | local + CI | required after §3 Phase 1 | utrwalenie składu łamiącego próg albo limity |
+| integration na torze zapisu | local + CI | required (wired) | utrwalenie składu łamiącego próg albo limity |
 | integration na izolacji i przepuszczaniu | local + CI | required after §3 Phase 2 | przepuszczenie żądania bez sesji; wypuszczenie przez trasę wiersza cudzego konta |
 | dym ręczny na politykach RLS (lokalny stos) | local (`npx supabase start`) | recommended after §3 Phase 2 | regresja polityki RLS niewidzialna dla CI — bramka integracyjna idzie na atrapie klienta, więc rozbrojenie polityki w migracji przejdzie w niej na zielono |
 | component na podpięciu wyspy | local + CI | required after §3 Phase 3 | rozjazd wykresu i werdyktu ze składem |
@@ -174,7 +174,32 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 
 ### 6.2 Dodanie testu integracyjnego toru zapisu
 
-- TBD — see §3 Phase 1 (wzorzec odmowy zapisu dla składu poniżej progu i łamiącego limity).
+- **Lokalizacja**: `src/lib/` — **świadomy wyjątek** od konwencji „obok modułu pod testem" z §6.1.
+  Astro traktuje każdy `.ts` w `src/pages/` jako endpoint, więc plik testowy położony obok trasy
+  stałby się trasą (`/api/teams/index.test`) i wszedłby do builda produkcyjnego. Test mieszka
+  w `src/lib/` mimo że moduł pod testem mieszka w `src/pages/`.
+- **Nazewnictwo**: `<obszar>-route.test.ts` — nazwa mówi „tor wykonawczy", nie „moduł", bo plik
+  wykonuje kilka tras naraz i nie ma jednego modułu-właściciela.
+- **Czystość**: `vi.hoisted` tworzy atrapę `createClient`, `vi.mock("@/lib/supabase", …)` ją
+  podmienia. Fabryka `vi.mock` jest podnoszona ponad importy, więc **nie może** domykać się nad
+  zwykłą `const` na poziomie modułu — stąd `vi.hoisted`. Trasa jest ładowana `await import(...)`
+  w ciele testu, nie statycznym importem, żeby atrapa była gotowa przed ewaluacją modułu.
+  Prawdziwy klient Supabase nie powstaje nigdy; atrapa idzie jako argument, który moduły danych
+  w `src/lib/` i tak przyjmują. Atrapa klienta **rzuca** przy nieznanej tabeli i nieznanej metodzie
+  łańcucha — atrapa przepuszczająca dowolne zapytanie cicho rozjeżdża się z prawdziwą bazą.
+- **Wyrocznia**: dziennik zapisów atrapy („czy wiersz powstał"), **nigdy** sumy punktowe
+  z `evaluateTeam` — te odzwierciedlają surowy wybór, także odrzucony przez limity, więc trzeci
+  perk i powtórzona postać podnoszą je mimo naruszenia. Progi i limity w asercjach pochodzą
+  z PRD i ze stałych `src/lib/domain/types.ts`, a komunikaty odmowy z importowanych stałych
+  `@/lib/team-submission` — nigdy z przepisanego literału.
+- **Test referencyjny**: `src/lib/team-save-route.test.ts`.
+- **Uruchomienie**: `npm test`.
+- **Kontrola mutacyjna**: `scripts/probe-save-barrier.sh` — nakłada wersjonowaną łatkę
+  `scripts/probe-save-barrier.patch` (kanoniczna mutacja: **zapis wykonuje się, zanim odmowa
+  wróci**), uruchamia `npm test` i wymaga **czerwieni**; kod wyjścia jest odwrócony wobec
+  `npm test`. Łatka, nie `sed`: `git apply -R` cofa ją dokładnie, a przy refaktorze trasy
+  przestaje się nakładać głośno, zamiast po cichu mutować nie to miejsce. Nowy test toru
+  bez przesondowanej czerwieni jest dekoracją (§1).
 
 ### 6.3 Dodanie testu izolacji między kontami
 
@@ -198,6 +223,26 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 ### 6.7 Notatki z faz wdrożenia
 
 (Uzupełniane po każdej dowiezionej fazie — 2–3 linie o tym, co faza okazała się uczyć.)
+
+**Faza 1 — Bariera serwerowa zapisu drużyny (2026-09-07).**
+
+- **Właściwym kosztem był osprzęt, nie asercje.** Przed tą fazą żaden z 17 plików testowych nie
+  importował niczego z `src/pages/`; atrapy powstały od zera i to one zajęły fazę. Przypadki
+  dokładane na gotowym osprzęcie kosztowały po kilka linii — 194 → 238 testów w dwóch fazach.
+- **Izolacja naruszenia limitu wymaga składu z wolnym miejscem.** `findThresholdSolution` na
+  pełnej puli oddaje skład sześcioosobowy, więc doklejenie siódmego wpisu wyzwala
+  `too-many-members` **razem** z badanym naruszeniem i przypadek przestaje wiązać swój limit.
+  Ten sam solver puszczony na najkrótszym prefiksie puli daje skład krótszy, do którego każde
+  naruszenie dokleja się jako czysta nadwyżka. Warunek jest sprawdzany asercją, nie założony.
+- **`npx astro check` jest czerwone na `main`** (2 × `ts(18047)` w `src/pages/teams/[id].astro`)
+  i nie łapie tego żadna bramka: `ci.yml` uruchamia `astro sync`, `lint`, `test`, `build`,
+  a `astro build` nie typuje. Kryteria fazy zostały odczytane jako „bez nowych błędów wobec
+  bazy". **Znany dług — do osobnej zmiany.**
+- **Znany dług pokrycia, świadomie poza zakresem tej fazy:** `src/lib/team-submission.test.ts`
+  nie ma przypadku `duplicate-character` ani `unknown-perk`. Na poziomie trasy oba rodzaje są
+  pokryte (§6.2, test referencyjny), ale warstwa jednostkowa bramki nadal ich nie wiąże.
+- **Drugi znany dług:** `createTeam` rzucające na trasie `POST /api/teams` nie ma przypadku —
+  Faza 1 zakresowała gałąź repo wyłącznie do `team === null` w trasie edycji.
 
 ## 7. What We Deliberately Don't Test
 
