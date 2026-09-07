@@ -182,7 +182,9 @@ z opcji (a)/(b)/(d) wybierze Faza 1 — zapisz, że wykonanie jest osiągalne, a
 
 #### Weryfikacja automatyczna
 
-- Stara litera zniknęła z §4: grep na `nie może importować` nie zwraca linii z §4 (przed zmianą: 118)
+- Stara litera zniknęła z §4: grep na `może importować` nie zwraca linii z §4
+  (przed zmianą trafia w 118 i 153; fraza `nie może importować` **nie** trafia w §4 —
+  stara litera jest tam zawinięta przez łamanie wiersza między 117 a 118)
 - Nowe kryterium runtime jest obecne w §4
 - Wiersz integration nie nazywa już pytania otwartym: grep na `Wymaga rozstrzygnięcia` zwraca pusto
 - Prettier nie zgłasza zmian: `npx prettier --check context/foundation/test-plan.md`
@@ -258,11 +260,26 @@ CI nie ma i mieć nie będzie. Zastępujemy ją granicą przyjętą przez użytk
 - **lokalnie / ręcznie**: sam efekt polityk RLS przeciwko prawdziwemu Postgresowi, bo `ci.yml:21`
   woła gołe `npm test` bez `services:`, bez `env:` i bez Dockera.
 
-Granica musi być nazwana jawnie, nie dorozumiana — kolumna *What would prove protection* dla #2
-mówi „sprawdzone wykonaniem zapytania, nie odczytem SQL-a" i **zostaje bez zmian**, więc bez
-jawnego rozdzielenia czytelnik przeczyta ją jako obietnicę, że CI wykonuje zapytanie do Postgresa.
 Zapisz też konsekwencję, która z tego wynika: rozbrojenie polityki RLS w migracji przejdzie w CI
 na zielono — dlatego dym ręczny nie jest tu opcjonalnym dodatkiem.
+
+#### 3b. Kolumna „What would prove protection" w wierszu #2
+
+**Plik**: `context/foundation/test-plan.md` (§2 *Risk Response Guidance*, linia 68, kolumna 2)
+
+**Cel**: komórka mówi dziś „sprawdzone **wykonaniem zapytania**, nie odczytem SQL-a". Po tym
+refreshie bramka automatyczna w CI żadnego zapytania do bazy nie wykonuje — idzie na ręcznie
+pisanej atrapie klienta. Zostawiona bez zmian, komórka obiecuje czytelnikowi wiersza #2 dowód,
+którego automat nie dostarcza, i jest sprzeczna z sąsiednią kolumną najtańszej warstwy.
+
+**Kontrakt**: sedno komórki zostaje — dowodem jest **wykonanie, nie odczyt SQL-a**; to jest lekcja
+z `lessons.md`, której nie wolno rozmyć. Zmienia się to, **czym** jest wykonanie w każdym z dwóch
+członów: bramka automatyczna wykonuje **tor żądania** dla czterech operacji (konto A na
+identyfikatorze konta B dostaje zero wierszy albo odmowę, tożsamość brana z sesji, klient
+podmieniony atrapą), a dym lokalny wykonuje **zapytanie do prawdziwej bazy** i dowodzi samego
+efektu polityk RLS. Oba człony mają być w tej komórce nazwane; żaden nie może zostać zwinięty do
+„sprawdzone wykonaniem". Nie zmieniaj kolumn *Must challenge* i *Source* — anty-wzorzec grepowania
+po SQL-u zostaje dosłownie.
 
 #### 4. Kolumna „Anti-pattern to avoid" w wierszach #1, #2 i #6
 
@@ -290,6 +307,8 @@ Trzy kopie mają być spójne co do treści; nie różnicuj ich brzmienia poza d
 - Tabela Risk Map nadal ma 6 wierszy ryzyk, a *Risk Response Guidance* dokładnie 6 wierszy
 - Oceny Impact/Likelihood nietknięte: liczba wystąpień `| High | High |` = 2 (ryzyka #1 i #5)
 - Anty-wzorzec fake-drift obecny w trzech wierszach
+- Kolumna dowodu wiersza #2 niesie oba człony: grep na `tor żądania` oraz na `RLS` trafia
+  w linii wiersza #2
 - Prettier nie zgłasza zmian: `npx prettier --check context/foundation/test-plan.md`
 
 #### Weryfikacja ręczna
@@ -298,6 +317,8 @@ Trzy kopie mają być spójne co do treści; nie różnicuj ich brzmienia poza d
   i nie zawiera kotwic plik:linia (§1 zasada #3)
 - Kolumna *Source* ryzyka #1 nie została przepisana — cytat PRD jest dosłowny
 - Granica CI/ręczne dla #2 jest czytelna dla kogoś, kto czyta tylko ten jeden wiersz, bez §3 i §5
+- Kolumna dowodu #2 nie obiecuje już zapytania do bazy w CI, a mimo to nadal wyklucza odczyt
+  SQL-a jako dowód (lekcja z `lessons.md` nierozmyta)
 - Trzy kopie anty-wzorca fake-drift mówią to samo
 - Kalibracja pod tabelą („Ryzyka #1 i #5 to jedyne High × High i idą pierwsze") nadal prawdziwa
 
@@ -358,10 +379,24 @@ przez trasę, a nie regresję samej polityki RLS.
 **Kontrakt**: bramka **zostaje wymagana** po Fazie 2 — decyzja użytkownika była „tor żądania w CI,
 RLS ręcznie", a nie zejście bramki do `recommended`. Kolumna *Catches* ma nazwać dokładnie to, co
 bramka faktycznie łapie: przepuszczenie żądania bez sesji oraz wypuszczenie wiersza cudzego konta
-przez trasę. Sprawdź, czy istniejący wiersz „dym ręczny przeciwko produkcji" (dziś
-`recommended after §3 Phase 4`, o torze potwierdzania adresu) pokrywa też dym RLS — jeśli nie,
-rozszerz jego kolumnę *Catches* o regresję polityki RLS niewidzialną dla CI. Nie dodawaj nowego
-wiersza, jeśli istniejący da się rozszerzyć; tabela §5 ma 10 wierszy i nie powinna puchnąć.
+przez trasę.
+
+Dym RLS dostaje **własny, jedenasty wiersz**, a nie dopisek do istniejącego „dym ręczny przeciwko
+produkcji". Ten istniejący wiersz jest `recommended after §3 Phase 4` i biegnie „między scaleniem
+a produkcją" — dym RLS jest natomiast **lokalny** (`npx supabase start`) i potrzebny **po Fazie 2**.
+Złożenie ich w jeden wiersz wpisałoby do przewodnika, że jedyna kontrola samych polityk RLS jest
+zalecana dwie fazy za późno i przeciwko innemu środowisku, niż ustala §2. Nowy wiersz:
+
+- *Gate*: `dym ręczny na politykach RLS (lokalny stos)`
+- *Where*: `local (npx supabase start)`
+- *Required?*: `recommended after §3 Phase 2`
+- *Catches*: regresja polityki RLS niewidzialna dla CI — bramka integracyjna idzie na atrapie
+  klienta, więc rozbrojenie polityki w migracji przejdzie w niej na zielono
+
+Wstaw go bezpośrednio pod wierszem `integration na izolacji i przepuszczaniu`, żeby para
+automat + dym stała obok siebie — dokładnie tak, jak stoi już para dla ryzyka #4 (`e2e na ścieżce
+persony głównej` i `dym ręczny przeciwko produkcji`). Istniejącego wiersza dymu produkcyjnego
+**nie ruszaj**; jego zakres (tor potwierdzania adresu) zostaje dosłownie.
 
 #### 4. §6.1 — punkt „Czystość" w wypełnionej książce kucharskiej
 
@@ -399,13 +434,14 @@ z `lessons.md`.
 
 #### Weryfikacja automatyczna
 
-- Zero trafień na Postgres w kontekście warstwy testowej w całym pliku (`prawdziwemu Postgresowi`,
-  `prawdziwego Postgresa`, `real Postgres`)
-- Stara litera zniknęła z §6.1 — grep na `nie może importować` zwraca pusto w całym pliku
-- §6.3 nadal jest placeholderem: liczba wystąpień `TBD — see §3 Phase` = 5
+- Zero trafień na trzy frazy w całym pliku: `prawdziwemu Postgresowi`, `prawdziwego Postgresa`,
+  `real Postgres`
+- Stara litera zniknęła z §6.1 — grep na `może importować` zwraca pusto w całym pliku
+- §6.3 nadal jest placeholderem: liczba linii pasujących do `^- TBD — see §3 Phase` = 5
+  (bez kotwicy `^- ` licznik wynosi 6 — szóste trafienie to akapit wprowadzający §6)
 - §3 tabela nadal ma 4 wiersze faz, statusy niezmienione (`researched` dla Fazy 1,
   `not started` dla 2–4)
-- §5 nadal ma 10 wierszy bramek
+- §5 ma 11 wierszy bramek (10 dotychczasowych + dym RLS na lokalnym stosie)
 - Prettier nie zgłasza zmian: `npx prettier --check context/foundation/test-plan.md`
 
 #### Weryfikacja ręczna
@@ -414,8 +450,10 @@ z `lessons.md`.
   i nie zaleca wydzielania rdzenia jako domyślnej odpowiedzi
 - §3 akapit uzasadnienia nadal broni tej samej kolejności faz i zmienił przyczynę, nie wniosek
 - §5 bramka „integration na izolacji" nadal jest `required after §3 Phase 2`
-- Dym RLS ma w §5 jawne miejsce — albo w rozszerzonym wierszu dymu ręcznego, albo nazwany
-  w kolumnie *Catches* bramki integracyjnej
+- Dym RLS ma w §5 własny wiersz, nazywający lokalny stos i `recommended after §3 Phase 2`,
+  postawiony bezpośrednio pod bramką integracyjną
+- Wiersz „dym ręczny przeciwko produkcji" jest nietknięty — nadal wyłącznie o torze
+  potwierdzania adresu
 
 **Uwaga implementacyjna**: zatrzymaj się po tej fazie na ręczne potwierdzenie przed Fazą 4.
 
@@ -432,7 +470,11 @@ sekwencyjna blokada z `change.md` może zostać zdjęta.
 
 #### 1. §8 Freshness Ledger i nagłówek „Last updated"
 
-**Plik**: `context/foundation/test-plan.md` (nagłówek dokumentu, linia 8; §8, linie 197–199)
+**Plik**: `context/foundation/test-plan.md` (linia „Last updated” w bloku cytatu na początku
+dokumentu; trzy punkty ledgera pod nagłówkiem `## 8. Freshness Ledger`)
+
+**Uwaga o kotwicach**: nie kotwicz tej edycji na numerach linii — wcześniejsze fazy przesuwają
+numerację, a zakres 197–199 wypada w §7, dla której kryterium 4.5 wymaga zerowego dyffu.
 
 **Cel**: bez adnotacji refresh jest w dokumencie niewidoczny — daty w §8 już brzmią `2026-09-07`,
 więc sama ich aktualizacja nie zostawia śladu.
@@ -482,12 +524,15 @@ obalone twierdzenie. Nie zmieniaj statusu Fazy 1 w §3 (zostaje `researched`) an
 #### Weryfikacja automatyczna
 
 - Zero trafień na pełny zestaw obalonych fraz w całym pliku: `prawdziwemu Postgresowi`,
-  `real Postgres`, `Wymaga rozstrzygnięcia`, `bez łamania czystości testów`, `nie może importować`
-- Nagłówek i ledger datowane: co najmniej 5 wystąpień `2026-09-07`
+  `real Postgres`, `Wymaga rozstrzygnięcia`, `bez łamania czystości testów`, `może importować`
+- §8 niesie dokładnie jedną linię z `62a6f68`, a trzy punkty ledgera mają datę `2026-09-07`
+  (licznik samych wystąpień `2026-09-07` jest bezużyteczny — plik miał ich 10 przed refreshem)
 - §8 ma linię o ostatnim refreshu z odwołaniem do commita `62a6f68`
 - Struktura nietknięta: liczba nagłówków `## ` = 8
-- §7 bit-w-bit niezmieniona: `git diff` nie pokazuje żadnej linii między `## 7.` a `## 8.`
-- §1 niezmieniona: `git diff` nie pokazuje żadnej linii między `## 1.` a `## 2.`
+- §7 bit-w-bit niezmieniona — wytnij sekcję z obu wersji i porównaj:
+  `git show HEAD:context/foundation/test-plan.md | awk '/^## 7\./{f=1} /^## 8\./{f=0} f' > /tmp/s7-old`,
+  to samo `awk` nad plikiem roboczym do `/tmp/s7-new`, następnie `diff /tmp/s7-old /tmp/s7-new` pusty
+- §1 niezmieniona — ta sama procedura dla zakresu `/^## 1\./` … `/^## 2\./`, `diff` pusty
 - `change.md` ma `status: planned`
 - Prettier: `npx prettier --check context/foundation/test-plan.md`
 - `git status --short` pokazuje wyłącznie `context/foundation/test-plan.md` i pliki folderu zmiany
@@ -559,7 +604,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [ ] 1.1 Stara litera zniknęła z §4
+- [ ] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4
 - [ ] 1.2 Nowe kryterium runtime obecne w §4
 - [ ] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto
 - [ ] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi
@@ -580,6 +625,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [ ] 2.3 Risk Map ma 6 wierszy ryzyk, Response Guidance 6 wierszy
 - [ ] 2.4 Liczba wystąpień `| High | High |` = 2
 - [ ] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach
+- [ ] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS)
 - [ ] 2.6 `npx prettier --check` przechodzi
 
 #### Ręczne
@@ -587,6 +633,7 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [ ] 2.7 Ryzyko #1 nadal scenariuszem użytkownika, bez kotwic plik:linia
 - [ ] 2.8 Kolumna *Source* ryzyka #1 nieprzepisana (cytat PRD dosłowny)
 - [ ] 2.9 Granica CI/ręczne czytelna z samego wiersza #2
+- [ ] 2.9b Kolumna dowodu #2 nie obiecuje zapytania do bazy w CI, ale nadal wyklucza odczyt SQL-a
 - [ ] 2.10 Trzy kopie anty-wzorca spójne treściowo
 - [ ] 2.11 Kalibracja pod tabelą nadal prawdziwa
 
@@ -594,11 +641,11 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [ ] 3.1 Zero trafień na Postgres w kontekście warstwy testowej w całym pliku
-- [ ] 3.2 Stara litera zniknęła z §6.1 i z całego pliku
-- [ ] 3.3 Liczba wystąpień `TBD — see §3 Phase` = 5
+- [ ] 3.1 Zero trafień na `prawdziwemu Postgresowi`, `prawdziwego Postgresa`, `real Postgres`
+- [ ] 3.2 Stara litera zniknęła z §6.1 — grep na `może importować` pusty w całym pliku
+- [ ] 3.3 Liczba linii pasujących do `^- TBD — see §3 Phase` = 5
 - [ ] 3.4 §3 ma 4 wiersze faz, statusy niezmienione
-- [ ] 3.5 §5 ma 10 wierszy bramek
+- [ ] 3.5 §5 ma 11 wierszy bramek (10 dotychczasowych + dym RLS)
 - [ ] 3.6 `npx prettier --check` przechodzi
 
 #### Ręczne
@@ -606,14 +653,15 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 - [ ] 3.7 §6.1 prowadzi do drogi zgodnej z `AGENTS.md:11`, nie zaleca rdzenia domyślnie
 - [ ] 3.8 §3 uzasadnienie broni tej samej kolejności, zmieniona tylko przyczyna
 - [ ] 3.9 §5 bramka izolacji nadal `required after §3 Phase 2`
-- [ ] 3.10 Dym RLS ma w §5 jawne miejsce
+- [ ] 3.10 Dym RLS ma w §5 własny wiersz (lokalny stos, `recommended after §3 Phase 2`)
+- [ ] 3.11 Wiersz dymu produkcyjnego nietknięty
 
-### Faza 4: §8 stempel, kontrola spójności, odblokowanie Fazy 1
+### Faza 4: §8 stempel, kontrola spójności, odblokowanie Fazy 1 wdrożenia
 
 #### Automatyczne
 
 - [ ] 4.1 Zero trafień na pełny zestaw obalonych fraz w całym pliku
-- [ ] 4.2 Co najmniej 5 wystąpień `2026-09-07`
+- [ ] 4.2 Dokładnie jedna linia z `62a6f68`; trzy punkty ledgera datowane `2026-09-07`
 - [ ] 4.3 §8 ma linię o ostatnim refreshu z commitem `62a6f68`
 - [ ] 4.4 Liczba nagłówków `## ` = 8
 - [ ] 4.5 `git diff` nie pokazuje żadnej linii między `## 7.` a `## 8.`
