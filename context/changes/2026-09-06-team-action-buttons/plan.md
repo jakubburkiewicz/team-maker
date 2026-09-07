@@ -623,19 +623,19 @@ zostają nietknięte. Nie ma stanu do przeniesienia i nie ma czego wycofywać po
 
 #### Automatyczne
 
-- [ ] 1.1 Typy wygenerowane: `npx astro sync`
-- [ ] 1.2 Linting przechodzi: `npm run lint`
-- [ ] 1.3 Testy przechodzą, łącznie z dwoma nowymi plikami: `npm test`
-- [ ] 1.4 Oba moduły istnieją i są czyste (`test -f` + strażnik importów)
-- [ ] 1.5 Oba pliki testowe istnieją
-- [ ] 1.6 Ekran wyruszenia nie twierdzi już, że gracz właśnie zapisał (strażnik czerwony na bazie)
-- [ ] 1.7 Blok „Work in Progress" przetrwał redakcję
+- [x] 1.1 Typy wygenerowane: `npx astro sync`
+- [x] 1.2 Linting przechodzi: `npm run lint`
+- [x] 1.3 Testy przechodzą, łącznie z dwoma nowymi plikami: `npm test`
+- [x] 1.4 Oba moduły istnieją i są czyste (`test -f` + strażnik importów)
+- [x] 1.5 Oba pliki testowe istnieją
+- [x] 1.6 Ekran wyruszenia nie twierdzi już, że gracz właśnie zapisał (strażnik czerwony na bazie)
+- [x] 1.7 Blok „Work in Progress" przetrwał redakcję
 
 #### Ręczne
 
-- [ ] 1.8 Ekran po zapisie orzeka o stanie (nie o czynności gracza), nazywa drużynę z bazy i pokazuje „Work in Progress"
-- [ ] 1.9 Wejście na ekran wyruszenia bez uprzedniego zapisu daje tekst, który nie kłamie
-- [ ] 1.10 Cudze i nieistniejące `<id>` nadal dają ekran 404
+- [x] 1.8 Ekran po zapisie orzeka o stanie (nie o czynności gracza), nazywa drużynę z bazy i pokazuje „Work in Progress"
+- [x] 1.9 Wejście na ekran wyruszenia bez uprzedniego zapisu daje tekst, który nie kłamie
+- [x] 1.10 Cudze i nieistniejące `<id>` nadal dają ekran 404
 
 ### Faza 2: Akcje w kolumnie bocznej edytora `/teams/[id]`
 
