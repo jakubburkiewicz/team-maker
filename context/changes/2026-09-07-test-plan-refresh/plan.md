@@ -604,38 +604,38 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [x] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4
-- [x] 1.2 Nowe kryterium runtime obecne w §4
-- [x] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto
-- [x] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi (N/A — pada też na commicie bazowym; `--write` przeformatowałby cały plik i złamał 4.5/4.6. Zamiast tego zweryfikowano, że po znormalizowaniu prettierem obu stron dyff ogranicza się do zamierzonych edycji)
-- [x] 1.5 Tabela stosu §4 nadal ma 7 wierszy
+- [x] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4 — d3f70c2
+- [x] 1.2 Nowe kryterium runtime obecne w §4 — d3f70c2
+- [x] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto — d3f70c2
+- [x] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi (N/A — pada też na commicie bazowym; `--write` przeformatowałby cały plik i złamał 4.5/4.6. Zamiast tego zweryfikowano, że po znormalizowaniu prettierem obu stron dyff ogranicza się do zamierzonych edycji) — d3f70c2
+- [x] 1.5 Tabela stosu §4 nadal ma 7 wierszy — d3f70c2
 
 #### Ręczne
 
-- [x] 1.6 Cztery elementy kontraktu reguły zgodne z `AGENTS.md:11`, żaden nie zwinięty
-- [x] 1.7 Cztery pozostałe ograniczenia twarde nietknięte
-- [x] 1.8 Wiersz integration nie przesądza wyboru opcji wykonania za Fazę 1
+- [x] 1.6 Cztery elementy kontraktu reguły zgodne z `AGENTS.md:11`, żaden nie zwinięty — d3f70c2
+- [x] 1.7 Cztery pozostałe ograniczenia twarde nietknięte — d3f70c2
+- [x] 1.8 Wiersz integration nie przesądza wyboru opcji wykonania za Fazę 1 — d3f70c2
 
 ### Faza 2: §2 Risk Map — zawężenie #1, granica dla #2, anty-wzorce
 
 #### Automatyczne
 
-- [ ] 2.1 Fraza o prawdziwym Postgresie zniknęła z §2 wiersza #2
-- [ ] 2.2 Grep na `bez łamania czystości testów` i `jak pogodzić test wykonawczy` zwraca pusto
-- [ ] 2.3 Risk Map ma 6 wierszy ryzyk, Response Guidance 6 wierszy
-- [ ] 2.4 Liczba wystąpień `| High | High |` = 2
-- [ ] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach
-- [ ] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS)
-- [ ] 2.6 `npx prettier --check` przechodzi
+- [x] 2.1 Fraza o prawdziwym Postgresie zniknęła z §2 wiersza #2
+- [x] 2.2 Grep na `bez łamania czystości testów` i `jak pogodzić test wykonawczy` zwraca pusto
+- [x] 2.3 Risk Map ma 6 wierszy ryzyk, Response Guidance 6 wierszy
+- [x] 2.4 Liczba wystąpień `| High | High |` = 2
+- [x] 2.5 Anty-wzorzec fake-drift obecny w 3 wierszach
+- [x] 2.5b Kolumna dowodu wiersza #2 niesie oba człony (tor żądania + RLS)
+- [x] 2.6 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego `git diff -U0` potwierdza, że zmieniły się wyłącznie linie 47, 67, 68 i 72)
 
 #### Ręczne
 
-- [ ] 2.7 Ryzyko #1 nadal scenariuszem użytkownika, bez kotwic plik:linia
-- [ ] 2.8 Kolumna *Source* ryzyka #1 nieprzepisana (cytat PRD dosłowny)
-- [ ] 2.9 Granica CI/ręczne czytelna z samego wiersza #2
-- [ ] 2.9b Kolumna dowodu #2 nie obiecuje zapytania do bazy w CI, ale nadal wyklucza odczyt SQL-a
-- [ ] 2.10 Trzy kopie anty-wzorca spójne treściowo
-- [ ] 2.11 Kalibracja pod tabelą nadal prawdziwa
+- [x] 2.7 Ryzyko #1 nadal scenariuszem użytkownika, bez kotwic plik:linia
+- [x] 2.8 Kolumna *Source* ryzyka #1 nieprzepisana (cytat PRD dosłowny)
+- [x] 2.9 Granica CI/ręczne czytelna z samego wiersza #2
+- [x] 2.9b Kolumna dowodu #2 nie obiecuje zapytania do bazy w CI, ale nadal wyklucza odczyt SQL-a
+- [x] 2.10 Trzy kopie anty-wzorca spójne treściowo
+- [x] 2.11 Kalibracja pod tabelą nadal prawdziwa
 
 ### Faza 3: Propagacja do §3, §5, §6.1 i §6.3
 
