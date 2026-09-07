@@ -305,6 +305,9 @@ jedynym.
 
 - Osierocony pasek nie istnieje: `! test -e src/components/Topbar.astro`
 - Nikt go nie importuje: `! grep -rn 'components/Topbar' src/`
+- Powłoka faktycznie renderuje nagłówek — bez tego wybór layoutu przestaje być przełącznikiem,
+  a wszystkie pozostałe strażniki i testy zostają zielone:
+  `grep -n '<AppHeader' src/layouts/AppLayout.astro`
 - Nagłówek **korzysta** z modułu nawigacji, a nie z własnej kopii reguły:
   `grep -nE '^import .* from "@/lib/nav"' src/components/AppHeader.astro`
 - Adresy pozycji menu przychodzą z listy, nie z markupu (wzorzec strzyże komentarze — patrz
@@ -537,8 +540,8 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [x] 2.1 `src/components/Topbar.astro` nie istnieje — f6f5266
-- [x] 2.2 Nikt nie importuje `components/Topbar` — f6f5266
+- [x] 2.1 `src/components/Topbar.astro` nie istnieje — ed11612
+- [x] 2.2 Nikt nie importuje `components/Topbar` — ed11612
 - [x] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav` — f6f5266
 - [x] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu — f6f5266
 - [x] 2.5 `TeamNotFound.astro` importuje `AppLayout` — f6f5266
@@ -547,6 +550,7 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 - [x] 2.8 Testy przechodzą: `npm test` — f6f5266
 - [x] 2.9 Linting przechodzi: `npm run lint` — f6f5266
 - [x] 2.10 Build przechodzi: `npm run build` — f6f5266
+- [x] 2.17 `AppLayout.astro` renderuje `<AppHeader />` (kryterium dodane w triażu przeglądu 2026-09-07) — f6f5266
 
 #### Ręczne
 

@@ -115,3 +115,67 @@
   `supabase/migrations/` (umowa ma wymieniać warianty, nie jeden wzorzec); `/10x-implement` przy
   pisaniu asercji negatywnych; `/10x-impl-review` — sonduj wzorce wariantami, nie czytaj samego
   regexu.
+
+## Strażnik, który jest zielony na commicie bazowym, nie wiąże niczego
+
+- **Context**: `context/changes/2026-09-06-app-shell-header-nav/plan.md:316,425` — kryteria 2.6
+  i 3.1 (`! grep -rnE 'href="/(dashboard|teams)"' src/`), odhaczone `[x]` w Progress z hashami
+  commitów f6f5266 i dbcc40e. Trzecie z rzędu wystąpienie klasy „strażnik grepowy nie wiąże",
+  po §„Kryteria grepowe kotwicz na składni, nie na słowach" (S-06) i §„Strażnik grepowy nad SQL-em
+  ma pokrywać legalne warianty zapisu" (S-07).
+- **Problem**: Oba strażniki miały potwierdzić wycięcie linków powrotnych w fazach 2 i 3.
+  `git grep -nE 'href="/(dashboard|teams)"' b5c64fa^ -- src/` nie zwraca **nic**: wymaganie
+  wstępne `2026-09-06-teams-list-as-home` przepisało już te linki na `href="/"`. Oba strażniki
+  były więc zielone **przed** pierwszym commitem zmiany i pozostałyby zielone, gdyby faza 3 nie
+  zrobiła nic. Praca, której naprawdę bronią — wycięcie siedmiu linków `href="/"`
+  i `href="/teams/new"` z `TeamNotFound.astro`, `new.astro`, `[id].astro`, `embark.astro` — nie
+  ma żadnego pokrycia automatycznego; pilnuje jej wyłącznie ręczne 3.11. Sonda: ponowne wklejenie
+  karty z linkiem „← Your teams" przechodzi wszystkie 12 strażników na zielono. Obie wcześniejsze
+  lekcje zostały tu spełnione co do litery (kotwica na składni, strzyżenie komentarzy) — bo żadna
+  nie mówi nic o **linii bazowej**. Plan opisywał pliki w stanie po wymaganiu wstępnym, ale
+  kryteria napisał w słownictwie stanu sprzed niego.
+- **Rule**: Strażnik negatywny jest wart tyle, ile jego czerwień **przed** zmianą. Zanim odhaczysz
+  `[x]`, uruchom go na commicie bazowym (`git stash` albo `git grep <wzorzec> <base> -- <ścieżki>`)
+  i potwierdź, że **czerwieni się tam**. Zielony na bazie znaczy, że pilnuje czegoś, czego już nie
+  ma — wtedy przepisz go na to, co ta faza faktycznie usuwa, zamiast go odhaczać. Szczególnie gdy
+  plan opisuje pliki w stanie po wymaganiu wstępnym: słownictwo kryteriów musi pochodzić z tego
+  samego stanu co opis, inaczej strażnik celuje w nieistniejący już zapis. Ta sama próba należy się
+  strażnikom pozytywnym w drugą stronę — `grep -n '<AppHeader' src/layouts/AppLayout.astro` ma
+  czerwienić się na bazie, bo pliku tam jeszcze nie ma.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna weryfikacja"
+  w planie, który ma wymaganie wstępne albo opisuje pliki w stanie po innej zmianie;
+  `/10x-implement` przed każdym `[x]` w Progress; `/10x-impl-review` — uruchamiaj strażniki także
+  na commicie bazowym zakresu, nie tylko na HEAD.
+
+## Strażnik grepowy nad JSX/TS — wariantów cytowania jest cztery, a `return` bywa wcięty
+
+- **Context**: `context/changes/2026-09-06-app-shell-header-nav/plan.md:178,179,311,320,432`
+  (triaż przeglądu implementacji 2026-09-07, ustalenie F3). Rozwinięcie §„Strażnik grepowy nad
+  SQL-em ma pokrywać legalne warianty zapisu, nie jeden zapis" na drugi język repozytorium:
+  tamta lekcja wypisuje warianty nazw tabel i przywilejów, ta — warianty zapisu ścieżki,
+  wyjścia i importu w `.astro`/TS.
+- **Problem**: Pięć strażników planu przeszło dosłownie, a każdy przepuszcza legalny wariant tej
+  samej operacji (sondy na kopiach poza repozytorium):
+  `href="` łapie `href="/teams/new"`, przepuszcza `href={"/teams/new"}`, `href='/teams/new'`
+  i `` href={`/teams/new`} ``; `^return ` przepuszcza `  return Astro.redirect("/")` oraz
+  `if (notFound) { return new Response(...) }` — czyli **najczęstszy** kształt wczesnego wyjścia,
+  ten, przed którym ostrzega lekcja S-03; `"/(dashboard|teams)"` przepuszcza `'/teams'`,
+  `` `/teams` `` i `"/teams/"`, a `normalize()` sprowadza `"/teams/"` z powrotem do martwej trasy;
+  strażnik importów (`^import .* from "(astro:|@/lib/supabase)`) przepuszcza `import "astro:env/server"`,
+  `export * from "@/lib/supabase"`, `await import("@/lib/supabase")` i import względny;
+  `Astro\.props` przepuszcza `Astro["props"]` i `const { props } = Astro` — a ten pilnuje
+  niezmiennika izolacji S-07. Plan deklarował sondę przy dwóch z nich, ale przesondował wyłącznie
+  wariant, który strażnik łapie — sonda potwierdzająca własne założenie nie jest sondą.
+- **Rule**: Zanim napiszesz strażnika nad `.astro`/`.ts`/`.tsx`, wypisz warianty zapisu tej samej
+  operacji, tak jak przy SQL-u. Ścieżka w atrybucie ma cztery formy: `href="…"`, `href='…'`,
+  `href={"…"}`, `` href={`…`} `` — pokryj je jednym fragmentem, nie czterema regexami. `return`
+  we frontmatterze bywa wcięty i bywa w `if`, więc kotwica to `^\s*return\s`, nigdy `^return `.
+  Import ma formy bez `from` (`import "x"`), dynamiczną (`import("x")`), re-eksport
+  (`export * from "x"`) i względną — jeśli strażnik pilnuje czystości modułu, musi objąć wszystkie.
+  Literał ścieżki dopuszcza końcowy ukośnik, więc wzorzec i asercja testowa mają go tolerować
+  (`/teams/?` zamiast `/teams`). I sonduj **wariantem rozbrajającym**, nie tym, który łapiesz:
+  strażnik uznany za przesondowany na podstawie wariantu pozytywnego jest nieprzesondowany.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna weryfikacja"
+  grepującym po `src/**/*.{astro,ts,tsx}`; `/10x-implement` przy pisaniu asercji negatywnych
+  w testach (`not.toBe("/teams")` ma tę samą dziurę co grep); `/10x-impl-review` — sonduj wariantem,
+  który ma przejść, a nie tym, który ma paść.
