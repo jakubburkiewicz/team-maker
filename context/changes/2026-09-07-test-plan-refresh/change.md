@@ -1,7 +1,7 @@
 ---
 change_id: 2026-09-07-test-plan-refresh
 title: Refresh test-plan.md — runtime test-purity rule and Postgres-free isolation response
-status: planned
+status: implementing
 created: 2026-09-07
 updated: 2026-09-07
 archived_at: null

@@ -604,17 +604,17 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [ ] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4
-- [ ] 1.2 Nowe kryterium runtime obecne w §4
-- [ ] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto
-- [ ] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi
-- [ ] 1.5 Tabela stosu §4 nadal ma 7 wierszy
+- [x] 1.1 Stara litera zniknęła z §4 — grep na `może importować` bez trafień w §4
+- [x] 1.2 Nowe kryterium runtime obecne w §4
+- [x] 1.3 Grep na `Wymaga rozstrzygnięcia` zwraca pusto
+- [x] 1.4 `npx prettier --check context/foundation/test-plan.md` przechodzi (N/A — pada też na commicie bazowym; `--write` przeformatowałby cały plik i złamał 4.5/4.6. Zamiast tego zweryfikowano, że po znormalizowaniu prettierem obu stron dyff ogranicza się do zamierzonych edycji)
+- [x] 1.5 Tabela stosu §4 nadal ma 7 wierszy
 
 #### Ręczne
 
-- [ ] 1.6 Cztery elementy kontraktu reguły zgodne z `AGENTS.md:11`, żaden nie zwinięty
-- [ ] 1.7 Cztery pozostałe ograniczenia twarde nietknięte
-- [ ] 1.8 Wiersz integration nie przesądza wyboru opcji wykonania za Fazę 1
+- [x] 1.6 Cztery elementy kontraktu reguły zgodne z `AGENTS.md:11`, żaden nie zwinięty
+- [x] 1.7 Cztery pozostałe ograniczenia twarde nietknięte
+- [x] 1.8 Wiersz integration nie przesądza wyboru opcji wykonania za Fazę 1
 
 ### Faza 2: §2 Risk Map — zawężenie #1, granica dla #2, anty-wzorce
 

@@ -107,18 +107,30 @@ Status vocabulary (fixed — parser literals): `not started` → `change opened`
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
 | unit (czyste moduły) | Vitest | ^4.1.11 | `npm test` = `vitest run`, zakres `src/**/*.test.ts`; 17 plików, wszystkie w `src/lib/` |
-| integration (trasy, baza) | none yet — see Phase 1 i Phase 2 | — | Wymaga rozstrzygnięcia, jak pogodzić wykonanie z regułą czystości testów z `AGENTS.md` |
+| integration (trasy, baza) | none yet — see Phase 1 i Phase 2 | — | Rozstrzygnięte 2026-09-07: wykonanie trasy w Vitest jest zgodne z regułą czystości, gdy `@/lib/supabase` jest w teście podmieniony hoistowanym `vi.mock`; sonda w badaniu Fazy 1 przeprowadziła całą sekwencję `POST /api/teams` aż do redirectu, bez zmian w konfiguracji Vitest. Konsekwencja: warstwa nie potrzebuje ani nowego runnera, ani przegrody w `vitest.config.ts`, ani zmiany `ci.yml` — wybór konkretnej opcji wykonania należy do Fazy 1 |
 | component (DOM) | none yet — see Phase 3 | — | Brak środowiska DOM; zakres Vitest obejmuje `.ts`, nie `.tsx` |
 | e2e | none yet — see Phase 4 | — | Wzorzec dla Astro SSR: `webServer` uruchamiający `npm run preview`; `wrangler dev` jest w tym repozytorium zakazany |
 | lint + typecheck | ESLint + `astro sync` | ESLint ^9.29.0 | Już w CI; `astro sync` musi poprzedzać lint, inaczej reguły typowane padają |
 | build | Astro + adapter Cloudflare | Astro ^6.3.1 | Już w CI; jedyny krok wymagający sekretów Supabase |
 | (optional) AI-native | przegląd „zimnego czytelnika" na 1–3 ekranach — checked: 2026-09-07 | n/a | NIE używać do wartości liczbowych, werdyktu progu ani stanu przycisku — te są deterministyczne i tańsze |
 
-Ograniczenia twarde wiążące wybór warstw (`AGENTS.md`): testy są czyste — nic pod testem nie
-może importować `astro:*` ani `@/lib/supabase`; `zod` nie jest zależnością i nie wolno jej
+Ograniczenia twarde wiążące wybór warstw (`AGENTS.md`): `zod` nie jest zależnością i nie wolno jej
 dodawać bez polecenia; `wrangler dev` jest zakazany (dev to `npm run dev` przez plugin Vite);
 `supabase config push` jest zakazany; potwierdzanie adresu e-mail jest **włączone w produkcji
 i wyłączone w `config.toml`** — rozjazd świadomy, nie do „naprawienia".
+
+Czystość testów — obowiązująca litera (`AGENTS.md`, którego reguła jest właścicielem; tu tylko
+cytowana): kryterium jest **runtime, nie treść linii importu**. Nic pod testem nie może
+**ewaluować** modułu rozwiązującego wirtualny moduł `astro:*` ani konstruować prawdziwego klienta
+Supabase. Wynika z tego, że warstwy wykonawcze są dostępne bez wyjątku od reguły:
+
+- `import type { APIRoute } from "astro"` jest w porządku — typy są kasowane przy transpilacji;
+- `node:fs` jest w porządku (precedens: `src/lib/teams-policy-sql.test.ts` czyta tak migracje);
+- plik, który importuje `@/lib/supabase` — na przykład trasa API — **może** być pod testem, o ile
+  test podmienia ten moduł hoistowanym `vi.mock("@/lib/supabase", …)`: prawdziwy moduł nigdy się
+  wtedy nie ewaluuje;
+- prawdziwego klienta nie wolno zbudować w teście nigdy — atrapa idzie jako argument, który moduły
+  danych w `src/lib/` i tak już przyjmują.
 
 **Stack grounding tools (current session):**
 - Docs: none — Context7 ani inny MCP dokumentacji nie jest udostępniony w tej sesji; oparto się na lokalnych manifestach i konfiguracjach; checked: 2026-09-07
