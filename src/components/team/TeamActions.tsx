@@ -27,7 +27,10 @@ const EMBARK_HINT_ID = "team-actions-embark-hint";
  * na `/`, gdzie o akcji mówi kontekst wiersza.
  *
  * Wyruszenie **nie zapisuje**: przy niezapisanych zmianach odmawia, żeby nie wyprowadzić gracza
- * z ekranu i nie zgubić jego pracy. Nieaktywny stan wyraża `<button disabled>`, nie `<a>`
+ * z ekranu **tą jedną drogą**. To nie jest ochrona pracy w toku i nie udaje jej: nagłówek powłoki
+ * (`AppHeader` → `NAV_ITEMS`), Wstecz i zamknięcie karty gubią zmiany tak samo, bez ostrzeżenia,
+ * bo `AppLayout` nie zakłada `beforeunload`. Szersza obietnica wymagałaby zakresu, którego
+ * Non-Goals PRD nie przewidują. Nieaktywny stan wyraża `<button disabled>`, nie `<a>`
  * z `aria-disabled` — tylko przycisk jest rzeczywiście nieklikalny i nienawigowalny klawiaturą.
  * Powód niesie **statyczny tekst** pod przyciskiem, nie dymek: `Button` ma
  * `disabled:pointer-events-none`, więc `title` na wyłączonym przycisku nigdy by się nie pokazał

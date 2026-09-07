@@ -179,3 +179,45 @@
   grepującym po `src/**/*.{astro,ts,tsx}`; `/10x-implement` przy pisaniu asercji negatywnych
   w testach (`not.toBe("/teams")` ma tę samą dziurę co grep); `/10x-impl-review` — sonduj wariantem,
   który ma przejść, a nie tym, który ma paść.
+
+## Strażnik musi mierzyć to, co deklaruje — narzędzie, jednostka zliczania i podpięcie
+
+- **Context**: `context/changes/2026-09-06-team-action-buttons/plan.md` — kryteria 1.6, 2.3, 2.4,
+  2.5, 3.3, 3.4, 3.5, 3.7 (triaż przeglądu implementacji 2026-09-07, ustalenia F2 i F3). Czwarte
+  z rzędu wystąpienie klasy „strażnik grepowy nie wiąże", po §„Kryteria grepowe kotwicz na składni",
+  §„Strażnik grepowy nad SQL-em" i §„Strażnik, który jest zielony na commicie bazowym".
+- **Problem**: Trzy nowe kierunki, których żadna z poprzednich lekcji nie obejmuje — wszystkie
+  przy poprawnym kodzie (12/12 MATCH), więc żaden nie ujawnił się sam:
+  1. **Rozjazd narzędzi.** Plan kazał zweryfikować czerwień na bazie komendą
+     `git grep -nE '\bsaved\b' HEAD -- <ścieżka>` i twierdził, że „zwraca **dwa** trafienia".
+     Zwraca **zero**: `\b` jest rozszerzeniem GNU/BSD `grep`, a `git grep -E` używa POSIX ERE,
+     gdzie tego wzorca nie ma. Strażnik po stronie HEAD (zwykły `grep`) działał, więc ten sam
+     wzorzec miał dwa różne znaczenia w dwóch połówkach jednego kryterium, a `[x]` podpisano
+     adnotacją „strażnik czerwony na bazie", której podaną komendą uzyskać się nie da.
+  2. **Jednostka zliczania.** Kryterium 3.5 liczyło `grep -cE '…\.ariaLabel\}' ≥ 6`, żeby związać
+     **trzy różne akcje** × dwa atrybuty. `grep -c` liczy **linie**, nie trafienia — próg 6 domyka
+     jedna akcja powtórzona trzy razy z `aria-label` i `title` w osobnych liniach, bez ani jednego
+     Edit i Delete. Plan poświęcił temu strażnikowi cały akapit obrony przed „gołym
+     `grep -c 'aria-label' … -ge 3`" i wpadł dokładnie w tę samą dziurę piętro wyżej.
+  3. **Deklaracja zamiast podpięcia.** Kryterium 2.3 (`^\s*onOpenChange`) miało dowieść, że okno
+     jest sterowane z zewnątrz. Przechodzi na pliku, w którym `onOpenChange` istnieje wyłącznie
+     jako pole interfejsu, nigdy nie przekazane do `AlertDialog` — czyli na oknie rozbrojonym.
+  Do tego dwa warianty rozszerzające §„Strażnik grepowy nad JSX/TS": adres sklejany konkatenacją
+  (`` `/teams/` + team.id ``) przechodzi przez 2.5, 3.4 i 3.7, a `grep 'client:[a-z]+'` domyka się
+  **samym komentarzem** o `client:load`, bez ani jednej wyspy.
+- **Rule**: Zanim odhaczysz strażnika, sprawdź trzy rzeczy ponad sam wzorzec. **Narzędzie**: obie
+  połówki kryterium (HEAD i baza) mają przechodzić przez ten sam program — weryfikację bazową rób
+  `git show <base>:<ścieżka> | grep …`, nigdy `git grep -E` z wzorcem zawierającym `\b`, `\d`, `\s`
+  ani inne rozszerzenia GNU; jeśli musisz użyć `git grep`, weź `-P`. **Jednostkę**: `grep -c` liczy
+  linie, więc każdy próg liczbowy wiąże liczbę **linii**, a nie liczbę bytów — gdy chcesz związać
+  kardynalność (trzy akcje, siedem kompetencji), użyj `grep -o … | wc -l` albo asercji w teście,
+  i przesonduj wariantem, w którym jeden byt powtórzono N razy. **Podpięcie**: strażnik nad propem,
+  hookiem czy importem ma celować w **użycie**, nie w deklarację — `onOpenChange={` zamiast
+  `onOpenChange`, bo pole interfejsu istnieje także w komponencie, który go nigdy nie przekazuje.
+  Gdy asercja w teście wiąże to samo co licznik, licznik skreśl — dubluje słabszą wersję tej samej
+  umowy i tworzy złudzenie dwóch niezależnych barier.
+- **Applies to**: `/10x-plan` i `/10x-plan-review` przy każdym kryterium „Automatyczna weryfikacja"
+  używającym `git grep`, progu liczbowego (`-c`, `-ge`, `wc -l`) albo celującym w prop/hook/import;
+  `/10x-implement` przed każdym `[x]` w Progress — komenda ma zostać uruchomiona **dosłownie**,
+  a jej wynik przeczytany, nie założony; `/10x-impl-review` — sonduj wariantem rozbrajającym
+  i sprawdzaj, czy narzędzie w komendzie w ogóle zna użytą składnię wzorca.

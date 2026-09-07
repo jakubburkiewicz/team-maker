@@ -37,6 +37,17 @@ interface DeleteTeamDialogProps {
  * z repo i odesłał na goły 404 zamiast na baner „Team deleted.". Nie `useFormStatus` — przy
  * `action` będącym stringiem React trzyma `pending === false` na stałe.
  *
+ * `submitting` **musi** wracać do `false` przy zamknięciu okna, bo szczęśliwa ścieżka
+ * (POST → 302 → pełne przeładowanie) nie jest jedyna. Ten komponent jest zamontowany na stałe,
+ * a na `/` **jedna** instancja obsługuje N wierszy, więc stan przeżywa zamknięcie okna i wędruje
+ * do następnego celu. Escape wciśnięty w trakcie wysyłki zatrzymuje nawigację POST i zamyka okno
+ * (Radix nie blokuje Escape sam) — bez resetu zostawiłoby to okno, w którym potwierdzenie **i**
+ * `Cancel` są zgaszone, a usuwanie **każdej** drużyny na liście przestaje działać bez widocznego
+ * powodu. Reset wisi na zamknięciu, nie na zmianie celu: `target` bywa ten sam przy ponownym
+ * otwarciu (`TeamActions`, `DeleteTeamButton` trzymają jedną drużynę), więc `key` na celu tej
+ * ścieżki by nie pokrył. Blokowania Escape tu **nie ma** świadomie — zgaszony przycisk przy
+ * nieaktualnym `submitting` (np. po powrocie z bfcache) zamieniłby okno w pułapkę bez wyjścia.
+ *
  * Okno stoi na prymitywie `alert-dialog`, nie na `dialog.tsx`: `role="alertdialog"` i brak
  * zamykania kliknięciem w tło są dla operacji nieodwracalnej właściwością, nie ozdobą — skoro
  * Non-Goal PRD wyklucza kosz i przywracanie, to okno jest **jedyną** ochroną.
@@ -57,7 +68,15 @@ export default function DeleteTeamDialog({ target, open, onOpenChange }: DeleteT
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <AlertDialog open={open && target !== null} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={open && target !== null}
+      onOpenChange={(next) => {
+        if (!next) {
+          setSubmitting(false);
+        }
+        onOpenChange(next);
+      }}
+    >
       {target !== null && (
         <AlertDialogContent className="border-white/10 bg-[#0f1529] text-white">
           <AlertDialogHeader>
@@ -76,14 +95,17 @@ export default function DeleteTeamDialog({ target, open, onOpenChange }: DeleteT
             >
               Cancel
             </AlertDialogCancel>
-            <form method="post" action={`/api/teams/${encodeURIComponent(target.id)}/delete`}>
+            <form
+              method="post"
+              action={`/api/teams/${encodeURIComponent(target.id)}/delete`}
+              onSubmit={() => {
+                setSubmitting(true);
+              }}
+            >
               <Button
                 type="submit"
                 variant="destructive"
                 disabled={submitting}
-                onClick={() => {
-                  setSubmitting(true);
-                }}
                 className="w-full border border-red-400/40 bg-red-500/80 text-white hover:bg-red-500"
               >
                 {submitting ? "Deleting…" : "Delete team"}

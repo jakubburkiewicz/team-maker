@@ -50,7 +50,7 @@ export default function TeamList({ teams }: TeamListProps) {
           return (
             <li
               key={team.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 text-white backdrop-blur-xl"
+              className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/10 p-4 text-white backdrop-blur-xl transition-colors hover:border-purple-400/60 hover:bg-white/20"
             >
               <a
                 href={edit.href}

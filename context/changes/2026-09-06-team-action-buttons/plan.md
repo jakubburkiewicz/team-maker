@@ -246,11 +246,16 @@ przywróci sformułowanie zorientowane wyłącznie na zapis.
 - Ekran wyruszenia nie twierdzi już, że gracz właśnie zapisał:
   `! grep -nE '\bsaved\b' 'src/pages/teams/[id]/embark.astro'`
   — strażnik **musi** zostać uruchomiony na commicie bazowym i czerwienić się tam
-  (`git grep -nE '\bsaved\b' HEAD -- 'src/pages/teams/[id]/embark.astro'` zwraca dziś **dwa**
+  (`git show HEAD:'src/pages/teams/[id]/embark.astro' | grep -nE '\bsaved\b'` zwraca dziś **dwa**
   trafienia: nagłówek `:62` („… is saved") i tytuł strony `:56` (`Team ${team.name} saved`).
   Wąskie `is saved` trafiało wyłącznie w nagłówek i przepuszczało tytuł, który orzeka o dokładnie
   tym samym zdarzeniu — stąd kotwica na słowie, nie na frazie (`lessons.md` §„Kryteria grepowe
-  kotwicz na składni, nie na słowach"). Zielony na bazie znaczyłby, że nie wiąże niczego
+  kotwicz na składni, nie na słowach"). Zielony na bazie znaczyłby, że nie wiąże niczego.
+  Weryfikacja bazowa idzie przez `git show … | grep`, **nie** przez `git grep -E`: `\b` jest
+  rozszerzeniem GNU/BSD `grep`, a `git grep -E` używa POSIX ERE, gdzie tego wzorca nie ma —
+  `git grep -nE '\bsaved\b'` zwraca zero trafień także tam, gdzie słowo stoi. Ten sam wzorzec
+  musi po obu stronach przechodzić przez **to samo narzędzie**, inaczej czerwień na bazie jest
+  nie do uzyskania, a `[x]` opiera się na komendzie, która nie mogła jej pokazać
 - Blok „Work in Progress" przetrwał redakcję:
   `grep -n 'Work in Progress' src/pages/teams/[id]/embark.astro`
 

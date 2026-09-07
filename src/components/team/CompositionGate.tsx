@@ -47,7 +47,7 @@ export function CompositionGate({ ready, composition, teamId }: CompositionGateP
   return (
     <form
       method="POST"
-      action={editing ? `/api/teams/${teamId}` : "/api/teams"}
+      action={editing ? `/api/teams/${encodeURIComponent(teamId)}` : "/api/teams"}
       onSubmit={() => {
         setSubmitting(true);
       }}
