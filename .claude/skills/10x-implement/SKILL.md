@@ -16,11 +16,11 @@ allowed-tools:
   - TaskGet
 ---
 
-# Implementacja Planu
+# Implementacja planu
 
 Twoim zadaniem jest zaimplementowanie zatwierdzonego planu technicznego z `context/changes/<change-id>/plan.md`. Plany te zawierają fazy ze specyficznymi zmianami oraz kanoniczną sekcję `## Progress` na dole, która steruje stanem wykonania (patrz `references/progress-format.md`).
 
-## Początkowa konfiguracja
+## Konfiguracja początkowa
 
 Po wywołaniu tej komendy:
 
@@ -28,7 +28,7 @@ Po wywołaniu tej komendy:
    - Jeśli wywołano jako `/10x-implement <change-id> [phase N]`, rozwiąż do `context/changes/<change-id>/plan.md`.
    - Jeśli wywołano z `@context/changes/<change-id>/plan.md` lub pełną ścieżką, zaakceptuj.
    - **Odmów, jeśli rozwiązana ścieżka zaczyna się od `context/archive/`** — wydrukuj "This change is archived. Open a new change with `/10x-new` instead." i ZATRZYMAJ.
-   - Jeśli nic nie zostało podane, odpowiedz poniższą wiadomością i **ZATRZYMAJ SIĘ i czekaj**:
+   - Jeśli nic nie zostało podane, odpowiedz poniższą wiadomością i **ZATRZYMAJ i czekaj**:
 
 ```
 I'll help you implement an approved technical plan. Please provide:
@@ -46,34 +46,34 @@ Tip: Make sure the plan has been reviewed and approved before implementation.
 Po podaniu ścieżki do planu:
 
 - Przeczytaj cały plan. Sekcja `## Progress` na dole jest autorytatywna dla stanu wykonania — znaczniki wyboru (`- [x]`) znajdują się TYLKO tam. Bloki faz zawierają zwykłe punktorzy `- ` (bez pól wyboru).
-- Przeczytaj `context/foundation/lessons.md`, jeśli istnieje, i przyswój każdy wpis przed rozpoczęciem jakiejkolwiek fazy — są to zaakceptowane, powtarzające się zasady zespołu i muszą kształtować każdy wybór implementacyjny, którego dokonasz w tym przebiegu.
-- Przeczytaj wszystkie pliki wymienione w planie (odwołania do badań, ram, plików źródłowych w tym samym folderze zmiany).
-- **Czytaj pliki w całości** — nigdy nie używaj parametrów limit/offset, potrzebujesz pełnego kontekstu.
-- Zastanów się głęboko, jak poszczególne elementy do siebie pasują.
+- Przeczytaj `context/foundation/lessons.md`, jeśli istnieje, i przyswój każdy wpis przed rozpoczęciem jakiejkolwiek fazy — są to zaakceptowane, powtarzające się zasady zespołu i muszą kształtować każdy wybór implementacyjny, który podejmiesz w tym przebiegu.
+- Przeczytaj wszystkie pliki wymienione w planie (odwołania do badań, ram, plików źródłowych w tym samym folderze zmiany)
+- **Czytaj pliki w całości** — nigdy nie używaj parametrów limit/offset, potrzebujesz pełnego kontekstu
+- Zastanów się głęboko, jak poszczególne elementy do siebie pasują
 - **Zaktualizuj `change.md`**: przy wejściu ustaw `status: implementing` (tylko jeśli aktualnie w `{planned, plan_reviewed}`) i `updated: <today>`.
-- **Zsynchronizuj roadmapę** (najlepszy wysiłek, raz przy wejściu): jeśli `context/foundation/roadmap.md` zawiera element, którego `Change ID` jest równe `<change-id>`, zmień status tego elementu na `Status: in-progress`. Zobacz "## Synchronizacja statusu roadmapy" poniżej. Jest to odpowiednik otwartej pracy dla zmiany statusu na `done` w `/10x-archive`; nigdy nie blokuje i większość zmian nie będzie śledzona w roadmapie.
+- **Zsynchronizuj roadmapę** (najlepszy wysiłek, raz przy wejściu): jeśli `context/foundation/roadmap.md` zawiera element, którego `Change ID` jest równe `<change-id>`, zmień status tego elementu na `Status: in-progress`. Patrz "## Synchronizacja statusu roadmapy" poniżej. Jest to odpowiednik otwartej pracy dla zmiany statusu na `done` w `/10x-archive`; nigdy nie blokuje i większość zmian nie będzie śledzona w roadmapie.
 - Policz całkowitą liczbę faz (z nagłówków `## Phase N:`) i utwórz jeden wpis TaskCreate dla każdej fazy (pojawiają się one na pasku stanu użytkownika):
-  - Dla każdej fazy utwórz zadanie z `subject: "Phase N: [Phase Name]"` i `activeForm: "Implementing Phase N"`.
-  - Ustaw bieżącą fazę na `in_progress` za pomocą TaskUpdate przed rozpoczęciem pracy.
-  - Oznacz każdą fazę jako `completed` za pomocą TaskUpdate, gdy jej kryteria sukcesu zostaną spełnione.
-- **Znajdź następny oczekujący krok**, skanując sekcję `## Progress`: pierwsza linia `- [ ]` w kolejności dokumentu to miejsce, od którego zaczynasz. Jeśli podano argument `phase N`, przejdź do pierwszego `- [ ]` wewnątrz `### Phase N:`.
-- Rozpocznij implementację, jeśli rozumiesz, co należy zrobić.
+  - Dla każdej fazy utwórz zadanie z `subject: "Phase N: [Phase Name]"` i `activeForm: "Implementing Phase N"`
+  - Ustaw bieżącą fazę na `in_progress` za pomocą TaskUpdate przed rozpoczęciem pracy
+  - Oznacz każdą fazę jako `completed` za pomocą TaskUpdate, gdy jej kryteria sukcesu zostaną spełnione
+- **Znajdź następny oczekujący krok**, skanując sekcję `## Progress`: pierwsza linia `- [ ]` w kolejności dokumentu to miejsce, od którego zaczynasz. Jeśli podano argument `phase N`, przejdź do pierwszej linii `- [ ]` wewnątrz `### Phase N:`.
+- Rozpocznij implementację, jeśli rozumiesz, co należy zrobić
 
 ## Filozofia implementacji
 
 Plany są starannie zaprojektowane, ale rzeczywistość może być skomplikowana. Twoim zadaniem jest:
 
-- Postępować zgodnie z intencją planu, jednocześnie dostosowując się do tego, co znajdziesz.
-- W pełni zaimplementować każdą fazę przed przejściem do następnej.
-- Zweryfikować, czy Twoja praca ma sens w szerszym kontekście bazy kodu.
-- Aktualizować pola wyboru w planie w miarę kończenia sekcji.
+- Postępować zgodnie z zamierzeniami planu, jednocześnie dostosowując się do tego, co znajdziesz
+- W pełni zaimplementować każdą fazę przed przejściem do następnej
+- Zweryfikować, czy Twoja praca ma sens w szerszym kontekście bazy kodu
+- Aktualizować pola wyboru w planie w miarę kończenia sekcji
 
 Gdy coś nie pasuje dokładnie do planu, zastanów się dlaczego i jasno to zakomunikuj. Plan jest Twoim przewodnikiem, ale Twoja ocena również ma znaczenie.
 
 Jeśli napotkasz niezgodność:
 
-- ZATRZYMAJ SIĘ i głęboko zastanów się, dlaczego plan nie może być przestrzegany.
-- Przedstaw problem jasno w formie tekstowej:
+- ZATRZYMAJ SIĘ i głęboko zastanów się, dlaczego plan nie może być przestrzegany
+- Przedstaw problem jasno w formie tekstu:
 
   ```
   Issue in Phase [N]:
@@ -104,9 +104,9 @@ Rytuał zatwierdzania na koniec fazy (patrz "Podejście do weryfikacji" poniżej
 
 - Za każdym razem, gdy wywołujesz `Edit` lub `Write` na pliku podczas bieżącej fazy, dodaj jego ścieżkę względną do repozytorium do zbioru zmienionych plików.
 - Zbiór zawsze zawiera `context/changes/<change-id>/plan.md`, ponieważ każda faza generuje co najmniej jedną edycję w sekcji `## Progress`. Dodaj go przy wejściu do fazy, nawet zanim jakiekolwiek pola wyboru zostaną zmienione.
-- **Uruchomienie Fazy 1**: w pierwszej fazie zmiany, również zasiej zbiór zmienionych plików wszystkimi nieśledzonymi lub zmodyfikowanymi plikami wewnątrz `context/changes/<change-id>/` — zazwyczaj `change.md`, `research.md`, `plan.md` i innymi plikami kontekstowymi utworzonymi podczas planowania. Pliki te są częścią zmiany i powinny trafić do pierwszego commita, zamiast pozostawać jako nieśledzone resztki.
+- **Uruchomienie fazy 1**: w pierwszej fazie zmiany, również zainicjuj zbiór zmienionych plików wszystkimi nieśledzonymi lub zmodyfikowanymi plikami wewnątrz `context/changes/<change-id>/` — zazwyczaj `change.md`, `research.md`, `plan.md` i innymi plikami kontekstowymi utworzonymi podczas planowania. Pliki te są częścią zmiany i powinny trafić do pierwszego commita, zamiast pozostać jako nieśledzone resztki.
 - Zbiór **resetuje się na każdej granicy fazy**. Po zakończeniu commita na koniec fazy, wyczyść go przed rozpoczęciem następnej fazy.
-- Ta lista zastępuje wszelkie heurystyki z `git status`. Jeśli zbiór zmienionych plików to `{a.md, b.md, plan.md}`, ale `git status --porcelain` również zgłasza, że `c.md` jest brudny, `c.md` jest niezwiązany — obsłuż go za pomocą monitu o brudną ścieżkę w rytuale, nigdy nie pakuj go cicho do commita.
+- Ta lista zastępuje wszelkie heurystyki z `git status`. Jeśli zbiór zmienionych plików to `{a.md, b.md, plan.md}`, ale `git status --porcelain` również zgłasza `c.md` jako brudny, `c.md` jest niezwiązany — obsłuż go za pomocą monitu o brudną ścieżkę w rytuale, nigdy nie dołączaj go cicho do commita.
 
 ## Śledzenie odniesień do problemów/zadań dla commitów
 
@@ -114,12 +114,12 @@ Przed zaproponowaniem jakiejkolwiek wiadomości commitu na koniec fazy lub epilo
 
 - Jeśli obecne są jedno lub więcej odniesień, umieść je w treści wiadomości commitu pod linią `Refs:`, zachowując dokładne identyfikatory/adresy URL podane przez użytkownika, jeśli to możliwe.
 - Jeśli dotyczy wiele odniesień, wymień je oddzielone przecinkami w jednej linii `Refs:`.
-- Nie wymyślaj ani nie wnioskuj odniesień do śledzenia na podstawie change-id, nazwy gałęzi lub nazw plików. Używaj tylko odniesień widocznych w bieżącym kontekście rozmowy lub wyraźnie podanych przez użytkownika.
-- Zastosuj tę samą linię `Refs:` do każdego commitu na koniec fazy i do commitu epilogu, chyba że użytkownik zawęzi odniesienie do konkretnej fazy.
+- Nie wymyślaj ani nie wnioskuj odniesień do śledzenia z change-id, nazwy gałęzi lub nazw plików. Używaj tylko odniesień widocznych w bieżącym kontekście rozmowy lub jawnie podanych przez użytkownika.
+- Zastosuj tę samą linię `Refs:` do każdego commita na koniec fazy i do commita epilogu, chyba że użytkownik zawęzi odniesienie do konkretnej fazy.
 
 ## Synchronizacja statusu roadmapy
 
-`context/foundation/roadmap.md` (generowany przez `/10x-roadmap`) indeksuje każdą Fundację/Fragment za pomocą stabilnego **Change ID**. `/10x-archive` już zamyka pętlę na drugim końcu — gdy zmiana jest archiwizowana, zmienia status odpowiadającego elementu roadmapy na `done`. Ten krok łączy początek: gdy implementacja *rozpoczyna się*, oznacz odpowiadający element jako **`in-progress`**, aby roadmapa pokazywała bieżącą pracę, zamiast przechodzić bezpośrednio z `ready` do `done`.
+`context/foundation/roadmap.md` (generowany przez `/10x-roadmap`) indeksuje każdą Fundację/Fragment za pomocą stabilnego **Change ID**. `/10x-archive` już zamyka pętlę na końcu — gdy zmiana jest archiwizowana, zmienia status odpowiadającego elementu roadmapy na `done`. Ten krok łączy początek: gdy implementacja *rozpoczyna się*, oznacz odpowiadający element jako **`in-progress`**, aby roadmapa pokazywała bieżącą pracę, zamiast przechodzić bezpośrednio z `ready` do `done`.
 
 Uruchom to **raz, przy wejściu** do zmiany (zaraz po stemplu `change.md` → `implementing`) — nie na fazę. Wyszukiwanie jest **obowiązkowe**; "najlepszy wysiłek" dotyczy tylko *edycji* — brakująca roadmapa lub nieznaleziony cel jest pomijany cicho i nigdy nie blokuje, nie monituje, nie cofa ani nie przerywa działania. Nie pomijaj sprawdzenia, zakładając, że nie ma roadmapy.
 
@@ -127,7 +127,7 @@ Uruchom to **raz, przy wejściu** do zmiany (zaraz po stemplu `change.md` → `i
 2. Sprawdź, czy plik jest już brudny: `ROADMAP_PREDIRTY=$(git status --porcelain context/foundation/roadmap.md 2>/dev/null)` — używane w kroku 5 do podjęcia decyzji o przygotowaniu.
 3. Przeczytaj plik. Poszukaj `<change-id>` użytego jako `Change ID`:
    - w tabeli `## At a glance` — wiersz, którego komórka w kolumnie **Change ID** jest dokładnie równa `<change-id>`;
-   - oraz w treści `## Foundations` / `## Slices` — blok `### <ID>: …`, który zawiera linię `- **Change ID:** <change-id>`.
+   - oraz w treściach `## Foundations` / `## Slices` — blok `### <ID>: …`, który zawiera linię `- **Change ID:** <change-id>`.
 
    `<ID>` to lokalny identyfikator tego elementu w roadmapie (`F-NN` lub `S-NN`). Dopasowanie jest tylko dokładnym ciągiem znaków — fragment może generować kilka zmian, więc bliskie dopasowanie jest celowo *nie* dotykane. **Brak dopasowania** → wydrukuj `ℹ context/foundation/roadmap.md has no item with Change ID "<change-id>" — roadmap left untouched.` i pomiń resztę tego kroku.
 4. **Znaleziono dopasowanie** → odczytaj bieżący `- **Status:**` elementu. Jeśli jest już `in-progress` lub `done`, pozostaw go bez zmian (**tylko do przodu**: nigdy nie cofaj bardziej zaawansowanego statusu) i przejdź do kroku 5. W przeciwnym razie zastosuj obie edycje za pomocą narzędzia Edit — każda niezależna i z najlepszym wysiłkiem; jeśli cel nie znajduje się tam, gdzie umieszcza go szablon `/10x-roadmap` (ręcznie edytowany lub roadmapa w starszym formacie), pomiń tę pod-edycję, kontynuuj i zanotuj, co zostało pominięte. Dotknij tylko pola `Status`; pozostaw `Outcome`, `Prerequisites`, `Change ID` itp. bez zmian.
@@ -135,19 +135,19 @@ Uruchom to **raz, przy wejściu** do zmiany (zaraz po stemplu `change.md` → `i
    2. **Treść elementu** — przepisz linię `- **Status:**` elementu na `- **Status:** in-progress`.
 
    Następnie zaktualizuj `updated:` w frontmatterze roadmapy na `<today>` (pozostaw wszystkie inne klucze bez zmian; pomiń to, jeśli plik nie ma frontmattera).
-5. **Włącz zmianę do historii tej zmiany.** Jeśli `git` jest dostępny **i** `ROADMAP_PREDIRTY` (krok 2) był pusty, dodaj `context/foundation/roadmap.md` do zbioru zmienionych plików bieżącej fazy, aby zmiana statusu trafiła do commita fazy, zamiast pozostawać brudna. Jeśli `ROADMAP_PREDIRTY` był niepusty, plik miał już niezatwierdzone edycje: pozostaw zmianę w drzewie roboczym, pozostaw `context/foundation/roadmap.md` POZA zbiorem zmienionych plików i wydrukuj `⚠ context/foundation/roadmap.md had pre-existing uncommitted changes — flipped roadmap item <ID> to in-progress in the working tree but did NOT stage it. Commit it yourself.` Jeśli `git` jest niedostępny, edycja po prostu pozostaje w drzewie roboczym.
+5. **Włącz zmianę statusu do historii tej zmiany.** Jeśli `git` jest dostępny **i** `ROADMAP_PREDIRTY` (krok 2) był pusty, dodaj `context/foundation/roadmap.md` do zbioru zmienionych plików bieżącej fazy, aby zmiana statusu trafiła do commita fazy, zamiast pozostawać brudna. Jeśli `ROADMAP_PREDIRTY` był niepusty, plik miał już niezacommitowane edycje: pozostaw zmianę statusu w drzewie roboczym, pozostaw `context/foundation/roadmap.md` POZA zbiorem zmienionych plików i wydrukuj `⚠ context/foundation/roadmap.md had pre-existing uncommitted changes — flipped roadmap item <ID> to in-progress in the working tree but did NOT stage it. Commit it yourself.` Jeśli `git` jest niedostępny, edycja po prostu pozostaje w drzewie roboczym.
 
 ## Podejście do weryfikacji
 
 Po zaimplementowaniu fazy:
 
-- Uruchom sprawdzenia kryteriów sukcesu (zazwyczaj `make check test` obejmuje wszystko).
-- Napraw wszelkie problemy przed kontynuowaniem.
-- Zaktualizuj swój postęp w zadaniach i w sekcji `## Progress` planu.
-- **Zmieniaj TYLKO sekcję `## Progress`.** Bloki faz (Overview, Changes Required, Success Criteria) są tylko do odczytu. Użyj Edit, aby zmienić `- [ ] N.M <title>` → `- [x] N.M <title>` w Progress, gdy każdy krok zostanie zakończony. NIE edytuj punktorów bloków faz, NIE dodawaj znaczników postępu w komentarzach HTML na dole planu i NIE zapisuj żadnego pliku stanu pomocniczego.
+- Uruchom sprawdzenia kryteriów sukcesu (zazwyczaj `make check test` obejmuje wszystko)
+- Napraw wszelkie problemy przed kontynuowaniem
+- Zaktualizuj swój postęp w zadaniach do wykonania i w sekcji `## Progress` planu
+- **Modyfikuj TYLKO sekcję `## Progress`.** Bloki faz (Overview, Changes Required, Success Criteria) są tylko do odczytu. Użyj Edit, aby zmienić `- [ ] N.M <title>` → `- [x] N.M <title>` w Progress, gdy każdy krok zostanie zakończony. NIE edytuj punktorów bloków faz, NIE dodawaj znaczników postępu w komentarzach HTML na dole planu i NIE zapisuj żadnego pliku stanu pomocniczego.
 - **Uruchom rytuał zatwierdzania na koniec fazy**: Po pomyślnym przejściu wszystkich automatycznych sprawdzeń dla fazy, przejdź przez ten sekwencyjny rytuał, aby utworzyć jeden commit Conventional-Commits i zapisać krótki SHA zamykający z powrotem do każdego wiersza Progress zmienionego podczas fazy.
 
-  1. **Bramka ręcznego potwierdzenia.** Poinformuj człowieka, że automatyczna weryfikacja zakończyła się pomyślnie i wymień elementy ręcznej weryfikacji z planu. Zatrzymaj się tutaj. Nie kontynuuj, dopóki człowiek nie potwierdzi, że ręczne testowanie zakończyło się sukcesem. Użyj tego formatu:
+  1. **Bramka ręcznego potwierdzenia.** Poinformuj człowieka, że automatyczna weryfikacja przeszła i wymień elementy ręcznej weryfikacji z planu. Zatrzymaj się tutaj. Nie kontynuuj, dopóki człowiek nie potwierdzi, że testy ręczne zakończyły się sukcesem. Użyj tego formatu:
 
      ```
      Phase [N] Complete - Ready for Manual Verification
@@ -161,18 +161,18 @@ Po zaimplementowaniu fazy:
      Let me know when manual testing is complete so I can proceed to the commit step.
      ```
 
-     **Ręczne podsumowanie międzyfazowe (tylko ostatnia faza).** Przed wyświetleniem komunikatu bramki, określ, czy bieżąca faza jest fazą końcową: przeskanuj sekcję `## Progress` w poszukiwaniu nagłówków `### Phase M:` i potraktuj bieżącą fazę jako końcową, jeśli w kolejności dokumentu nie istnieje nagłówek z `M > N`. Jeśli bieżąca faza **nie jest** końcowa, komunikat bramki ma dokładnie powyższy format — bez podsumowania. Jeśli bieżąca faza **jest** końcowa, po bloku "Please perform the manual verification steps listed in the plan:", przeskanuj całą sekcję Progress w poszukiwaniu wierszy `- [ ]`, które znajdują się pod podsekcją `#### Manual` w dowolnej fazie **innej niż bieżąca**. Jeśli takie wiersze istnieją, dołącz następujący blok do komunikatu bramki (w kolejności dokumentu, jeden wiersz na linię, sformatowany jako `<phase>.<index> <title>` — usuń wszelkie prefiksy `- [ ]` i wszelkie końcowe sufiksy ` — <sha>`):
+     **Ręczne podsumowanie międzyfazowe (tylko faza końcowa).** Przed wyświetleniem komunikatu bramki, określ, czy bieżąca faza jest fazą końcową: przeskanuj sekcję `## Progress` w poszukiwaniu nagłówków `### Phase M:` i traktuj bieżącą fazę jako końcową, jeśli w kolejności dokumentu nie istnieje nagłówek z `M > N`. Jeśli bieżąca faza **nie** jest końcowa, komunikat bramki ma dokładnie powyższy format — bez podsumowania. Jeśli bieżąca faza **jest** końcowa, po bloku "Please perform the manual verification steps listed in the plan:", przeskanuj całą sekcję Progress w poszukiwaniu wierszy `- [ ]`, które znajdują się pod podsekcją `#### Manual` w dowolnej fazie **innej niż bieżąca**. Jeśli takie wiersze istnieją, dołącz następujący blok do komunikatu bramki (w kolejności dokumentu, jeden wiersz na linię, sformatowany jako `<phase>.<index> <title>` — usuń wszelkie prefiksy `- [ ]` i wszelkie końcowe sufiksy ` — <sha>`):
 
      ```
      Pending manual checks from earlier phases:
      - [phase.index title]
      ```
 
-     Jeśli nie ma oczekujących ręcznych wierszy z wcześniejszych faz, pomiń blok podsumowania całkowicie. Bramka nadal czeka na potwierdzenie przez człowieka; jest to informacja, a nie twarda blokada. Fazy pośrednie (każda faza, która nie jest końcową) zachowują oryginalny format bramki bez podsumowania.
+     Jeśli nie ma oczekujących wierszy ręcznych z wcześniejszych faz, pomiń blok podsumowania całkowicie. Bramka nadal czeka na potwierdzenie przez człowieka; jest to informacja, a nie twarda blokada. Fazy pośrednie (każda faza, która nie jest fazą końcową) zachowują oryginalny format bramki bez podsumowania.
 
   2. **Oblicz zestaw do przygotowania.** Weź zestaw zmienionych plików utrzymywany podczas fazy (patrz "Śledzenie plików zmienionych podczas fazy" powyżej) i połącz go z `{context/changes/<change-id>/plan.md}`. Plik planu jest zawsze przygotowywany, ponieważ każda faza generuje co najmniej jedną edycję w sekcji `## Progress`.
 
-  3. **Wykryj niezwiązane brudne ścieżki.** Uruchom `git status --porcelain` i przetnij z ścieżkami *poza* zestawem do przygotowania. Jeśli zestaw brudnych, ale nietkniętych plików jest niepusty, przedstaw problematyczne ścieżki i użyj `AskUserQuestion`:
+  3. **Wykryj niezwiązane brudne ścieżki.** Uruchom `git status --porcelain` i przetnij z ścieżkami *poza* zestawem do przygotowania. Jeśli zestaw brudnych, ale niedotkniętych plików jest niepusty, przedstaw problematyczne ścieżki i użyj `AskUserQuestion`:
 
      - question: "<N> unrelated path(s) are dirty. How should I handle them?"
        header: "Dirty paths"
@@ -185,7 +185,7 @@ Po zaimplementowaniu fazy:
          description: "Stop the phase commit. Resolve the dirty paths first, then re-run the ritual."
        multiSelect: false
 
-     Jeśli zestaw brudnych, ale nietkniętych plików jest pusty, pomiń ten krok.
+     Jeśli zestaw brudnych, ale niedotkniętych plików jest pusty, pomiń ten krok.
 
   4. **Przygotuj jawnie według ścieżki.** `git add` każdy plik w wybranym zestawie według nazwy. NIE używaj `git add -A` ani `git add .` — tylko jawne ścieżki.
 
@@ -197,7 +197,7 @@ Po zaimplementowaniu fazy:
 
      Ustaw `SHA=""` i przejdź do kroku 8.
 
-  6. **Zaproponuj wiadomość Conventional-Commits.** Zbuduj linię tematu w formie `<type>(<change-id>): <phase title> (p<N>)`, gdzie `<type>` to jeden z `feat / fix / chore / refactor / docs` wybrany na podstawie charakteru fazy (np. `feat` dla nowego zachowania widocznego dla użytkownika, `chore` dla edycji promptów/dokumentacji, `refactor` dla restrukturyzacji bez zmiany zachowania). Tytuł fazy jest istotną częścią i prowadzi; sufiks `(p<N>)` zawiera indeks fazy. Zbuduj krótką treść, wymieniającą zmienione pliki, plus linię `Refs:` z "Śledzenie odniesień do problemów/zadań dla commitów", jeśli ma zastosowanie. Użyj `AskUserQuestion`:
+  6. **Zaproponuj wiadomość Conventional-Commits.** Zbuduj linię tematu w formie `<type>(<change-id>): <phase title> (p<N>)`, gdzie `<type>` to jeden z `feat / fix / chore / refactor / docs` wybrany z natury fazy (np. `feat` dla nowego zachowania widocznego dla użytkownika, `chore` dla edycji promptów/dokumentacji, `refactor` dla restrukturyzacji bez zmiany zachowania). Tytuł fazy jest znaczącą częścią i prowadzi; sufiks `(p<N>)` zawiera indeks fazy. Zbuduj krótką treść wymieniającą zmienione pliki, plus linię `Refs:` z "Śledzenie odniesień do problemów/zadań dla commitów", jeśli ma zastosowanie. Użyj `AskUserQuestion`:
 
      - question: "Approve commit message?"
        header: "Commit msg"
@@ -210,7 +210,7 @@ Po zaimplementowaniu fazy:
          description: "Replace both subject and body."
        multiSelect: false
 
-  7. **Zatwierdź za pomocą heredoc.** Uruchom `git commit` zgodnie z globalnym protokołem wiadomości commitu:
+  7. **Commit za pomocą heredoc.** Uruchom `git commit` zgodnie z globalnym protokołem wiadomości commitu:
 
      ```bash
      git commit -m "$(cat <<'EOF'
@@ -222,7 +222,7 @@ Po zaimplementowaniu fazy:
      )"
      ```
 
-     Nigdy nie przekazuj `--no-verify`, `--amend` ani flag pomijających podpisywanie. Jeśli hak pre-commit zawiedzie, napraw podstawowy problem i utwórz NOWY commit — oryginalny commit NIE nastąpił, więc poprawianie dotknęłoby commitu poprzedniej fazy.
+     Nigdy nie przekazuj `--no-verify`, `--amend` ani flag omijających podpisywanie. Jeśli hak pre-commit zawiedzie, napraw podstawowy problem i utwórz NOWY commit — oryginalny commit NIE nastąpił, więc poprawianie dotknęłoby commita poprzedniej fazy.
 
   8. **Zapisz krótki SHA.** Uruchom `git rev-parse --short HEAD` i zapisz jako `SHA`. Pomiń ten krok, jeśli `SHA=""` zostało ustawione w kroku 5.
 
@@ -287,22 +287,22 @@ Użyj Edit, aby zmienić dokładnie jedną linię Progress na raz:
 - Znajdź: `- [ ] N.M <title>`
 - Zastąp: `- [x] N.M <title>`
 
-Nie dołączaj sufiksu SHA do edycji poszczególnych kroków — SHA jest zapisywane z powrotem na koniec fazy przez rytuał commitu (patrz "Podejście do weryfikacji" powyżej), a tylko SHA zamykającego commitu trafia do każdego wiersza, który został zmieniony podczas fazy. W trakcie fazy, ukończone wiersze mają `[x]` bez sufiksu SHA; jest to prawidłowy stan pośredni.
+Nie dołączaj sufiksu SHA do edycji na krok — SHA jest zapisywane z powrotem na koniec fazy przez rytuał commitu (patrz "Podejście do weryfikacji" powyżej), a tylko SHA zamykającego commita trafia do każdego wiersza, który został zmieniony podczas fazy. W trakcie fazy, ukończone wiersze mają `[x]` bez sufiksu SHA; jest to prawidłowy stan pośredni.
 
 ### Po każdej fazie
 
 Gdy wszystkie elementy `- [ ]` wewnątrz `### Phase N:` są teraz `- [x]`:
 
-1. Uruchom rytuał zatwierdzania na koniec fazy (patrz "Podejście do weryfikacji" powyżej): ręczne potwierdzenie → przygotowanie → monit o brudną ścieżkę → zatwierdzenie → zapis SHA.
+1. Uruchom rytuał zatwierdzania na koniec fazy (patrz "Podejście do weryfikacji" powyżej): ręczne potwierdzenie → przygotowanie → monit o brudną ścieżkę → commit → zapis SHA.
 2. `change.md.updated` jest aktualizowany jako część kroku 10 rytuału.
 
-Fazy z pustym diffem (tylko weryfikacja ręczna lub fazy no-op) nic nie zatwierdzają i pozostawiają swoje wiersze bez SHA; `/10x-archive` wyświetli je jako ostrzeżenia informacyjne w ramach swojego sprawdzenia braku SHA. Jest to celowe — nie każda faza generuje kod.
+Fazy z pustym diffem (tylko weryfikacja ręczna lub fazy adaptowane bez operacji) nie commitują niczego i pozostawiają swoje wiersze bez SHA; `/10x-archive` wyświetli je jako ostrzeżenia informacyjne w ramach swojego sprawdzenia braku SHA. Jest to celowe — nie każda faza generuje kod.
 
 ### Po wszystkich fazach
 
 Gdy każdy `- [ ]` w całej sekcji `## Progress` jest teraz `- [x]`:
 
-1. **Obronne wyświetlanie oczekujących elementów.** Przeskanuj całą sekcję `## Progress` jeszcze raz w poszukiwaniu wierszy `- [ ]`. W normalnym przebiegu jest to operacja no-op — warunek wyzwalający "Po wszystkich fazach" to już "każdy `- [ ]` jest `- [x]`", więc skanowanie nie powinno nic znaleźć. Istnieje po to, aby wszelkie nieoczekiwane pozostałości były jawne, a nie cicho tracone (np. jeśli częściowe uruchomienie, ręczna edycja lub ścieżka wznowienia ominęła wyzwalacz). Jeśli liczba jest niezerowa, wymień każdy wiersz jako `<phase>.<index> <title>` pogrupowany według podsekcji Automated vs Manual w kolejności dokumentu, a następnie zapytaj za pomocą `AskUserQuestion`:
+1. **Obronne wyświetlanie oczekujących elementów.** Przeskanuj całą sekcję `## Progress` po raz ostatni w poszukiwaniu wierszy `- [ ]`. W normalnym przebiegu jest to operacja bez efektu — warunek wyzwalający "Po wszystkich fazach" to już "każdy `- [ ]` jest `- [x]`", więc wyszukiwanie nie powinno nic znaleźć. Istnieje po to, aby wszelkie nieoczekiwane pozostałości były jawne, a nie cicho utracone (np. jeśli częściowe uruchomienie, ręczna edycja lub ścieżka wznowienia ominęła wyzwalacz). Jeśli liczba jest niezerowa, wymień każdy wiersz jako `<phase>.<index> <title>` pogrupowany według podsekcji Automated vs Manual w kolejności dokumentu, a następnie zapytaj za pomocą `AskUserQuestion`:
 
    - question: "<N> Progress item(s) still pending. How to proceed?"
      header: "Stragglers"
@@ -313,20 +313,20 @@ Gdy każdy `- [ ]` w całej sekcji `## Progress` jest teraz `- [x]`:
        description: "Flip status: implemented and run the epilogue commit anyway. Stragglers will surface as warnings under /10x-archive."
      multiSelect: false
 
-   W przypadku "Pause": ZATRZYMAJ natychmiast. NIE aktualizuj `change.md`, NIE uruchamiaj commitu epilogu. W przypadku "Proceed to epilogue": kontynuuj z krokami 2–4 poniżej. Jeśli liczba wynosi zero, pomiń ten krok i kontynuuj.
+   W przypadku "Pause": ZATRZYMAJ natychmiast. NIE aktualizuj `change.md`, NIE uruchamiaj commita epilogu. W przypadku "Proceed to epilogue": kontynuuj z krokami 2–4 poniżej. Jeśli liczba wynosi zero, pomiń ten krok i kontynuuj.
 
 2. Zaktualizuj `change.md`: ustaw `status: implemented`, `updated: <today>`. (NIE ustawiaj `archived_at` — to należy do `/10x-archive`.)
 3. NIE zapisuj żadnego znacznika postępu w komentarzu HTML na dole planu.
-4. **Uruchom commit epilogu.** Commit ostatniej fazy nie może zawierać własnego SHA (jajko i kura), więc zapis SHA z powrotem do wierszy Progress ostatniej fazy plus zmiana statusu `change.md` pozostają brudne w drzewie roboczym po powrocie rytuału ostatniej fazy. Utwórz jeden commit zamykający, aby je zatwierdzić — w przeciwnym razie twarda blokada `/10x-archive` (niezatwierdzone ścieżki w folderze zmiany) zablokuje. Kroki:
+4. **Uruchom commit epilogu.** Commit ostatniej fazy nie może zawierać własnego SHA (jajko i kura), więc zapis SHA z powrotem do wierszy Progress ostatniej fazy plus zmiana statusu `change.md` pozostają brudne w drzewie roboczym po powrocie rytuału ostatniej fazy. Utwórz jeden commit zamykający, aby je zatwierdzić — w przeciwnym razie twarda blokada `/10x-archive` (niezacommitowane ścieżki w folderze zmiany) zablokuje. Kroki:
    1. Przygotuj dokładnie `context/changes/<change-id>/plan.md` i `context/changes/<change-id>/change.md` (jawne ścieżki, bez `git add -A`).
-   2. Uruchom `git diff --cached --quiet`; jeśli kod wyjścia to 0, pomiń epilog (nic do zatwierdzenia) i zatrzymaj się tutaj.
-   3. Zaproponuj temat `chore(<change-id>): close out plan (epilogue)` z krótką treścią odnotowującą końcowy zapis SHA planu + `change.md` → implemented, plus linię `Refs:` z "Śledzenie odniesień do problemów/zadań dla commitów", jeśli ma zastosowanie. Użyj AskUserQuestion, aby zatwierdzić jako proponowane / edytować temat / całkowicie zastąpić (te same opcje co rytuał fazy).
-   4. Zatwierdź za pomocą heredoc zgodnie z globalnym protokołem (nigdy `--no-verify` / `--amend`).
+   2. Uruchom `git diff --cached --quiet`; jeśli kod wyjścia to 0, pomiń epilog (nic do commitowania) i zatrzymaj się tutaj.
+   3. Zaproponuj temat `chore(<change-id>): close out plan (epilogue)` z krótką treścią odnotowującą końcowy zapis SHA planu + `change.md` → `implemented`, plus linię `Refs:` z "Śledzenie odniesień do problemów/zadań dla commitów", jeśli ma zastosowanie. Użyj AskUserQuestion, aby zatwierdzić jako proponowane / edytować temat / całkowicie zastąpić (te same opcje co rytuał fazy).
+   4. Commit za pomocą heredoc zgodnie z globalnym protokołem (nigdy `--no-verify` / `--amend`).
    5. NIE zapisuj własnego SHA epilogu z powrotem do planu — jego jedynym zadaniem jest czyste zatwierdzenie końcowych edycji.
 
 ### "Gdzie jestem?" — wywnioskowane, nie przechowywane
 
-Przeanalizuj sekcję `## Progress`. Pierwsza linia `- [ ]` to następny krok. Bieżąca faza to nagłówek `### Phase N:` bezpośrednio nad nią. Ukończenie to `count([x]) / count([ ] + [x])`. Bez JSON, bez znaczników, bez pliku pomocniczego — tylko sekcja Progress.
+Przeanalizuj sekcję `## Progress`. Pierwsza linia `- [ ]` to następny krok. Bieżąca faza to nagłówek `### Phase N:` bezpośrednio nad nią. Ukończenie to `count([x]) / count([ ] + [x])`. Brak JSON, brak znaczników, brak pliku pomocniczego — tylko sekcja Progress.
 
 ## Ukończenie planu
 
@@ -362,21 +362,21 @@ Jeśli użytkownik wybierze przegląd → uruchom `/10x-impl-review <change-id>`
 
 Gdy coś nie działa zgodnie z oczekiwaniami:
 
-- Najpierw upewnij się, że przeczytałeś i zrozumiałeś cały odpowiedni kod.
-- Zastanów się, czy baza kodu ewoluowała od czasu napisania planu.
-- Przedstaw jasno niezgodność i poproś o wskazówki.
+- Najpierw upewnij się, że przeczytałeś i zrozumiałeś cały odpowiedni kod
+- Zastanów się, czy baza kodu ewoluowała od czasu napisania planu
+- Przedstaw jasno niezgodność i poproś o wskazówki
 
-Używaj podzadań oszczędnie — głównie do ukierunkowanego debugowania lub eksplorowania nieznanego terenu:
+Używaj podzadań oszczędnie — głównie do ukierunkowanego debugowania lub eksploracji nieznanego terenu:
 
-- **Explore** (`subagent_type: "Explore"`) — Szybkie wyszukiwanie plików, wzorców, podobnego kodu.
-- **general-purpose** (`subagent_type: "general-purpose"`) — Głęboka analiza wymagająca wieloetapowego rozumowania.
+- **Explore** (`subagent_type: "Explore"`) — Szybkie wyszukiwanie plików, wzorców, podobnego kodu
+- **general-purpose** (`subagent_type: "general-purpose"`) — Głęboka analiza wymagająca wieloetapowego rozumowania
 
 ## Wznowienie pracy
 
 Jeśli sekcja `## Progress` planu ma istniejące znaczniki `[x]`:
 
-- Ufaj, że ukończona praca jest wykonana.
-- Kontynuuj od pierwszej linii `- [ ]`.
-- Weryfikuj poprzednią pracę tylko wtedy, gdy coś wydaje się nie tak.
+- Ufaj, że ukończona praca jest wykonana
+- Kontynuuj od pierwszej linii `- [ ]`
+- Weryfikuj poprzednią pracę tylko wtedy, gdy coś wydaje się nie tak
 
 Pamiętaj: Implementujesz rozwiązanie, a nie tylko zaznaczasz pola. Miej na uwadze cel końcowy i utrzymuj postęp.
