@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { APIRoute } from "astro";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CharacterRow } from "@/lib/character-pool-repo";
 import { CHARACTER_POOL, MAX_TEAM_SIZE, evaluateTeam, type RuleViolation, type TeamComposition } from "@/lib/domain";
@@ -53,7 +53,8 @@ function strict<T extends object>(label: string, shape: T): T {
 
 interface QueryResult<T> {
   data: T;
-  error: null;
+  /** Awaria zapytania. Repo rozróżnia ją od „zero wierszy" — zero wierszy nie jest awarią. */
+  error: { message: string } | null;
 }
 
 /** `from("characters").select(...).order(...).order(...)` + `await` (`character-pool-repo.ts`). */
@@ -101,6 +102,21 @@ interface FakeSupabase {
   /** Klient w kształcie, w jakim widzą go moduły `src/lib/`; prawdziwy nie powstaje nigdy. */
   client: SupabaseClient;
   writes: WriteLogEntry[];
+  /**
+   * Ile razy trasa sięgnęła po tabelę `teams`. Zero dowodzi odcięcia **przed** zapytaniem —
+   * `updateTeam` odrzuca nie-UUID przez `isTeamId`, zamiast wysyłać go do Postgresa (`22P02`).
+   */
+  teamsQueries: () => number;
+}
+
+interface FakeOptions {
+  /** Zapytanie o pulę kończy się błędem, więc `getCharacterPool` rzuca. */
+  poolFails?: boolean;
+  /**
+   * Wiersz oddany przez `update … returning`. `null` to **stan**, nie awaria: nieznane id albo
+   * cudzy wiersz odcięty przez RLS — nierozróżnialnie (US-04).
+   */
+  updatedTeam?: TeamRow | null;
 }
 
 /**
@@ -126,9 +142,16 @@ function poolRows(): CharacterRow[] {
 /** Nagłówek, który baza oddaje po udanym zapisie — `id` jest UUID-em, bo trafia do adresu. */
 const SAVED_TEAM: TeamRow = { id: "3f2b8c14-9d6e-4a70-b1c5-8e2d47a90b3f", name: "0x7f3a91" };
 
-function fakeSupabase(): FakeSupabase {
+function fakeSupabase(options: FakeOptions = {}): FakeSupabase {
   const writes: WriteLogEntry[] = [];
-  const poolResult = Promise.resolve<QueryResult<readonly CharacterRow[]>>({ data: poolRows(), error: null });
+  const updatedTeam = options.updatedTeam === undefined ? SAVED_TEAM : options.updatedTeam;
+  let teamsQueries = 0;
+
+  const poolResult = Promise.resolve<QueryResult<readonly CharacterRow[]>>(
+    options.poolFails === true
+      ? { data: [], error: { message: "connection reset" } }
+      : { data: poolRows(), error: null },
+  );
 
   const pool: PoolQuery = strict("characters query", {
     select: () => pool,
@@ -153,7 +176,7 @@ function fakeSupabase(): FakeSupabase {
           strict("teams update eq", {
             select: (): UpdateSelected =>
               strict("teams update select", {
-                maybeSingle: () => Promise.resolve<QueryResult<TeamRow | null>>({ data: SAVED_TEAM, error: null }),
+                maybeSingle: () => Promise.resolve<QueryResult<TeamRow | null>>({ data: updatedTeam, error: null }),
               }),
           }),
       });
@@ -163,31 +186,56 @@ function fakeSupabase(): FakeSupabase {
   const client = {
     from: (table: string): PoolQuery | TeamsTable => {
       if (table === "characters") return pool;
-      if (table === "teams") return teams;
+      if (table === "teams") {
+        teamsQueries += 1;
+        return teams;
+      }
       throw new Error(`Fake Supabase client: unexpected table "${table}"`);
     },
   };
 
-  return { client: client as unknown as SupabaseClient, writes };
+  return { client: client as unknown as SupabaseClient, writes, teamsQueries: () => teamsQueries };
 }
 
 const USER_ID = "9a1c4e70-52bd-4f18-8c33-7d0e6b2f5a41";
 
+const ROUTE_URL = "https://team-maker.test/api/teams";
+
 /** Prawdziwy `Request` z ciałem form-urlencoded, żeby `formData()` w trasie był prawdziwy. */
 function saveRequest(composition: string): Request {
-  return new Request("https://team-maker.test/api/teams", {
+  return new Request(ROUTE_URL, {
     method: "POST",
     body: new URLSearchParams({ [COMPOSITION_FIELD]: composition }),
   });
 }
 
+/** Formularz bez pola składu — `formData().get(COMPOSITION_FIELD)` oddaje `null`, nie tekst. */
+function requestWithoutCompositionField(): Request {
+  return new Request(ROUTE_URL, { method: "POST", body: new URLSearchParams() });
+}
+
+/** Ciało, na którym `formData()` **rzuca** `TypeError` — spreparowane żądanie spoza formularza. */
+function jsonBodyRequest(): Request {
+  return new Request(ROUTE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ [COMPOSITION_FIELD]: [] }),
+  });
+}
+
+interface ContextOptions {
+  request: Request;
+  params: { id?: string };
+  user: { id: string } | null;
+}
+
 /** Atrapa `APIContext` — sonda potwierdziła, że handler nie sięga po nic ponadto. */
-function routeContext(request: Request, params: { id?: string } = {}): Parameters<APIRoute>[0] {
+function routeContext(options: ContextOptions): Parameters<APIRoute>[0] {
   const context = {
-    locals: { user: { id: USER_ID } },
-    request,
+    locals: { user: options.user },
+    request: options.request,
     cookies: {},
-    params,
+    params: options.params,
     redirect: (path: string) => new Response(null, { status: 302, headers: { Location: path } }),
   };
 
@@ -346,23 +394,83 @@ const VIOLATION_CASES: readonly ViolationCase[] = [
 interface RouteRun {
   response: Response;
   writes: WriteLogEntry[];
+  teamsQueries: number;
 }
 
-async function post(route: SaveRoute, payload: string): Promise<RouteRun> {
-  const supabase = fakeSupabase();
-  createClientMock.mockReturnValue(supabase.client);
+interface RunOptions {
+  request?: Request;
+  params?: { id?: string };
+  /** `null` → brak sesji; trasa ma odesłać na logowanie, nie tworzyć klienta. */
+  user?: { id: string } | null;
+  fake?: FakeOptions;
+  /** `true` → `createClient` oddaje `null`, czyli brak konfiguracji Supabase. */
+  unconfigured?: boolean;
+}
+
+async function run(route: SaveRoute, options: RunOptions = {}): Promise<RouteRun> {
+  const supabase = fakeSupabase(options.fake);
+  createClientMock.mockReturnValue(options.unconfigured === true ? null : supabase.client);
 
   const { POST } = await route.load();
-  const response = await POST(routeContext(saveRequest(payload), route.params));
+  const response = await POST(
+    routeContext({
+      request: options.request ?? saveRequest("[]"),
+      params: options.params ?? route.params,
+      user: options.user === undefined ? { id: USER_ID } : options.user,
+    }),
+  );
 
-  return { response, writes: supabase.writes };
+  return { response, writes: supabase.writes, teamsQueries: supabase.teamsQueries() };
+}
+
+function post(route: SaveRoute, payload: string): Promise<RouteRun> {
+  return run(route, { request: saveRequest(payload) });
 }
 
 function rejectionLocation(route: SaveRoute, message: string): string {
   return `${route.rejectPrefix}${encodeURIComponent(message)}`;
 }
 
+/**
+ * Teksty odmowy, których `src/pages/` **nie eksportuje**: `SAVE_FAILED_MESSAGE` jest prywatną
+ * stałą `[id].ts`, a pozostałe dwa są literałami w ciele obu tras. Zakres tej zmiany zabrania
+ * edycji `src/pages/`, więc test trzyma je jako **świadomą drugą kopię literału** — nazwaną tu
+ * wprost, żeby przegląd implementacji nie zgłosił jej jako dryfu. Wyniesienie ich do
+ * `@/lib/team-submission` jest kandydatem na osobną zmianę.
+ */
+const UNEXPORTED_MESSAGES = {
+  supabaseMisconfigured: "Supabase is not configured",
+  poolUnavailable: "Character pool is unavailable",
+  saveFailed: "Could not save the team",
+} as const;
+
 /* ------------------------------------------------------------------ testy */
+
+/**
+ * **Siedem kroków sekwencji trasy** i miejsce, w którym każdy jest związany — to jest lista do
+ * przeglądu, nie wzorzec do grepowania (nazwy kroków żyją w prozie tytułów):
+ *
+ * 1. sesja        → „krok 1 (sesja): …"
+ * 2. klient       → „krok 2 (klient): …"
+ * 3. `formData()` → „krok 3 (formData): …"
+ * 4. pole składu  → „krok 4 (pole): …"
+ * 5. pula postaci → „krok 5 (pula): …"
+ * 6. bramka       → opisy „ryzyko #1 — próg kompetencji" i „ryzyko #6 — limity składu"
+ * 7. repo         → „krok 7 (repo): …" (trasa edycji) oraz przypadek pozytywny obu tras,
+ *                    który wiąże kształt wiersza idącego do bazy
+ */
+
+beforeEach(() => {
+  createClientMock.mockReset();
+  // Obie trasy logują w gałęziach awaryjnych; log jest ich jedyną diagnostyką w Workerze,
+  // więc go nie usuwamy — tylko wyciszamy, żeby `npm test` pozostał czytelny.
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
+  vi.spyOn(console, "warn").mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("kardynalność tabel i założenia fixtur", () => {
   it("obie trasy zapisu są w tabeli", () => {
@@ -392,10 +500,6 @@ describe("kardynalność tabel i założenia fixtur", () => {
 });
 
 describe.each(SAVE_ROUTES.map((route) => [route.label, route] as const))("%s — bariera zapisu", (_label, route) => {
-  beforeEach(() => {
-    createClientMock.mockReset();
-  });
-
   describe("ryzyko #1 — próg kompetencji", () => {
     it("pusty skład nie zostawia zapisu", async () => {
       const { response, writes } = await post(route, "[]");
@@ -450,5 +554,121 @@ describe.each(SAVE_ROUTES.map((route) => [route.label, route] as const))("%s —
       expect(await response.text()).toBe("");
       expect(response.headers.get("Content-Type") ?? "").not.toContain("json");
     });
+  });
+
+  describe("glue sekwencji — gałęzie chroniące Worker przed 500", () => {
+    it("krok 1 (sesja): brak sesji odsyła na logowanie i nie tworzy klienta", async () => {
+      const { response, writes } = await run(route, { user: null });
+
+      expect(createClientMock).not.toHaveBeenCalled();
+      expect(writes).toEqual([]);
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe("/auth/signin");
+    });
+
+    it("krok 2 (klient): brak konfiguracji Supabase odmawia zamiast rzucać", async () => {
+      const { response, writes } = await run(route, { unconfigured: true });
+
+      expect(writes).toEqual([]);
+      expect(response.headers.get("Location")).toBe(
+        rejectionLocation(route, UNEXPORTED_MESSAGES.supabaseMisconfigured),
+      );
+    });
+
+    it("krok 3 (formData): ciało application/json nie wychodzi z handlera jako 500", async () => {
+      const { response, writes } = await run(route, { request: jsonBodyRequest() });
+
+      expect(writes).toEqual([]);
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(rejectionLocation(route, INVALID_PAYLOAD_MESSAGE));
+    });
+
+    it("krok 4 (pole): formularz bez pola składu odmawia tak samo jak ciało nie-JSON", async () => {
+      const { response, writes } = await run(route, { request: requestWithoutCompositionField() });
+
+      expect(writes).toEqual([]);
+      expect(response.headers.get("Location")).toBe(rejectionLocation(route, INVALID_PAYLOAD_MESSAGE));
+    });
+
+    it("krok 5 (pula): awaria odczytu puli odmawia i nie zostawia zapisu", async () => {
+      const { response, writes } = await run(route, {
+        request: saveRequest(JSON.stringify(SOLUTION)),
+        fake: { poolFails: true },
+      });
+
+      expect(writes).toEqual([]);
+      expect(response.headers.get("Location")).toBe(rejectionLocation(route, UNEXPORTED_MESSAGES.poolUnavailable));
+    });
+  });
+});
+
+/* ---------------------------------------- trasa edycji: identyfikator i repo */
+
+const EDIT_ROUTE = SAVE_ROUTES[1];
+
+/** Dwa **poprawne** UUID-y, oba dające `null` z repo: własny wiersz, którego nie ma, i cudzy. */
+const MISSING_OWN_TEAM_ID = "1c9d2f80-4a6b-4e13-9f52-0b7a6c3d8e41";
+const OTHER_ACCOUNT_TEAM_ID = "7b40e6a2-13cf-4d95-8a07-25e1f9c4b6d3";
+
+/** Sam komponent `?error=…` adresu odesłania — bez części ze ścieżką, która zawiera `id`. */
+function errorQuery(location: string): string {
+  return location.slice(location.indexOf("?error="));
+}
+
+describe("POST /api/teams/[id] — kodowanie identyfikatora", () => {
+  it("params.id z nową linią nie trafia surowo do nagłówka Location", async () => {
+    const { response } = await run(EDIT_ROUTE, { params: { id: "\n" } });
+    const location = response.headers.get("Location") ?? "";
+
+    // Sam fakt, że doszliśmy tutaj, jest asercją: surowa nowa linia w `Location` wywraca
+    // `new Response`, a nieprzechwycony throw w Workerze to 500.
+    expect(response.status).toBe(302);
+    expect(location).not.toContain("\n");
+    expect(location.startsWith("/teams/%0A?error=")).toBe(true);
+  });
+
+  it("dla poprawnego UUID kodowanie jest identycznością", async () => {
+    const { response } = await run(EDIT_ROUTE, { params: { id: SAVED_TEAM.id } });
+
+    expect(response.headers.get("Location")).toBe(
+      `/teams/${SAVED_TEAM.id}?error=${encodeURIComponent(BELOW_THRESHOLD_MESSAGE)}`,
+    );
+  });
+});
+
+describe("POST /api/teams/[id] — krok 7 (repo): brak wiersza do aktualizacji", () => {
+  it("własny nieistniejący wiersz i cudzy odcięty przez RLS odmawiają znakowo tak samo", async () => {
+    const payload = saveRequest(JSON.stringify(SOLUTION));
+
+    const missing = await run(EDIT_ROUTE, {
+      request: payload,
+      params: { id: MISSING_OWN_TEAM_ID },
+      fake: { updatedTeam: null },
+    });
+    const foreign = await run(EDIT_ROUTE, {
+      request: saveRequest(JSON.stringify(SOLUTION)),
+      params: { id: OTHER_ACCOUNT_TEAM_ID },
+      fake: { updatedTeam: null },
+    });
+
+    const expected = `?error=${encodeURIComponent(UNEXPORTED_MESSAGES.saveFailed)}`;
+
+    expect(errorQuery(missing.response.headers.get("Location") ?? "")).toBe(expected);
+    expect(errorQuery(foreign.response.headers.get("Location") ?? "")).toBe(expected);
+  });
+
+  it("nie-UUID jest odcięty przed zapytaniem: ten sam komunikat, zero zapytań o teams", async () => {
+    const { response, writes, teamsQueries } = await run(EDIT_ROUTE, {
+      request: saveRequest(JSON.stringify(SOLUTION)),
+      params: { id: "abc" },
+      fake: { updatedTeam: null },
+    });
+
+    expect(teamsQueries).toBe(0);
+    expect(writes).toEqual([]);
+    expect(response.status).toBe(302);
+    expect(errorQuery(response.headers.get("Location") ?? "")).toBe(
+      `?error=${encodeURIComponent(UNEXPORTED_MESSAGES.saveFailed)}`,
+    );
   });
 });

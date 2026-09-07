@@ -644,36 +644,36 @@ npm ani CI.
 
 #### Automatyczne
 
-- [x] 2.1 `npm test` zielone; tabela wiąże kardynalność asercją (`VIOLATION_CASES` = 6, `SAVE_ROUTES` = 2)
-- [x] 2.2 Dwie eksportowane stałe komunikatów importowane, zero literału progu
-- [x] 2.3 Wyrocznia nie pochodzi ze `scores`
-- [x] 2.4 `npm run lint` przechodzi
-- [x] 2.5 `npx astro check` przechodzi
+- [x] 2.1 `npm test` zielone; tabela wiąże kardynalność asercją (`VIOLATION_CASES` = 6, `SAVE_ROUTES` = 2) — 06352f2
+- [x] 2.2 Dwie eksportowane stałe komunikatów importowane, zero literału progu — 06352f2
+- [x] 2.3 Wyrocznia nie pochodzi ze `scores` — 06352f2
+- [x] 2.4 `npm run lint` przechodzi — 06352f2
+- [x] 2.5 `npx astro check` przechodzi — 06352f2
 
 #### Ręczne
 
-- [x] 2.6 Sonda kończy się `0`, lista padających testów dłuższa niż po Fazie 1
-- [x] 2.7 Mutacja na `[id].ts` daje niezależną czerwień
-- [x] 2.8 Przegląd pod kątem lustra implementacji — każda wartość wskazywalna w PRD
-- [x] 2.9 Sześć rodzajów naruszeń ma własny przypadek na obu trasach — przegląd listy testów
+- [x] 2.6 Sonda kończy się `0`, lista padających testów dłuższa niż po Fazie 1 — 06352f2
+- [x] 2.7 Mutacja na `[id].ts` daje niezależną czerwień — 06352f2
+- [x] 2.8 Przegląd pod kątem lustra implementacji — każda wartość wskazywalna w PRD — 06352f2
+- [x] 2.9 Sześć rodzajów naruszeń ma własny przypadek na obu trasach — przegląd listy testów — 06352f2
 
 ### Faza 3: Glue trasy — siedem kroków domkniętych
 
 #### Automatyczne
 
-- [ ] 3.1 `npm test` zielone
-- [ ] 3.2 Nazwa pola pochodzi ze stałej `COMPOSITION_FIELD`
-- [ ] 3.3 Gałąź braku sesji pod testem, wzorzec toleruje końcowy ukośnik
-- [ ] 3.4 `npm run lint` przechodzi
-- [ ] 3.5 `npx astro check` przechodzi
-- [ ] 3.6 `npm run build` przechodzi
+- [x] 3.1 `npm test` zielone
+- [x] 3.2 Nazwa pola pochodzi ze stałej `COMPOSITION_FIELD`
+- [x] 3.3 Gałąź braku sesji pod testem, wzorzec toleruje końcowy ukośnik
+- [x] 3.4 `npm run lint` przechodzi
+- [x] 3.5 `npx astro check` przechodzi
+- [x] 3.6 `npm run build` przechodzi
 
 #### Ręczne
 
-- [ ] 3.7 Sonda kończy się `0`
-- [ ] 3.8 Mutacja „usuń `try/catch` wokół `formData()`" daje czerwień
-- [ ] 3.9 Mutacja „zdejmij `encodeURIComponent`" daje czerwień
-- [ ] 3.10 Każdy z siedmiu kroków sekwencji ma nazwany przypadek — przegląd listy testów
+- [x] 3.7 Sonda kończy się `0`
+- [x] 3.8 Mutacja „usuń `try/catch` wokół `formData()`" daje czerwień
+- [x] 3.9 Mutacja „zdejmij `encodeURIComponent`" daje czerwień
+- [x] 3.10 Każdy z siedmiu kroków sekwencji ma nazwany przypadek — przegląd listy testów
 
 ### Faza 4: Książka kucharska i domknięcie bramek
 
