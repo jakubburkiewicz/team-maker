@@ -1,0 +1,67 @@
+---
+import { isActiveNavItem, NAV_ITEMS } from "@/lib/nav";
+import { cn } from "@/lib/utils";
+
+// Pasek powłoki: tożsamość zalogowanego gracza po lewej, nawigacja i wylogowanie po prawej
+// (punkty 1 i 2 zgłoszenia). Przejmuje rolę, którą do tej pory pełnił `Topbar.astro` — z tą
+// różnicą, że tamten wisiał na jednej stronie, a ten na każdej stronie w powłoce.
+//
+// Bez propsów, celowo: dane bierze z `Astro.locals.user` (ustawiane przez `src/middleware.ts:13`
+// przy **każdym** żądaniu) i z `Astro.url.pathname`. Prop byłby cichym przełącznikiem — nowa
+// strona zapomniałaby go podać i po prostu nie miałaby nagłówka, czego nie łapie ani lint,
+// ani typy (`context/foundation/lessons.md`).
+//
+// Adresy pozycji przychodzą z `@/lib/nav`, nie z markupu: reguła aktywnej pozycji jest tam objęta
+// testem, bo nic pod testem nie może wciągać `astro:*` (AGENTS.md → Hard rules).
+const { user } = Astro.locals;
+const { pathname } = Astro.url;
+
+// Wyróżnienie składane przez `cn()`, nie przez sklejanie łańcuchów (AGENTS.md → Conventions).
+// Astro ma na to formę natywną (`class:list`) i `eslint.config.js:67` włącza
+// `astro/prefer-class-list-directive` w tę stronę — ale to **warn**, a `AGENTS.md` mówi `cn()`
+// wprost. Decyzja, nie przeoczenie.
+function navLinkClass(active: boolean): string {
+  return cn(
+    "transition-colors hover:text-purple-100 hover:underline",
+    active ? "text-purple-100 underline underline-offset-4" : "text-purple-300",
+  );
+}
+---
+
+{
+  /*
+    Gałąź `!user` jest obroną w głąb i jest nieosiągalna: każda strona w powłoce jest chroniona
+    przez `src/middleware.ts`, a `/auth/*` do powłoki nie wchodzi. Nagłówek **nie** odtwarza
+    gałęzi „Not signed in" z usuniętego `Topbar.astro` — nie ma ekranu, na którym mogłaby się
+    pokazać.
+  */
+}
+{
+  user && (
+    <header class="p-4 pb-0">
+      <div class="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+        <span class="text-blue-100/70">{user.email}</span>
+        <nav class="flex items-center gap-3">
+          {NAV_ITEMS.map((item) => {
+            const active = isActiveNavItem(item, pathname);
+
+            return (
+              <a href={item.href} aria-current={active ? "page" : undefined} class={navLinkClass(active)}>
+                {item.label}
+              </a>
+            );
+          })}
+          {/*
+            `Sign out` jest formularzem POST, nie linkiem — dlatego nie jest pozycją `NAV_ITEMS`
+            i nie może nigdy być „aktywny". Kształt i trasa dokładnie jak w `Topbar.astro:19-23`.
+          */}
+          <form method="POST" action="/api/auth/signout">
+            <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+              Sign out
+            </button>
+          </form>
+        </nav>
+      </div>
+    </header>
+  )
+}

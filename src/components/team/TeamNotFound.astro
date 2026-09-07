@@ -1,8 +1,8 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AppLayout from "@/layouts/AppLayout.astro";
 
 // Wspólna odpowiedź obu tras dynamicznych na `notFound` (US-04, FR-004). Komponent renderuje
-// **własny** `Layout`, więc strona wywołująca podaje samo `<TeamNotFound />` i nie ma czym rozjechać
+// **własną** powłokę, więc strona wywołująca podaje samo `<TeamNotFound />` i nie ma czym rozjechać
 // ani tytułu zakładki, ani treści. To jest sedno: różnica między odpowiedziami `/teams/[id]`
 // a `/teams/[id]/embark` na to samo cudze id ujawniałaby, że trasy wiedzą o wierszu różne rzeczy —
 // awaria cicha i jednocześnie wyciek. Stąd też brak propsów: każdy prop byłby miejscem rozjazdu.
@@ -12,6 +12,12 @@ import Layout from "@/layouts/Layout.astro";
 // Repo zwraca dla wszystkich trzech `null` nierozróżnialnie (`src/lib/team-repo.ts:11-14`) — ekran
 // nie ma prawa być bardziej rozmowny niż warstwa pod nim.
 //
+// Wyjście z tej ślepej uliczki daje **nagłówek powłoki**, nie link w karcie: nawigacja ma w `src/`
+// jedno źródło (`src/lib/nav.ts`), a każdy link powrotny obok karty byłby drugim.
+//
+// `min-h-screen` i `bg-cosmic` należą do powłoki, nie tutaj — zdublowane dałyby wysokość
+// `nagłówek + 100vh`, czyli martwy pasek przewijania pod kartą.
+//
 // Status 404 zostaje na stronie wywołującej (`Astro.response.status`), bo komponent nie ma dostępu
 // do jej odpowiedzi — i tak ma być: top-level `return` we frontmatterze wywraca `npm run lint`
 // (lekcja z S-03).
@@ -20,16 +26,13 @@ import Layout from "@/layouts/Layout.astro";
 // awarii zapytania, której atakujący nie potrafi wywołać. Brak wiersza nie jest usterką systemu.
 ---
 
-<Layout title="Team not found">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+<AppLayout title="Team not found">
+  <div class="flex flex-1 items-center justify-center p-4">
     <div
       class="w-full max-w-sm rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl"
     >
       <h1 class="text-xl font-semibold text-blue-100">Team not found</h1>
       <p class="mt-2 text-sm text-blue-100/70">This team does not exist, or it is not yours.</p>
-      <div class="mt-6 flex flex-col gap-2 text-sm">
-        <a href="/" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline"> Your teams </a>
-      </div>
     </div>
   </div>
-</Layout>
+</AppLayout>

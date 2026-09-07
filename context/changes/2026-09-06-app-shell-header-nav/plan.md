@@ -526,36 +526,36 @@ Zakładki zapisane pod `/dashboard` i `/teams` przestają działać — to skute
 
 #### Automatyczne
 
-- [x] 1.1 Wymaganie wstępne `2026-09-06-teams-list-as-home` wdrożone (bramka)
-- [x] 1.2 Testy przechodzą: `npm test`
-- [x] 1.3 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`)
-- [x] 1.4 Moduł nie zna usuwanych tras `/dashboard` i `/teams`
-- [x] 1.5 Linting przechodzi: `npm run lint`
-- [x] 1.6 Build przechodzi: `npm run build`
+- [x] 1.1 Wymaganie wstępne `2026-09-06-teams-list-as-home` wdrożone (bramka) — b5c64fa
+- [x] 1.2 Testy przechodzą: `npm test` — b5c64fa
+- [x] 1.3 Moduł jest czysty (brak importów `astro:*` i `@/lib/supabase`) — b5c64fa
+- [x] 1.4 Moduł nie zna usuwanych tras `/dashboard` i `/teams` — b5c64fa
+- [x] 1.5 Linting przechodzi: `npm run lint` — b5c64fa
+- [x] 1.6 Build przechodzi: `npm run build` — b5c64fa
 
 ### Faza 2: Powłoka i pierwszy konsument
 
 #### Automatyczne
 
-- [ ] 2.1 `src/components/Topbar.astro` nie istnieje
-- [ ] 2.2 Nikt nie importuje `components/Topbar`
-- [ ] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav`
-- [ ] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu
-- [ ] 2.5 `TeamNotFound.astro` importuje `AppLayout`
-- [ ] 2.6 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams`
-- [ ] 2.7 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07)
-- [ ] 2.8 Testy przechodzą: `npm test`
-- [ ] 2.9 Linting przechodzi: `npm run lint`
-- [ ] 2.10 Build przechodzi: `npm run build`
+- [x] 2.1 `src/components/Topbar.astro` nie istnieje
+- [x] 2.2 Nikt nie importuje `components/Topbar`
+- [x] 2.3 `AppHeader.astro` importuje moduł `@/lib/nav`
+- [x] 2.4 `AppHeader.astro` nie ma literalnych `href` pozycji menu
+- [x] 2.5 `TeamNotFound.astro` importuje `AppLayout`
+- [x] 2.6 `TeamNotFound.astro` nie ma już linków do `/dashboard` ani `/teams`
+- [x] 2.7 `TeamNotFound.astro` nadal nie przyjmuje propsów (niezmiennik S-07)
+- [x] 2.8 Testy przechodzą: `npm test`
+- [x] 2.9 Linting przechodzi: `npm run lint`
+- [x] 2.10 Build przechodzi: `npm run build`
 
 #### Ręczne
 
-- [ ] 2.11 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu
-- [ ] 2.12 Karta 404 wyśrodkowana i widoczna bez przewijania; brak paska przewijania; brak szwu tła
-- [ ] 2.13 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`)
-- [ ] 2.14 `Sign out` z nagłówka wylogowuje i kończy przekierowaniem `/` → `/auth/signin`
-- [ ] 2.15 Na ekranie 404 żadna pozycja menu nie jest wyróżniona
-- [ ] 2.16 Odpowiedź dla nieistniejącego id to nadal 404
+- [x] 2.11 Ekran 404 pokazuje nagłówek z e-mailem i trzema elementami menu
+- [x] 2.12 Karta 404 wyśrodkowana i widoczna bez przewijania; brak paska przewijania; brak szwu tła
+- [x] 2.13 Wyjście z ekranu 404 działa wyłącznie przez nagłówek (`Your teams` → `/`, `New team` → `/teams/new`)
+- [x] 2.14 `Sign out` z nagłówka wylogowuje i kończy przekierowaniem `/` → `/auth/signin`
+- [x] 2.15 Na ekranie 404 żadna pozycja menu nie jest wyróżniona
+- [x] 2.16 Odpowiedź dla nieistniejącego id to nadal 404
 
 ### Faza 3: Migracja stron domenowych
 
