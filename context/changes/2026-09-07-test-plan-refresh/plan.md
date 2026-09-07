@@ -660,19 +660,19 @@ Nie dotyczy — jeden plik dokumentacji, brak danych, brak schematu, brak konsum
 
 #### Automatyczne
 
-- [x] 4.1 Zero trafień na pełny zestaw obalonych fraz w całym pliku
-- [x] 4.2 Dokładnie jedna linia z `62a6f68`; trzy punkty ledgera datowane `2026-09-07`
-- [x] 4.3 §8 ma linię o ostatnim refreshu z commitem `62a6f68`
-- [x] 4.4 Liczba nagłówków `## ` = 8
-- [x] 4.5 `git diff` nie pokazuje żadnej linii między `## 7.` a `## 8.`
-- [x] 4.6 `git diff` nie pokazuje żadnej linii między `## 1.` a `## 2.`
-- [x] 4.7 `change.md` ma `status: planned` (zaadaptowane — kryterium opisywało wyjście z etapu planowania i `planned` obowiązywał przed wejściem w implementację; cykl życia `/10x-implement` zastępuje je przez `implementing` → `implemented`)
-- [x] 4.8 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego dyff wobec 17d7aa3 daje 12 hunków wyłącznie w zamierzonych komórkach, a §1 i §7 są bit-w-bit)
-- [x] 4.9 `git status --short` pokazuje wyłącznie test-plan.md i pliki folderu zmiany
+- [x] 4.1 Zero trafień na pełny zestaw obalonych fraz w całym pliku — 114a196
+- [x] 4.2 Dokładnie jedna linia z `62a6f68`; trzy punkty ledgera datowane `2026-09-07` — 114a196
+- [x] 4.3 §8 ma linię o ostatnim refreshu z commitem `62a6f68` — 114a196
+- [x] 4.4 Liczba nagłówków `## ` = 8 — 114a196
+- [x] 4.5 `git diff` nie pokazuje żadnej linii między `## 7.` a `## 8.` — 114a196
+- [x] 4.6 `git diff` nie pokazuje żadnej linii między `## 1.` a `## 2.` — 114a196
+- [x] 4.7 `change.md` ma `status: planned` (zaadaptowane — kryterium opisywało wyjście z etapu planowania i `planned` obowiązywał przed wejściem w implementację; cykl życia `/10x-implement` zastępuje je przez `implementing` → `implemented`) — 114a196
+- [x] 4.8 `npx prettier --check` przechodzi (N/A — jak 1.4; zamiast tego dyff wobec 17d7aa3 daje 12 hunków wyłącznie w zamierzonych komórkach, a §1 i §7 są bit-w-bit) — 114a196
+- [x] 4.9 `git status --short` pokazuje wyłącznie test-plan.md i pliki folderu zmiany — 114a196
 
 #### Ręczne
 
-- [x] 4.10 Przebieg czytelniczy §2 → §3 → §4 → §5 → §6 bez sprzeczności
-- [x] 4.11 Sześć ryzyk §2 to te same sześć, w tej samej kolejności, z tymi samymi ocenami
-- [x] 4.12 `/10x-plan` Fazy 1 może ruszyć — cztery komórki aktualne
-- [x] 4.13 Archiwum nietknięte, a przewodnik nie powtarza jego fałszywej tezy
+- [x] 4.10 Przebieg czytelniczy §2 → §3 → §4 → §5 → §6 bez sprzeczności — 114a196
+- [x] 4.11 Sześć ryzyk §2 to te same sześć, w tej samej kolejności, z tymi samymi ocenami — 114a196
+- [x] 4.12 `/10x-plan` Fazy 1 może ruszyć — cztery komórki aktualne — 114a196
+- [x] 4.13 Archiwum nietknięte, a przewodnik nie powtarza jego fałszywej tezy — 114a196
