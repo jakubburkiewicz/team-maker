@@ -32,11 +32,11 @@ Przykłady:
   /10x-new oauth-login add Google sign-in so users skip the email-password step
   /10x-new @context/changes/oauth-login/
 
-Pierwszy token staje się change-id. Wszystko, co po nim następuje, to swobodna intencja — używana do napisania bogatszego tytułu i wyboru sugestii następnego kroku. Akceptowane są odwołania w stylu ścieżki (z wiodącym znakiem `@` lub bez niego); ostatni segment ścieżki jest używany jako change-id.
+Pierwszy token staje się change-id. Wszystko, co po nim następuje, to swobodny zamiar — używany do napisania bogatszego tytułu i wybrania sugestii następnego kroku. Akceptowane są odwołania w stylu ścieżki (z wiodącym znakiem `@` lub bez); ostatni segment ścieżki jest używany jako change-id.
 
 Change-id musi być:
 - w kebab-case (małe litery, cyfry, myślniki; bez wiodącego/końcowego myślnika, bez podwójnych myślników)
-- unikalne w `context/changes/` i `context/archive/`
+- unikalny w `context/changes/` i `context/archive/`
 ```
 
    Następnie **poczekaj**, aż użytkownik poda argument.
@@ -50,15 +50,15 @@ Podziel surowy ciąg argumentów na pierwszym ciągu białych znaków:
   2. Usuń końcowy `/`, jeśli występuje.
   3. Jeśli wynik zawiera `/`, weź ostatni niepusty segment ścieżki (`context/changes/feature-x` → `feature-x`).
   4. Wynikiem jest `<change-id>`.
-- **Wszystko po pierwszym tokenie** = swobodna intencja. Może być pusta. Może to być zdanie lub akapit. **Nie** traktuj tego jako dosłownego tytułu do wstawienia w całości.
+- **Wszystko po pierwszym tokenie** = swobodny zamiar. Może być pusty. Może to być zdanie lub akapit. **Nie** traktuj tego jako dosłownego tytułu do wstawienia w całości.
 
 Przykłady:
 
-| Surowe dane wejściowe | `<change-id>` | Intencja |
-|-----------|---------------|--------|
-| `feature-x` | `feature-x` | (puste) |
+| Surowe dane wejściowe | `<change-id>` | Zamiar |
+|---|---|---|
+| `feature-x` | `feature-x` | (pusty) |
 | `oauth-login add Google sign-in for faster onboarding` | `oauth-login` | `add Google sign-in for faster onboarding` |
-| `@context/changes/oauth-login/` | `oauth-login` | (puste) |
+| `@context/changes/oauth-login/` | `oauth-login` | (pusty) |
 | `@context/changes/oauth-login/ revisit the token-refresh edge case` | `oauth-login` | `revisit the token-refresh edge case` |
 | `My Feature add OAuth` | `My Feature` (nie przejdzie kontroli kebab-case) | `add OAuth` |
 
@@ -78,12 +78,12 @@ Przed utworzeniem czegokolwiek:
 
 1. Utwórz katalog `context/changes/<change-id>/`.
 2. Wyprowadź `<title>`:
-   - Jeśli ciąg intencji jest pusty, zhumanizuj change-id: zastąp myślniki spacjami i napisz pierwszą literę wielką (np. `multi-course-access` → `Multi course access`).
-   - Jeśli ciąg intencji nie jest pusty, napisz zwięzły, czytelny dla człowieka tytuł (≤ 80 znaków, wielkość liter zdania, bez kropki na końcu), który oddaje istotę zmiany. Intencja jest *wskazówką*, a nie dosłownością — możesz ją przeformułować. Nie wrzucaj akapitu do tytułu.
+   - Jeśli ciąg zamiaru jest pusty, humanizuj change-id: zastąp myślniki spacjami i napisz pierwszą literę wielką (np. `multi-course-access` → `Multi course access`).
+   - Jeśli ciąg zamiaru nie jest pusty, napisz zwięzły, czytelny dla człowieka tytuł (≤ 80 znaków, wielkość liter w zdaniu, bez kropki na końcu), który oddaje istotę zmiany. Zamiar jest *wskazówką*, a nie dosłownym tekstem — możesz go przeformułować. Nie wrzucaj całego akapitu do tytułu.
 3. Wyprowadź treść `## Notes`:
-   - Jeśli ciąg intencji jest pusty, wyemituj komentarz z podpowiedzią: `<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->`
-   - Jeśli ciąg intencji nie jest pusty, wstaw go dosłownie jako treść Notatek — słowa użytkownika są zalążkiem. W takim przypadku nie emituj również komentarza z podpowiedzią (użytkownik pokazał, że wie, do czego służą Notatki).
-4. Zapisz `context/changes/<change-id>/change.md` w dokładnie takim kształcie (miejsce `<notes-body>` to to, co wyprodukował krok 3):
+   - Jeśli ciąg zamiaru jest pusty, wyemituj komentarz z podpowiedzią: `<!-- Free-form notes for this change: links, ad-hoc context, decisions that don't belong in research/frame/plan. -->`
+   - Jeśli ciąg zamiaru nie jest pusty, wstaw go dosłownie jako treść Notatek — słowa użytkownika są zalążkiem. W takim przypadku nie emituj również komentarza z podpowiedzią (użytkownik pokazał, że wie, do czego służą Notatki).
+4. Zapisz `context/changes/<change-id>/change.md` w dokładnie takim kształcie (slot `<notes-body>` to to, co wyprodukował krok 3):
 
 ```markdown
 ---
@@ -108,7 +108,7 @@ Zobacz `reference/change-md.md` dla pełnego odniesienia do schematu (dozwolone 
 
 Po pomyślnym utworzeniu, wydrukuj monit o następny krok i skopiuj sugerowane polecenie do schowka.
 
-Domyślny następny krok to `/10x-plan <change-id>` — większość zmian przechodzi bezpośrednio do planowania. Pozostałe dwie umiejętności są sytuacyjne: `/10x-research`, gdy przeanalizowana intencja (lub otaczająca tura) sugeruje, że zmiana wymaga znaczącej eksploracji bazy kodu, zanim będzie można napisać plan, oraz `/10x-frame`, gdy intencja sygnalizuje, że ramy są podejrzane — albo w kształcie błędu („napraw”, „błąd”, „zepsuty”, „dlaczego jest”, „przyczyna źródłowa”, „regresja”, „samodzielnie zdiagnozowane rozwiązanie”), albo w kształcie zakresu/projektu („czy w ogóle powinniśmy”, „czy to jest właściwe”, „co właściwie jest zepsute”, „przemyśl”, „zakwestionuj założenie”). Wybierz opcję sytuacyjną tylko wtedy, gdy sygnał jest wyraźny; w przeciwnym razie domyślnie użyj `/10x-plan`.
+Domyślny następny krok to `/10x-plan <change-id>` — większość zmian przechodzi bezpośrednio do planowania. Pozostałe dwie umiejętności są sytuacyjne: `/10x-research`, gdy przeanalizowany zamiar (lub otaczająca tura) sugeruje, że zmiana wymaga znaczącej eksploracji bazy kodu, zanim będzie można napisać plan, oraz `/10x-frame`, gdy zamiar sygnalizuje, że ramy są podejrzane — albo w kształcie błędu („napraw”, „błąd”, „zepsuty”, „dlaczego jest”, „przyczyna źródłowa”, „regresja”, „samodiagnozowane rozwiązanie”), albo w kształcie zakresu/projektu („czy w ogóle powinniśmy”, „czy to jest właściwe”, „co jest faktycznie zepsute”, „przemyśl”, „zakwestionuj założenie”). Wybierz opcję sytuacyjną tylko wtedy, gdy sygnał jest wyraźny; w przeciwnym razie domyślnie użyj `/10x-plan`.
 
 ```bash
 NEXT_CMD="/10x-plan <change-id>"   # default; see above for when to switch to /10x-research or /10x-frame
@@ -130,7 +130,7 @@ Następny krok:
 
 Inne opcje:
   /10x-research <change-id>   — najpierw zbadaj bazę kodu (gdy planowanie wymaga ugruntowania)
-  /10x-frame <change-id>      — najpierw zakwestionuj ramy (gdy objaw i proponowana poprawka są podane jako jedno, lub gdy nie jest jasne, jaki jest właściwy zakres do zaplanowania)
+  /10x-frame <change-id>      — najpierw zakwestionuj ramy (gdy objaw i proponowana poprawka są podane jako jedno, lub gdy niejasny jest właściwy zakres do zaplanowania)
 ```
 
 Jeśli żadne narzędzie do schowka nie jest dostępne (`pbcopy`, `clip.exe`, `xclip`, `Set-Clipboard`), pomiń adnotację `(✓ skopiowano do schowka)`, ale nadal wydrukuj sugestię.

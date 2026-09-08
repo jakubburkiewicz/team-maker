@@ -14,16 +14,16 @@ allowed-tools:
 
 Przenieś ukończony folder zmiany z `context/changes/<change-id>/` do `context/archive/<created-date>-<change-id>/`, oznacz `change.md` statusem `status: archived` + `archived_at`, użyj `git mv`, aby zachować historię plików, i — jeśli `context/foundation/roadmap.md` zawiera element roadmapy, którego `Change ID` jest równe `<change-id>` — zamknij również ten element: zmień jego `Status` na `done` i dodaj wpis do sekcji `## Done` roadmapy.
 
-Brama jest **pobłażliwa, tylko ostrzegawcza** — `/10x-archive` blokuje tylko w przypadku niezacommitowanych zmian w folderze zmiany. Wszystko inne (niekompletny postęp, brak impl-review, status nie w `{implemented, impl_reviewed}`) jest wyświetlane jako ostrzeżenie, po którym następuje monit potwierdzenia; użytkownik nadal może archiwizować.
+Brama jest **pobłażliwa, tylko ostrzegawcza** — `/10x-archive` blokuje tylko niezatwierdzone zmiany w folderze zmiany. Wszystko inne (niekompletny Progress, brak impl-review, status nie w `{implemented, impl_reviewed}`) jest wyświetlane jako ostrzeżenie, po którym następuje monit potwierdzenia; użytkownik nadal może archiwizować.
 
-Po archiwizacji, każda inna umiejętność 10x odmawia zapisu w `context/archive/<...>/` (każda chroniona umiejętność sprawdza rozwiązany prefiks ścieżki i przerywa działanie ze stałym komunikatem). Zarchiwizowane foldery są domyślnie tylko do odczytu.
+Po archiwizacji, każda inna umiejętność 10x odmawia zapisu w `context/archive/<...>/` (każda chroniona umiejętność sprawdza rozwiązany prefiks ścieżki i przerywa z ustalonym komunikatem). Zarchiwizowane foldery są domyślnie tylko do odczytu.
 
 ## Początkowa odpowiedź
 
-Po wywołaniu tej komendy:
+Po wywołaniu tego polecenia:
 
 1. **Sprawdź, czy podano jakiś argument**:
-   - Jeśli podano argument, przeanalizuj go (patrz „Analiza argumentów” poniżej) i przejdź do „Rozwiązania”.
+   - Jeśli podano argument, przeanalizuj go (patrz "Analiza argumentów" poniżej) i przejdź do "Rozwiązanie".
    - Jeśli NIE podano argumentu, odpowiedz następującym komunikatem i **ZATRZYMAJ**:
 
 ```
@@ -57,11 +57,11 @@ Wynikiem jest `<change-id>`.
    - Jeśli `status: archived`, wydrukuj: `error: change "<change-id>" is already archived in change.md but its folder is still under context/changes/. Inspect manually before re-running.` i ZATRZYMAJ.
    - Jeśli `created` brakuje lub nie jest w formacie `YYYY-MM-DD`, wydrukuj: `error: change.md.created is missing or malformed; cannot derive archive folder name.` i ZATRZYMAJ.
 
-## Twarda odmowa: niezacommitowane zmiany
+## Twarda odmowa: niezatwierdzone zmiany
 
 Dwa wstępne sprawdzenia. Każde niepowodzenie blokuje archiwizację.
 
-**1. Niezacommitowane edycje w folderze zmiany.** Uruchom:
+**1. Niezatwierdzone edycje w folderze zmiany.** Uruchom:
 
 ```bash
 git status --porcelain "context/changes/<change-id>/"
@@ -70,14 +70,14 @@ git status --porcelain "context/changes/<change-id>/"
 Jeśli wynik nie jest pusty, **zablokuj** i wydrukuj:
 
 ```
-✗ Nie można zarchiwizować: context/changes/<change-id>/ ma niezacommitowane zmiany.
+✗ Nie można zarchiwizować: context/changes/<change-id>/ ma niezatwierdzone zmiany.
 
   <jedna linia na każdą problematyczną ścieżkę z git status --porcelain>
 
-Najpierw je zacommituj lub schowaj, a następnie uruchom ponownie /10x-archive.
+Najpierw zatwierdź lub schowaj je, a następnie uruchom ponownie /10x-archive.
 ```
 
-**2. Istniejące już zmiany w stagingu w dowolnym miejscu.** Krok commitowania archiwum (patrz „Przenieś i oznacz” poniżej) łączy wszystko, co jest w stagingu w momencie commitowania. Jeśli użytkownik ma niezwiązane zmiany w stagingu z wcześniejszej pracy, trafiłyby one cicho do commita `chore(archive): close ...`. Uruchom:
+**2. Istniejące już zmiany w stagingu gdziekolwiek.** Krok zatwierdzania archiwum (patrz "Przenieś i oznacz" poniżej) łączy wszystko, co jest w stagingu w momencie zatwierdzania. Jeśli użytkownik ma niepowiązane zmiany w stagingu z wcześniejszej pracy, trafiłyby one cicho do commita `chore(archive): close ...`. Uruchom:
 
 ```bash
 git diff --cached --quiet
@@ -90,12 +90,12 @@ Jeśli kod wyjścia jest różny od zera, **zablokuj** i wydrukuj:
 
   <wynik `git diff --cached --name-only`>
 
-Najpierw je zacommituj lub `git reset`, aby usunąć ze stagingu, a następnie uruchom ponownie /10x-archive.
+Najpierw je zatwierdź lub `git reset`, aby wycofać ze stagingu, a następnie uruchom ponownie /10x-archive.
 ```
 
 Każde niepowodzenie → ZATRZYMAJ. Nie przechodź do monitu ostrzegawczego; są to twarde blokady.
 
-Jeśli `git` nie jest dostępny lub repozytorium nie jest repozytorium git, wydrukuj: `warning: not a git repository — skipping uncommitted-changes block.` i kontynuuj. (Archiwizacja nadal działa bez git; tracimy tylko zachowanie historii za pomocą `git mv` i pomijamy krok commitowania archiwum.)
+Jeśli `git` nie jest dostępny lub repozytorium nie jest repozytorium git, wydrukuj: `warning: not a git repository — skipping uncommitted-changes block.` i kontynuuj. (Archiwizacja nadal działa bez git; tracimy tylko zachowanie historii za pomocą `git mv` i pomijamy krok zatwierdzania archiwum.)
 
 ## Miękkie ostrzeżenia (nieblokujące)
 
@@ -104,11 +104,11 @@ Zbierz następujące ostrzeżenia, a następnie przedstaw je wszystkie naraz z j
 1. **Sprawdzenie statusu**: odczytaj `change.md.status`. Jeśli NIE jest w `{implemented, impl_reviewed}`, dodaj do kolejki: `Status to "<status>"; oczekiwano "implemented" lub "impl_reviewed".`
 2. **Sprawdzenie oczekującego postępu**: przeanalizuj sekcję `## Progress` pliku `context/changes/<change-id>/plan.md` (jeśli `plan.md` istnieje). Dla każdego bloku `### Phase N:`, zidentyfikuj jego podsekcje `#### Automated` i `#### Manual` i policz wiersze `- [ ]` pod każdą z nich oddzielnie. Niech `<X>` = całkowita liczba oczekujących automatycznych we wszystkich fazach, `<Y>` = całkowita liczba oczekujących ręcznych we wszystkich fazach, `<N>` = `<X> + <Y>`.
 
-   - **Jeśli plan używa podsekcji Auto/Manual** (dowolny blok `### Phase N:` zawiera nagłówek `#### Automated` lub `#### Manual`) i `<N> > 0`, dodaj do kolejki: `<N> elementów postępu nadal oczekuje (<X> automatycznych, <Y> ręcznych): <lista tokenów "N.M <tytuł>" oddzielonych przecinkami, obcięta do 5 z "…" jeśli dłuższa>.` Uporządkuj połączoną listę tokenów najpierw według elementów automatycznych (w kolejności dokumentu), a następnie według elementów ręcznych (w kolejności dokumentu); limit obcięcia do 5 dotyczy połączonej listy.
-   - **Starsze rozwiązanie awaryjne**: jeśli żaden blok `### Phase N:` w Progress nie zawiera nagłówka `#### Automated` ani `#### Manual`, wróć do oryginalnego zachowania — policz linie `- [ ]` pod podnagłówkami `### Phase`; jeśli jakieś pozostaną, dodaj do kolejki: `<N> elementów postępu nadal oczekuje: <lista tokenów "N.M <tytuł>" oddzielonych przecinkami, obcięta do 5 z "…" jeśli dłuższa>.` (bez rozbicia w nawiasach). Zachowuje to zerową zmianę zachowania dla planów utworzonych przed workflow-v2.
+   - **Jeśli plan używa podsekcji Auto/Manual** (dowolny blok `### Phase N:` zawiera nagłówek `#### Automated` lub `#### Manual`) i `<N> > 0`, dodaj do kolejki: `<N> elementów postępu nadal oczekuje (<X> automatycznych, <Y> ręcznych): <lista tokenów "N.M <tytuł>" oddzielonych przecinkami, obcięta do 5 z "…" jeśli dłuższa>.` Uporządkuj połączoną listę tokenów najpierw według elementów automatycznych (w kolejności dokumentu), a następnie według elementów ręcznych (w kolejności dokumentu); limit obcięcia 5 dotyczy połączonej listy.
+   - **Starsze rozwiązanie awaryjne**: jeśli żaden blok `### Phase N:` w Progress nie zawiera nagłówka `#### Automated` ani `#### Manual`, wróć do oryginalnego zachowania — policz linie `- [ ]` pod podnagłówkami `### Phase`; jeśli jakieś pozostały, dodaj do kolejki: `<N> elementów postępu nadal oczekuje: <lista tokenów "N.M <tytuł>" oddzielonych przecinkami, obcięta do 5 z "…" jeśli dłuższa>.` (bez rozbicia w nawiasach). Zachowuje to zerową zmianę zachowania dla planów utworzonych przed workflow-v2.
    - Jeśli brakuje `plan.md`, dodaj do kolejki: `Nie znaleziono plan.md w folderze zmiany.` i pomiń liczenie postępu.
-3. **Sprawdzenie brakującego impl-review**: glob `context/changes/<change-id>/reviews/impl-review*.md`. Jeśli żaden nie pasuje, dodaj do kolejki: `Nie znaleziono impl-review w reviews/impl-review*.md.`
-4. **Sprawdzenie brakującego SHA**: przeanalizuj sekcję `## Progress` pliku `plan.md` (jeśli istnieje). Policz wiersze `- [x]`, których linia NIE kończy się na ` — <sha>`, gdzie `<sha>` to 7+ znaków szesnastkowych (tj. wyrażenie regularne ` — [0-9a-f]{7,}$` nie pasuje). Jeśli liczba jest różna od zera, dodaj do kolejki: `<N> wierszy postępu bez sufiksu SHA: <tokeny "N.M <tytuł>" oddzielone przecinkami, obcięte do 5 z "…" jeśli dłuższe>.` Wiersze bez SHA są uzasadnione dla faz z pustym diffem i dla planów, które zostały ukończone przed wprowadzeniem kontraktu SHA — jest to miękki sygnał, a nie wada. Pomiń cicho, jeśli brakuje `plan.md` (sprawdzenie oczekującego postępu już objęło ten przypadek).
+3. **Sprawdzenie braku impl-review**: glob `context/changes/<change-id>/reviews/impl-review*.md`. Jeśli żaden nie pasuje, dodaj do kolejki: `Nie znaleziono impl-review w reviews/impl-review*.md.`
+4. **Sprawdzenie braku SHA**: przeanalizuj sekcję `## Progress` pliku `plan.md` (jeśli istnieje). Policz wiersze `- [x]`, których linia NIE kończy się na ` — <sha>`, gdzie `<sha>` to 7+ znaków szesnastkowych (tj. wyrażenie regularne ` — [0-9a-f]{7,}$` nie pasuje). Jeśli liczba jest różna od zera, dodaj do kolejki: `<N> wierszy Progress bez sufiksu SHA: <tokeny "N.M <tytuł>" oddzielone przecinkami, obcięte do 5 z "…" jeśli dłuższe>.` Wiersze bez SHA są uzasadnione dla faz z pustym diffem i dla planów, które zostały ukończone przed wprowadzeniem kontraktu SHA — jest to miękki sygnał, a nie wada. Pomiń cicho, jeśli brakuje `plan.md` (sprawdzenie oczekującego postępu już objęło ten przypadek).
 
 Jeśli co najmniej jedno ostrzeżenie zostało dodane do kolejki, wydrukuj:
 
@@ -120,7 +120,7 @@ Jeśli co najmniej jedno ostrzeżenie zostało dodane do kolejki, wydrukuj:
   - <ostrzeżenie 3>
 ```
 
-Następnie użyj `AskUserQuestion`. **Tylko ręczne zachęcanie**: jeśli powyższe sprawdzenie oczekującego postępu dodało do kolejki ostrzeżenie, którego rozbicie było dokładnie `0 automatycznych, <Y> ręcznych` z `<Y> ≥ 1`, dodaj ` (Zalecane)` do etykiety `Kontynuuj archiwizację`, aby monit wyraźnie zachęcał do archiwizacji — ręczne sprawdzenia są często celowo odkładane, a archiwizacja jest oczekiwaną ścieżką. We wszystkich innych przypadkach (mieszane oczekujące, tylko automatyczne, ostrzeżenie o starszym rozwiązaniu awaryjnym lub brak ostrzeżenia o postępie), przedstaw etykiety dosłownie.
+Następnie użyj `AskUserQuestion`. **Tylko ręczne zachęcenie**: jeśli powyższe sprawdzenie oczekującego postępu dodało do kolejki ostrzeżenie, którego rozbicie było dokładnie `0 automatycznych, <Y> ręcznych` z `<Y> ≥ 1`, dodaj ` (Zalecane)` do etykiety `Kontynuuj archiwizację`, aby monit wyraźnie zachęcał do archiwizacji — ręczne sprawdzenia są często celowo odkładane, a archiwizacja jest oczekiwaną ścieżką. We wszystkich innych przypadkach (mieszane oczekujące, tylko automatyczne, ostrzeżenie o starszym rozwiązaniu awaryjnym lub brak ostrzeżenia o postępie), przedstaw etykiety dosłownie.
 
 - pytanie: `Zarchiwizować "<change-id>" mimo wszystko?`
   nagłówek: `Archiwizuj`
@@ -133,9 +133,9 @@ Następnie użyj `AskUserQuestion`. **Tylko ręczne zachęcanie**: jeśli powyż
     opis: `Nie archiwizuj. Wyjdź czysto bez dalszych działań.`
   multiSelect: false
 
-- **Kontynuuj archiwizację** → przejdź do „Przenieś i oznacz” poniżej.
+- **Kontynuuj archiwizację** → przejdź do "Przenieś i oznacz" poniżej.
 - **Wznów implementację** → wydrukuj `→ /10x-implement <change-id>` i skopiuj to do schowka za pomocą `pbcopy 2>/dev/null || clip.exe 2>/dev/null || xclip -selection clipboard 2>/dev/null || true` (lub `Set-Clipboard` w PowerShell) (najlepszy wysiłek, wieloplatformowy). ZATRZYMAJ.
-- **Anuluj** → wydrukuj `Anulowano. Folder niezmieniony.` i ZATRZYMAJ.
+- **Anuluj** → wydrukuj `Anulowano. Folder bez zmian.` i ZATRZYMAJ.
 
 Jeśli nie dodano żadnych ostrzeżeń do kolejki, pomiń monit i przejdź bezpośrednio.
 
@@ -157,9 +157,9 @@ Jeśli nie dodano żadnych ostrzeżeń do kolejki, pomiń monit i przejdź bezpo
    - Jeśli `git mv` zawiedzie (nie jest to repozytorium git, lub git odmawia z jakiegoś powodu), wróć do `mkdir -p context/archive`, a następnie `mv "context/changes/<change-id>" "$DEST"`. Wydrukuj ostrzeżenie, jeśli użyto rozwiązania awaryjnego.
    - Potwierdź po przeniesieniu: `[ -d "$DEST" ] && [ ! -d "context/changes/<change-id>" ]`. Jeśli którekolwiek sprawdzenie zawiedzie, wydrukuj diagnostykę i ZATRZYMAJ.
 
-4. **Przygotuj znacznik do zmiany nazwy.** Edycja w kroku 2 zmodyfikowała `change.md` w drzewie roboczym, ale `git mv` tylko przygotowuje zmianę nazwy z zawartością pliku HEAD. Uruchom `git add "$DEST/change.md"`, aby znacznik frontmatter trafił do tego samego commita co zmiana nazwy.
+4. **Przygotuj znacznik do zmiany nazwy.** Edycja w kroku 2 zmodyfikowała `change.md` w drzewie roboczym, ale `git mv` tylko przygotowuje zmianę nazwy z zawartością HEAD pliku. Uruchom `git add "$DEST/change.md"`, aby znacznik frontmatter trafił do tego samego commita co zmiana nazwy.
 
-5. **Zamknij pasujący element roadmapy.** Uruchom to przy **każdej** archiwizacji — wyszukiwanie roadmapy jest obowiązkowe. „Najlepszy wysiłek” obejmuje tylko *edycje*: brakująca roadmapa lub nieznaleziony cel edycji jest cicho pomijany i nigdy nie blokuje, nie wycofuje ani nie monituje archiwizacji. NIE oznacza to „założenia, że nie ma roadmapy i pominięcia sprawdzenia”. Nie szukanie jest wadą — potwierdzenie (krok 7) musi zgłosić wynik tak czy inaczej.
+5. **Zamknij pasujący element roadmapy.** Uruchom to przy **każdej** archiwizacji — wyszukiwanie roadmapy jest obowiązkowe. "Najlepszy wysiłek" obejmuje tylko *edycje*: brakująca roadmapa lub nieznaleziony cel edycji jest pomijany cicho i nigdy nie blokuje, nie wycofuje ani nie monituje archiwizacji. NIE oznacza to "założenia, że nie ma roadmapy i pominięcia sprawdzenia". Niepatrzenie jest wadą — potwierdzenie (krok 7) musi zgłosić wynik tak czy inaczej.
 
    1. `test -f context/foundation/roadmap.md`. Jeśli brak, pomiń ten krok cicho.
    2. Zapisz, czy plik jest już brudny: `ROADMAP_PREDIRTY=$(git status --porcelain context/foundation/roadmap.md 2>/dev/null)`. (Używane w podkroku 7 do podjęcia decyzji, czy przygotować go do commita archiwum.)
@@ -178,12 +178,12 @@ Jeśli nie dodano żadnych ostrzeżeń do kolejki, pomiń monit i przejdź bezpo
          - **<ID>: <Outcome>** — Zarchiwizowane <dzisiaj> → `context/archive/<CREATED>-<change-id>/`. Lekcja: —.
          ```
 
-         `<dzisiaj>` to `date -u +%F` (`RRRR-MM-DD`); `<CREATED>` to wartość obliczona w kroku 1 „Oblicz miejsce docelowe archiwum”. Jeśli roadmapa nie ma nagłówka `## Done`, dodaj nagłówek i ten punkt na końcu pliku.
+         `<dzisiaj>` to `date -u +%F` (`RRRR-MM-DD`); `<CREATED>` to wartość obliczona w kroku 1 "Oblicz miejsce docelowe archiwum". Jeśli roadmapa nie ma nagłówka `## Done`, dodaj nagłówek i ten punkt na końcu pliku.
    6. Zaktualizuj frontmatter roadmapy: ustaw `updated: <dzisiaj jako RRRR-MM-DD>`. Pozostaw wszystkie inne klucze (`created`, `version`, `status`, `prd_version`, `main_goal`, `top_blocker`, …) bez zmian. Jeśli plik nie ma frontmatter YAML, pomiń ten podkrok.
-   7. **Przygotuj go do commita archiwum** — tylko jeśli `git` jest dostępny **i** `ROADMAP_PREDIRTY` (podkrok 2) był pusty. Następnie uruchom `git add context/foundation/roadmap.md`, aby zamknięcie roadmapy trafiło do tego samego commita co zmiana nazwy + znacznik. Jeśli `ROADMAP_PREDIRTY` nie był pusty, plik miał już niezacommitowane edycje; pozostaw zamknięcie roadmapy w drzewie roboczym i wydrukuj `⚠ context/foundation/roadmap.md miał istniejące niezacommitowane zmiany — zamknięto element roadmapy <ID> w drzewie roboczym, ale NIE przygotowano go. Zacommituj go samodzielnie.` Jeśli `git` jest niedostępny, edycja pozostaje w drzewie roboczym (wstępne sprawdzenie już ostrzegło).
+   7. **Przygotuj to do commita archiwum** — tylko jeśli `git` jest dostępny **i** `ROADMAP_PREDIRTY` (podkrok 2) był pusty. Następnie uruchom `git add context/foundation/roadmap.md`, aby zamknięcie roadmapy trafiło do tego samego commita co zmiana nazwy + znacznik. Jeśli `ROADMAP_PREDIRTY` nie był pusty, plik miał już niezatwierdzone edycje; pozostaw zamknięcie roadmapy w drzewie roboczym i wydrukuj `⚠ context/foundation/roadmap.md miał istniejące niezatwierdzone zmiany — zamknięto element roadmapy <ID> w drzewie roboczym, ale NIE przygotowano go. Zatwierdź go samodzielnie.` Jeśli `git` jest niedostępny, edycja pozostaje w drzewie roboczym (wstępne sprawdzenie już ostrzegło).
    8. Zapamiętaj `<ID>` i `<Outcome>` dla danych wyjściowych potwierdzenia.
 
-6. **Zacommituj archiwum.** Utwórz jeden commit:
+6. **Zatwierdź archiwum.** Utwórz jeden commit:
 
    ```bash
    git commit -m "$(cat <<'EOF'
@@ -207,24 +207,24 @@ change.md zaktualizowano:
   archived_at:  <data i czas ISO>
   updated:      <dzisiaj>
 
-roadmap.md:     zamknięto <ID> "<Outcome>"  →  Status: done, wpis dodano do ## Done    ← jeśli pasowało; w przeciwnym razie wydrukuj: brak elementu z Change ID "<change-id>" — sprawdzono, pozostawiono bez zmian. Zawsze drukuj jedno z dwóch; to dowodzi, że wyszukiwanie zostało wykonane.
+roadmap.md:     zamknięto <ID> "<Outcome>"  →  Status: done, wpis dodany do ## Done    ← jeśli dopasowano; w przeciwnym razie wydrukuj: brak elementu z Change ID "<change-id>" — sprawdzono, pozostawiono bez zmian. Zawsze drukuj jedno z dwóch; to dowodzi, że wyszukiwanie zostało wykonane.
 
-Zacommitowano jako: <krótki SHA> chore(archive): close <change-id>
+Zatwierdzono jako: <krótki SHA> chore(archive): close <change-id>
 
 Folder jest teraz domyślnie tylko do odczytu. Aby rozpocząć nową zmianę: /10x-new <new-id>
 ```
 
 ## Obsługa błędów
 
-- Każdy nieoczekiwany błąd systemu plików podczas przenoszenia pozostawia folder źródłowy na miejscu — przygotowane edycje `change.md` trafiają przed przeniesieniem, więc w przypadku częściowego niepowodzenia użytkownik widzi `status: archived` w `context/changes/<change-id>/change.md`, ale folder nadal znajduje się w `context/changes/`. `/10x-status` zgłosi to jako ostrzeżenie `status drift: archived in wrong folder`. Ponowne uruchomienie `/10x-archive` jest bezpieczne: sprawdzenie rozwiązania na początku wykryje `status: archived` i poprosi użytkownika o ręczne sprawdzenie.
+- Każdy nieoczekiwany błąd systemu plików podczas przenoszenia pozostawia folder źródłowy na miejscu — przygotowane edycje `change.md` trafiają przed przeniesieniem, więc w przypadku częściowej awarii użytkownik widzi `status: archived` w `context/changes/<change-id>/change.md`, ale folder nadal znajduje się w `context/changes/`. `/10x-status` zgłosi to jako ostrzeżenie `status drift: archived in wrong folder`. Ponowne uruchomienie `/10x-archive` jest bezpieczne: sprawdzenie rozwiązania na początku wykryje `status: archived` i poprosi użytkownika o ręczne sprawdzenie.
 - NIE próbuj wycofywać — edycje change.md oznaczają intencję, a częściowy stan można odzyskać ręcznie.
-- Krok zamykania roadmapy (krok 5 „Przenieś i oznacz”) jest izolowany: każde niepowodzenie jest wyłapywane, odnotowywane w danych wyjściowych potwierdzenia i pomijane. Nigdy nie przerywa archiwizacji i nigdy nie wywołuje wycofania. Częściowo zastosowana edycja roadmapy jest możliwa do odzyskania ręcznie.
+- Krok zamykania roadmapy ("Przenieś i oznacz", krok 5) jest izolowany: każda awaria tam jest przechwytywana, odnotowywana w danych wyjściowych potwierdzenia i pomijana. Nigdy nie przerywa archiwizacji i nigdy nie wywołuje wycofania. Częściowo zastosowana edycja roadmapy jest możliwa do odzyskania ręcznie.
 
 ## Czego ta umiejętność NIE robi
 
 - Nie dodaje SHA do elementów Progress — `/10x-implement` jest jedynym autorem sufiksu SHA na końcu fazy. Brama archiwum wymusza obecność SHA jako sygnał tylko ostrzegawczy (patrz sprawdzenie miękkiego ostrzeżenia 4); nigdy nie przepisuje wiersza bez SHA.
 - Nie uruchamia `pnpm test` / `pnpm build` / `pnpm ci:local` jako bramy — brama jest z założenia pobłażliwa, tylko ostrzegawcza.
-- Nie wykonuje pusha. Commit archiwum ląduje lokalnie; `git push` to decyzja użytkownika.
+- Nie wypycha. Commit archiwum trafia lokalnie; `git push` to decyzja użytkownika.
 - Nie przepisuje roadmapy poza zamknięciem jednego dopasowanego elementu. Gdy `context/foundation/roadmap.md` ma element, którego `Change ID` jest równe zarchiwizowanemu `<change-id>`, ta umiejętność zmienia tylko `Status` tego elementu (komórka tabeli + linia treści `### <ID>:`), dodaje jeden punkt `## Done` i aktualizuje datę `updated:`. Nigdy nie zmienia kolejności fragmentów, nie przelicza grafu zależności, nie edytuje innych elementów ani nie tworzy roadmapy, która nie istnieje. Brak dopasowania (lub brak pliku roadmapy) → roadmapa pozostaje bez zmian.
 - Nie zapisuje do `context/archive/<...>/` po przeniesieniu; zarchiwizowane foldery są domyślnie tylko do odczytu. Inne umiejętności 10x (`/10x-research`, `/10x-frame`, `/10x-plan`, `/10x-plan-review`, `/10x-implement`, `/10x-impl-review`, `/10x-tdd`, `/10x-goal-implement`) odmawiają, gdy rozwiązana ścieżka zaczyna się od `context/archive/`.
 - Nie przywraca z archiwum. Aby ponownie odwiedzić zarchiwizowaną zmianę, otwórz nową zmianę za pomocą `/10x-new` i odwołaj się do zarchiwizowanego folderu w celu uzyskania kontekstu.

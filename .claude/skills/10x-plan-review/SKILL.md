@@ -30,7 +30,7 @@ Jeśli rozwiązana ścieżka planu zaczyna się od `context/archive/`, odmów za
 
 ## Krok 1: Ładowanie i skanowanie spójności wewnętrznej
 
-W pełni odczytaj plik planu. Odczytaj również siostrzany plik `plan-brief.md` w tym samym folderze zmiany, jeśli istnieje. Odczytaj `context/foundation/lessons.md`, jeśli jest obecny, i użyj zaakceptowanych reguł jako priorytetów podczas skanowania pod kątem problemów merytorycznych / wykonalności / naruszenia umowy — ustalenie, które powtarza znaną, powtarzającą się regułę, powinno mieć większą, a nie mniejszą wagę. Wyodrębnij:
+W pełni odczytaj plik planu. Odczytaj również siostrzany plik `plan-brief.md` w tym samym folderze zmian, jeśli istnieje. Odczytaj `context/foundation/lessons.md`, jeśli jest obecny, i użyj zaakceptowanych reguł jako priorytetów podczas skanowania pod kątem problemów merytorycznych / wykonalności / naruszeń kontraktu — ustalenie, które powtarza znaną, powtarzającą się regułę, powinno mieć większą, a nie mniejszą wagę. Wyodrębnij:
 - **Pożądany stan końcowy** i **Kryteria sukcesu**
 - **Analiza stanu bieżącego** — udokumentowane ograniczenia i pułapki
 - **Granice zakresu** — „Czego NIE robimy”
@@ -42,19 +42,19 @@ Przed jakąkolwiek weryfikacją kodu, sprawdź plan pod kątem jego wewnętrznej
 
 - **Sprzeczność**: czy analiza stanu bieżącego dokumentuje ograniczenie, które implementacja ignoruje? (np. „npm nie uruchamia preuninstall dla zależności”, a fazy na tym polegają) Czy elementy z „Czego NIE robimy” pojawiają się ponownie w fazach? Czy faza zakłada zachowanie, które gdzie indziej jest uznane za wadliwe?
 - **Luka w obietnicy**: każda zdolność obiecana w Pożądanym Stanie Końcowym / Kryteriach Sukcesu / Notatkach Migracyjnych powinna mieć fazę wspierającą. Jeśli kryteria sukcesu mówią „ograniczenie szybkości działa”, ale żadna faza tego nie buduje, implementator napotyka lukę w trakcie budowy.
-- **Naruszenia kontraktu** (gdy plan definiuje lub używa punktów końcowych API): śledź przepływ danych między punktami końcowymi — jeśli krok B potrzebuje tokena/ID z kroku A, czy odpowiedź A go zawiera? Zaznacz nierozwiązane decyzje projektowe, które implementator musiałby zgadywać (który punkt końcowy, która metoda autoryzacji, które miejsce przechowywania stanu ograniczenia szybkości).
-- **Dotknięte powierzchnie kontraktu**: jeśli `docs/reference/contract-surfaces.md` istnieje w projekcie, odczytaj go i wyodrębnij listę nagłówków H2 jako nazwy powierzchni. Uruchom `grep -F` na tekście planu z jednym `-e <surface name>` na nagłówek. Dla każdego trafienia, odczytaj odpowiednią sekcję H2 `contract-surfaces.md` i zweryfikuj (a) czy plan dokładnie raportuje aktualny kształt powierzchni, oraz (b) czy jakakolwiek zmiana nazwy lub schematu jest oznaczona jako łamiąca z historią migracji dla konsumentów niższego szczebla. Jeśli plik nie istnieje, pomiń to sprawdzenie po cichu — jest to konwencja opt-in, samoczynnie uruchamiana przy pierwszym użyciu przez `/10x-contract` lub gałąź sortowania `/10x-impl-review`. Lista grepów pochodząca z H2 oznacza: gdy konsument dodaje nową powierzchnię do swojego pliku, następny przegląd planu automatycznie ją wykrywa — nie jest potrzebna edycja SKILL.md.
+- **Naruszenia kontraktu** (gdy plan definiuje lub używa punktów końcowych API): śledź przepływ danych między punktami końcowymi — jeśli krok B potrzebuje tokena/ID z kroku A, czy odpowiedź A go zawiera? Oznacz nierozwiązane decyzje projektowe, które implementator musiałby zgadywać (który punkt końcowy, która metoda autoryzacji, które przechowywanie dla stanu ograniczenia szybkości).
+- **Dotknięte powierzchnie kontraktu**: jeśli `docs/reference/contract-surfaces.md` istnieje w projekcie, odczytaj go i wyodrębnij listę nagłówków H2 jako nazwy powierzchni. Uruchom `grep -F` na tekście planu z jednym `-e <surface name>` dla każdego nagłówka. Dla każdego trafienia, odczytaj odpowiednią sekcję H2 `contract-surfaces.md` i zweryfikuj (a) czy plan dokładnie raportuje aktualny kształt powierzchni, oraz (b) czy jakakolwiek zmiana nazwy lub schematu jest oznaczona jako łamiąca z historią migracji dla konsumentów niższego szczebla. Jeśli plik nie istnieje, pomiń to sprawdzenie bezgłośnie — jest to konwencja opt-in, samoczynnie uruchamiana przy pierwszym użyciu przez `/10x-contract` lub gałąź sortowania `/10x-impl-review`. Lista grep pochodząca z H2 oznacza: gdy konsument dodaje nową powierzchnię do swojego pliku, następny przegląd planu automatycznie ją wykrywa — nie jest potrzebna edycja SKILL.md.
 - **Spójność Postęp↔Faza** (kontrakt mechaniczny — patrz `references/progress-format.md`):
   - Dokładnie jeden nagłówek `## Progress` na dole plan.md.
-  - Każda `## Phase N: <name>` w treści planu ma pasujące `### Phase N: <name>` w sekcji Progress.
+  - Każda `## Phase N: <name>` w treści planu ma pasujące `### Phase N: <name>` w Progress.
   - Każdy punkt kryteriów sukcesu (pod `#### Automated Verification:` / `#### Manual Verification:`) w bloku Fazy ma pasujące `- [ ] N.M <title>` (lub `- [x]`) w odpowiedniej podsekcji Progress.
   - Bloki Fazy zawierają tylko zwykłe punkty `- ` — bez `- [ ]` lub `- [x]` poza sekcją Progress.
-  Traktuj każdy z tych punktów jako KRYTYCZNE ustalenie w ramach Kompletności Planu — `/10x-implement` nie będzie w stanie przetworzyć źle sformułowanej sekcji Progress.
+  Traktuj każdy z nich jako KRYTYCZNE ustalenie w ramach Kompletności Planu — `/10x-implement` nie będzie w stanie przetworzyć źle sformatowanej sekcji Progress.
 
 ## Krok 2: Ugruntowanie
 
 Szybko, bez podagentów:
-- **Ścieżki**: `ls -l` na ≥5 ścieżkach plików, które plan rzekomo modyfikuje. Nieistniejące ścieżki są krytyczne.
+- **Ścieżki**: `ls -l` dla ≥5 ścieżek plików, które plan twierdzi, że modyfikuje. Nieistniejące ścieżki są krytyczne.
 - **Symbole**: grep dla konkretnych funkcji/kluczy konfiguracyjnych, do których odwołuje się plan.
 - **Spójność brief↔plan**: czy fazy, decyzje, zakres pasują?
 
@@ -64,10 +64,10 @@ Raportuj w linii: `Grounding: 5/5 paths ✓, 3/3 symbols ✓, brief↔plan ✓`.
 
 Pomiń, jeśli `--quick`.
 
-Z kroków 1–2 zidentyfikuj **3–5 najbardziej ryzykownych twierdzeń** w planie — rzeczy, które, jeśli są błędne, wymuszają znaczną przeróbkę. Uruchom **jednego** podagenta (`subagent_type: "general-purpose"`) z trzema połączonymi zadaniami:
+Z Kroków 1–2 zidentyfikuj **3–5 najbardziej ryzykownych twierdzeń** w planie — rzeczy, które, jeśli są błędne, wymuszają znaczną przeróbkę. Uruchom **jednego** podagenta (`subagent_type: "general-purpose"`) z trzema połączonymi zadaniami:
 
-1. **Zweryfikuj najbardziej ryzykowne twierdzenia** w stosunku do rzeczywistego kodu. Dla każdego: co pokazuje kod, czy potwierdza, czy zaprzecza planowi, z dowodami plik:linia.
-2. **Skanowanie promienia rażenia**: dla funkcji, stałych lub punktów końcowych, które plan modyfikuje, przeszukaj bazę kodu pod kątem innych wywołań/importerów niewymienionych w planie. Są to pliki, o których plan nie wie, że na nie wpływa.
+1. **Zweryfikuj najbardziej ryzykowne twierdzenia** względem rzeczywistego kodu. Dla każdego: co pokazuje kod, czy potwierdza, czy zaprzecza planowi, z dowodami plik:linia.
+2. **Skanowanie promienia rażenia**: dla funkcji, stałych lub punktów końcowych, które plan modyfikuje, przeszukaj bazę kodu pod kątem innych wywołań/importerów nie wymienionych w planie. Są to pliki, o których plan nie wie, że na nie wpływa.
 3. **Sprawdzenie wzorca** (tylko jeśli plan wprowadza nowe wzorce): czy istniejące pliki w dotkniętych obszarach już to rozwiązują? Proliferacja wzorców jest częstym odkryciem.
 
 Daj podagentowi ukierunkowane pytania z odpowiednimi ścieżkami plików — nie wyrzucaj całego planu. Skoncentrowane zapytanie znajduje więcej niż szerokie przeszukiwanie, ponieważ agent wie, czego szukać.
@@ -79,26 +79,26 @@ Przeanalizuj plan pod kątem pięciu wymiarów. Twórz ustalenia tylko dla rzecz
 ### Zgodność ze stanem końcowym
 Czy przechodząc fazy sekwencyjnie, system osiąga określony stan końcowy? Czy wszystkie kryteria sukcesu mogłyby zostać spełnione, podczas gdy cel pozostaje nieosiągnięty? Czy istnieje jakaś luka „ostatniej mili”, gdzie plan wykonuje 90% i zatrzymuje się?
 
-### Oszczędna realizacja
-Dla każdej fazy: „gdybym to usunął, czy stan końcowy nadal byłby osiągalny?” Zwróć uwagę na przedwczesną abstrakcję, dodatki „skoro już tu jesteśmy”, framework-tam-gdzie-wystarczyłaby-funkcja, sprzeczności zakresu (elementy „nie robimy” pojawiające się w fazach).
+### Oszczędne wykonanie
+Dla każdej fazy: „gdybym to usunął, czy stan końcowy nadal byłby osiągalny?” Zwróć uwagę na przedwczesną abstrakcję, dodatki „skoro już tu jesteśmy”, framework-gdzie-funkcja-by-wystarczyła, sprzeczności zakresu (elementy „nie robimy” pojawiające się w fazach).
 
 ### Dopasowanie architektoniczne
-Czy to pasuje do istniejącego systemu? Nowe wzorce tam, gdzie istniejące by działały (proliferacja wzorców). Czyste granice modułów i prawidłowy kierunek zależności. Zmiany o dużym promieniu rażenia — fazy dotykające wielu plików w różnych modułach, zmiany w współdzielonych narzędziach. Niejasne „refaktoryzuj w razie potrzeby” lub „zaktualizuj odpowiednio”, które doprowadzą do spirali.
+Czy to pasuje do istniejącego systemu? Nowe wzorce, gdzie istniejące by działały (proliferacja wzorców). Czyste granice modułów i prawidłowy kierunek zależności. Zmiany o dużym promieniu rażenia — fazy dotykające wielu plików w różnych modułach, zmiany w współdzielonych narzędziach. Niejasne „refaktoryzuj w razie potrzeby” lub „zaktualizuj odpowiednio”, które będą się rozrastać.
 
 ### Martwe punkty
-Czego plan nie uwzględnił? Ścieżki błędów (opisana tylko ścieżka sukcesu?), historia wycofywania (faza 3 zawodzi — czy możemy cofnąć?), wpływ zasobów/kosztów (wywołania API, praca obliczeniowa — ile to kosztuje przy oczekiwanym użyciu?), zmiany wartości domyślnych (domyślna wartość, która potraja koszt lub czas, powinna być wskazana), luki w testowaniu, granice bezpieczeństwa.
+Czego plan nie wziął pod uwagę? Ścieżki błędów (opisana tylko ścieżka sukcesu?), historia wycofywania (faza 3 zawodzi — czy możemy cofnąć?), wpływ zasobów/kosztów (wywołania API, praca obliczeniowa — ile to kosztuje przy oczekiwanym użyciu?), zmiany wartości domyślnych (domyślna wartość, która trzykrotnie zwiększa koszt lub czas, powinna być wskazana), luki w testowaniu, granice bezpieczeństwa.
 
 ### Kompletność planu
-Czy dokument jest wykonalny? Czy ścieżki plików są specyficzne (nie „gdzieś w src/")? Czy zmiany są na poziomie funkcji/metody? Czy kryteria sukcesu zawierają uruchamialne polecenia? Czy są sekcje TBD, TODO lub sekcje zastępcze?
+Czy dokument jest wykonalny? Czy ścieżki plików są specyficzne (nie „gdzieś w src/")? Czy zmiany są na poziomie funkcji/metody? Czy kryteria sukcesu zawierają uruchamialne polecenia? Sekcje TBD, TODO lub sekcje zastępcze?
 
 ## Krok 5: Kompilacja ustaleń
 
 Każde ustalenie zawiera:
 
 - **ID**: F1, F2, F3…
-- **Waga**: KRYTYCZNE / OSTRZEŻENIE / OBSERWACJA (jak źle, jeśli zignorowane)
+- **Waga**: KRYTYCZNA / OSTRZEŻENIE / OBSERWACJA (jak źle, jeśli zignorowane)
 - **Wpływ**: NISKI / ŚREDNI / WYSOKI (ile uwagi wymaga decyzja)
-- **Wymiar**: jeden z: Zgodność ze stanem końcowym / Oszczędna realizacja / Dopasowanie architektoniczne / Martwe punkty / Kompletność planu
+- **Wymiar**: jeden z: Zgodność ze stanem końcowym / Oszczędne wykonanie / Dopasowanie architektoniczne / Martwe punkty / Kompletność planu
 - **Tytuł**: jedna linia
 - **Lokalizacja**: sekcja planu lub faza
 - **Szczegóły**: co jest nie tak z dowodami — twierdzenie planu kontra to, co jest faktycznie prawdą, lub czego brakuje
@@ -106,13 +106,13 @@ Każde ustalenie zawiera:
 
 ### Wpływ
 
-Ortogonalny do wagi. KRYTYCZNE z NISKIM wpływem (oczywista poprawka) jest tanie w rozwiązaniu; OSTRZEŻENIE z WYSOKIM wpływem (niejasne kompromisy, szeroki zasięg) zasługuje na dokładne przemyślenie.
+Ortogonalny do wagi. KRYTYCZNY z NISKIM wpływem (oczywista poprawka) jest tani w rozwiązaniu; OSTRZEŻENIE z WYSOKIM wpływem (niejasne kompromisy, szeroki zasięg) zasługuje na dokładne przemyślenie.
 
 | Wpływ | Znaczenie |
 |---|---|
 | 🏃 **NISKI** | Szybka decyzja. Poprawka jest oczywista i wąsko zakrojona. Bezpieczne do grupowania. |
 | 🔎 **ŚREDNI** | Warto się zatrzymać. Prawdziwy kompromis lub nietrywialna edycja — pomyśl przed podjęciem decyzji. |
-| 🔬 **WYSOKI** | Stawka architektoniczna. Szeroki promień rażenia, strategiczne implikacje lub niejasna najlepsza ścieżka. |
+| 🔬 **WYSOKI** | Stawki architektoniczne. Szeroki promień rażenia, strategiczne implikacje lub niejasna najlepsza ścieżka. |
 
 ### Opcje naprawy
 
@@ -129,7 +129,7 @@ Domyślnie **jedna** poprawka. Przedstaw dwie tylko wtedy, gdy istnieje prawdziw
 
 Oferując dwie opcje, oznacz dokładnie jedną `⭐ Recommended`.
 
-### Werdykty wymiarów i werdykt ogólny
+### Werdykty wymiarów i ogólny werdykt
 
 Każdy wymiar: **ZALICZONY** / **OSTRZEŻENIE** / **NIEZALICZONY**.
 
@@ -137,7 +137,7 @@ Każdy wymiar: **ZALICZONY** / **OSTRZEŻENIE** / **NIEZALICZONY**.
 - **DO POPRAWY** — wymaga ukierunkowanych poprawek. Wiele ostrzeżeń lub 1 niekrytyczny NIEZALICZONY.
 - **DO PRZEMYŚLENIA** — fundamentalne problemy. Wiele NIEZALICZONYCH lub błędne podejście.
 
-Sortuj ustalenia według wagi: KRYTYCZNE → OSTRZEŻENIE → OBSERWACJA. Ogranicz do 10 — skonsoliduj powiązane ustalenia, jeśli masz ich więcej.
+Posortuj ustalenia według wagi: KRYTYCZNE → OSTRZEŻENIE → OBSERWACJA. Ogranicz do 10 — skonsoliduj powiązane ustalenia, jeśli masz ich więcej.
 
 ## Krok 6: Przedstaw raport i zaoferuj zapisanie
 
@@ -151,7 +151,7 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
 ═══════════════════════════════════════════════════════════
 
   Zgodność ze stanem końcowym    ZALICZONY    ✅
-  Oszczędna realizacja         OSTRZEŻENIE ⚠️   (1 ustalenie)
+  Oszczędne wykonanie         OSTRZEŻENIE ⚠️   (1 ustalenie)
   Dopasowanie architektoniczne  ZALICZONY    ✅
   Martwe punkty            NIEZALICZONY    ❌   (1 ustalenie)
   Kompletność planu      OSTRZEŻENIE ⚠️   (1 ustalenie)
@@ -165,19 +165,19 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
 
   F1 — Brak wycofania dla uzupełniania 50M wierszy
   ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-    Waga:  ❌ KRYTYCZNE
-    Wpływ:    🔬 WYSOKI — stawka architektoniczna; dokładnie przemyśl przed podjęciem decyzji
+    Waga:  ❌ KRYTYCZNA
+    Wpływ:    🔬 WYSOKI — stawki architektoniczne; dokładnie przemyśl przed podjęciem decyzji
     Wymiar: Martwe punkty
     Lokalizacja:  Faza 3 — Zmiany w bazie danych
 
     Szczegóły:
     Plan dodaje kolumnę NOT NULL do użytkowników (50M wierszy), ale żadna faza
-    nie obejmuje wycofania, jeśli uzupełnianie danych nie powiedzie się w trakcie. Częściowe uzupełnianie
+    nie obejmuje wycofania, jeśli uzupełnianie zakończy się niepowodzeniem w trakcie. Częściowe uzupełnianie
     pozostawia tabelę w niespójnym stanie.
 
     Poprawka A ⭐ Zalecana: Uczyń kolumnę dopuszczającą wartości null + oddzielne, restartowalne uzupełnianie
-      Siła:   Restartowalne; częściowy postęp nie jest destrukcyjny; pasuje do
-                  wzorca użytego dla users.email_verified_at w ostatnim kwartale.
+      Siła:   Restartowalne; częściowy postęp nie jest destrukcyjny; pasuje
+                  do wzorca użytego dla users.email_verified_at w zeszłym kwartale.
       Kompromis:   Dwa wdrożenia (dodaj dopuszczające wartości null → uzupełnij → wymuś NOT NULL).
       Pewność: WYSOKA — to dokładnie to podejście zostało czysto wdrożone 3 miesiące temu.
       Martwy punkt: Krok wymuszania nadal potrzebuje własnej notatki o wycofaniu.
@@ -196,20 +196,20 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
   ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
     Waga:  ⚠️ OSTRZEŻENIE
     Wpływ:    🔎 ŚREDNI — prawdziwy kompromis; zatrzymaj się, aby to przemyśleć
-    Wymiar: Oszczędna realizacja
+    Wymiar: Oszczędne wykonanie
     Lokalizacja:  Faza 1 — Refaktoryzacja konfiguracji
 
     Szczegóły:
     Plan buduje pełny system konfiguracji w oparciu o wzorzec dostawcy dla tylko dwóch
     źródeł (env + plik). Bezpośrednie scalenie słowników osiąga ten sam stan końcowy
-    z około 1/3 kodu.
+    z ~1/3 kodu.
 
     Poprawka: Zastąp abstrakcję dostawcy konfiguracji bezpośrednim scaleniem słowników w
          load_config(). Wprowadź wzorzec dostawcy tylko wtedy, gdy pojawi się trzecie
          źródło.
       Siła:   Mniej kodu, mniej koncepcji do utrzymania.
       Kompromis:   Jeśli trzecie źródło pojawi się wkrótce, refaktoryzujemy dwukrotnie.
-      Pewność: WYSOKA — istniejąca baza kodu wszędzie indziej stosuje ten wzorzec „dodawania abstrakcji
+      Pewność: WYSOKA — istniejąca baza kodu wszędzie indziej stosuje ten wzorzec „dodawaj abstrakcję
                   w razie potrzeby”.
       Martwy punkt: Plany dotyczące dodatkowych źródeł konfiguracji nie zostały zbadane.
 
@@ -226,7 +226,7 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
     „Refaktoryzuj format_output w razie potrzeby” — format_output jest importowany przez
     12 plików w 4 modułach. Implementator nie ma wskazówek.
 
-    Poprawka: Określ dokładne zmiany sygnatury i wymień wywołujących wymagających aktualizacji.
+    Poprawka: Określ dokładne zmiany sygnatury i wymień wywołujących, którzy wymagają aktualizacji.
 
 ═══════════════════════════════════════════════════════════
 ```
@@ -235,8 +235,8 @@ Zwykły tekst, rysowanie ramek. Ustalenia pogrupowane według wagi; pomiń puste
 
 - **Linia tytułu ustalenia** zawiera tylko ID i krótki tytuł — nic więcej. Wszystko inne znajduje się poniżej jako oznaczone pola, dzięki czemu każdy wiersz jest krótki i łatwy do skanowania.
 - **Zawsze łącz ikony ze słowem.** Nigdy nie używaj samej ikony jako jedynego sygnału — `❌ KRYTYCZNE`, a nie tylko `❌`. Dzięki temu raport jest czytelny podczas szybkiego przeglądania i nie zmusza użytkownika do zapamiętywania znaczenia każdej ikony.
-- **Wpływ zawsze zawiera swoje jednowierszowe znaczenie** (skopiuj z tabeli Wpływ — „stawka architektoniczna; dokładnie przemyśl przed podjęciem decyzji” / „prawdziwy kompromis; zatrzymaj się, aby to przemyśleć” / „szybka decyzja; poprawka jest oczywista i wąsko zakrojona”). Dzięki temu NISKI/ŚREDNI/WYSOKI jest zrozumiały w miejscu użycia, zamiast polegać na tym, że użytkownik pamięta tabelę.
-- Waga, Wpływ, Wymiar, Lokalizacja są na osobnych liniach z wyrównanymi etykietami. Szczegóły zaczynają się na osobnej linii pod etykietą `Detail:`, dzięki czemu mogą naturalnie zawijać się.
+- **Wpływ zawsze zawiera swoje jednowierszowe znaczenie** (skopiuj z tabeli Wpływ — „stawki architektoniczne; dokładnie przemyśl przed podjęciem decyzji” / „prawdziwy kompromis; zatrzymaj się, aby to przemyśleć” / „szybka decyzja; poprawka jest oczywista i wąsko zakrojona”). Dzięki temu NISKI/ŚREDNI/WYSOKI jest zrozumiały w miejscu użycia, zamiast polegać na tym, że użytkownik zapamięta tabelę.
+- Waga, Wpływ, Wymiar, Lokalizacja znajdują się na osobnych liniach z wyrównanymi etykietami. Szczegóły zaczynają się na osobnej linii pod etykietą `Detail:`, dzięki czemu mogą naturalnie zawijać się.
 
 Następnie zapytaj:
 
@@ -272,7 +272,7 @@ Zapisz do `context/changes/<change-id>/reviews/plan-review.md` (jeden przegląd 
 | Wymiar | Werdykt |
 |-----------|---------|
 | Zgodność ze stanem końcowym | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
-| Oszczędna realizacja | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
+| Oszczędne wykonanie | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
 | Dopasowanie architektoniczne | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
 | Martwe punkty | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
 | Kompletność planu | ZALICZONY/OSTRZEŻENIE/NIEZALICZONY |
@@ -284,15 +284,15 @@ Zapisz do `context/changes/<change-id>/reviews/plan-review.md` (jeden przegląd 
 
 ### F1 — Brak wycofania dla uzupełniania 50M wierszy
 
-- **Waga**: ❌ KRYTYCZNE
-- **Wpływ**: 🔬 WYSOKI — stawka architektoniczna; dokładnie przemyśl przed podjęciem decyzji
+- **Waga**: ❌ KRYTYCZNA
+- **Wpływ**: 🔬 WYSOKI — stawki architektoniczne; dokładnie przemyśl przed podjęciem decyzji
 - **Wymiar**: Martwe punkty
 - **Lokalizacja**: Faza 3 — Zmiany w bazie danych
-- **Szczegóły**: Plan dodaje kolumnę NOT NULL do użytkowników (50M wierszy), ale żadna faza nie obejmuje wycofania, jeśli uzupełnianie danych nie powiedzie się w trakcie.
+- **Szczegóły**: Plan dodaje kolumnę NOT NULL do użytkowników (50M wierszy), ale żadna faza nie obejmuje wycofania, jeśli uzupełnianie zakończy się niepowodzeniem w trakcie.
 - **Poprawka A ⭐ Zalecana**: Uczyń kolumnę dopuszczającą wartości null + oddzielne, restartowalne uzupełnianie
   - Siła: Restartowalne; częściowy postęp nie jest destrukcyjny.
   - Kompromis: Dwa wdrożenia.
-  - Pewność: WYSOKA — to podejście zostało czysto wdrożone w ostatnim kwartale.
+  - Pewność: WYSOKA — to podejście zostało czysto wdrożone w zeszłym kwartale.
   - Martwy punkt: Krok wymuszania nadal potrzebuje własnej notatki o wycofaniu.
 - **Poprawka B**: Dodaj jawną fazę wycofania z pełną migawką tabeli
   - Siła: Pojedyncze wdrożenie; wycofanie jest atomowe.
@@ -308,20 +308,20 @@ Zapisz do `context/changes/<change-id>/reviews/plan-review.md` (jeden przegląd 
 - **Wymiar**: Kompletność planu
 - **Lokalizacja**: Faza 2
 - **Szczegóły**: „Refaktoryzuj format_output w razie potrzeby” — importowany przez 12 plików w 4 modułach.
-- **Poprawka**: Określ dokładne zmiany sygnatury i wymień wywołujących wymagających aktualizacji.
+- **Poprawka**: Określ dokładne zmiany sygnatury i wymień wywołujących, którzy wymagają aktualizacji.
 - **Decyzja**: OCZEKUJĄCA
 ```
 
 Znacznik `<!-- PLAN-REVIEW-REPORT -->` i pola `Decision: PENDING` umożliwiają tryb wznowienia.
 
 „Zapisz i sortuj później” → zapisz, wydrukuj ścieżkę, przypomnij o uruchomieniu `/10x-plan-review <saved-report-path>`.
-„Sortuj” → przejdź do kroku 7.
+„Sortuj” → przejdź do Kroku 7.
 
 ## Krok 7: Interaktywne sortowanie
 
 ### Tryb wznowienia
 
-Jeśli wprowadzono za pomocą zapisanego pliku: odczytaj go, przeanalizuj nagłówki `### F`, filtruj do `Decision: PENDING`. Jeśli brak, powiedz „Wszystkie ustalenia posortowane” i zatrzymaj.
+Jeśli wprowadzono za pomocą zapisanego pliku: odczytaj go, przeanalizuj nagłówki `### F`, filtruj do `Decision: PENDING`. Jeśli brak, powiedz „Wszystkie ustalenia posortowane” i zatrzymaj się.
 
 ### Pętla sortowania
 
@@ -341,7 +341,7 @@ options:
   - label: "Pomiń"
     description: "Nie warto teraz się tym zajmować."
   - label: "Akceptuj ryzyko"
-    description: "Zrozumiałem — zajmę się tym podczas implementacji."
+    description: "Zrozumiano — zajmę się tym podczas implementacji."
   - label: "Nie zgadzam się"
     description: "To nie jest problem — odrzuć."
 multiSelect: false
@@ -352,7 +352,7 @@ multiSelect: false
 **Obsługa odpowiedzi:**
 - **Zastosuj poprawkę A/B / Popraw w planie**: pokaż dokładną edycję planu (przed/po). Krótkie potwierdzenie, a następnie zastosuj. Oznacz NAPRAWIONE (zapisz, która poprawka, np. „Naprawiono za pomocą poprawki A”).
 - **Popraw inaczej**: zapytaj o preferowane podejście, zastosuj, oznacz NAPRAWIONE.
-- **Pomiń** → POMINIĘTO. **Akceptuj ryzyko** → ZAAKCEPTOWANO. **Nie zgadzam się** → ODRZUCONO. Idź dalej, nie kłóć się.
+- **Pomiń** → POMINIĘTO. **Akceptuj ryzyko** → ZAAKCEPTOWANO. **Nie zgadzam się** → ODRZUCONO. Przejdź dalej, nie kłóć się.
 
 Po każdej decyzji, jeśli pracujesz z zapisanego pliku, zaktualizuj jego pole `Decision:`.
 
@@ -376,9 +376,9 @@ Po każdej decyzji, jeśli pracujesz z zapisanego pliku, zaktualizuj jego pole `
 
 - To jest umiejętność **przeglądu**. Analizuj i raportuj — nie przepisuj planu, chyba że zostanie to poproszone podczas sortowania.
 - Bądź konkretny. „Faza 3 wprowadza drugi system zdarzeń obok istniejącego EventBus w `src/core/events.ts`” — a nie „architektura może mieć problemy”.
-- Rozróżnij „nie zadziała” (NIEZALICZONY) od „może być lepiej” (OSTRZEŻENIE).
+- Rozróżniaj „nie zadziała” (NIEZALICZONY) od „może być lepiej” (OSTRZEŻENIE).
 - Jeśli plan jest naprawdę dobry, powiedz to krótko i zakończ. Nie twórz ustaleń.
 - Wpływ dotyczy **wysiłku decyzyjnego**, a nie **wagi**. NISKI wpływ na KRYTYCZNE ustalenie oznacza, że poprawka jest oczywista; WYSOKI wpływ na OSTRZEŻENIE oznacza, że kompromis jest realny.
 - Dwie opcje naprawy tylko wtedy, gdy istnieje prawdziwy kompromis. Nie wymyślaj alternatyw dla trywialnych poprawek.
-- Podczas sortowania utrzymuj tempo. Użytkownik już przeczytał raport — przedstaw ustalenie, podejmij decyzję, idź dalej.
+- Podczas sortowania utrzymuj tempo. Użytkownik już przeczytał raport — przedstaw ustalenie, podejmij decyzję, przejdź dalej.
 - Podczas stosowania poprawki do planu, dokonuj minimalnych, ukierunkowanych edycji. Nie restrukturyzuj całego planu dla jednego ustalenia.
