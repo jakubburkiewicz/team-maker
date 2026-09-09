@@ -847,34 +847,34 @@ odbierze:
 
 #### Automatyczne
 
-- [x] 1.1 Strażnik czerwieni się na stanie bazowym (`.env` na hostowanym → odmowa #2, nie pad testu)
-- [x] 1.2 Odmowa #1 wiąże (root `.dev.vars` istnieje)
-- [x] 1.3 Odmowa #3 wiąże (build zamrożony na innym stosie)
-- [x] 1.4 Odmowa #4 wiąże (stos zatrzymany)
-- [x] 1.5 Po `.env` lokalnym + `npm run build`: `npx playwright test` startuje aplikację z konfiguracji
-- [x] 1.6 `npx tsc --noEmit` zielone
-- [x] 1.7 `npm run lint` zielone
-- [x] 1.8 `git status --porcelain` czyste poza gitignorowanym `.env`
+- [x] 1.1 Strażnik czerwieni się na stanie bazowym (`.env` na hostowanym → odmowa #2, nie pad testu) — a714498
+- [x] 1.2 Odmowa #1 wiąże (root `.dev.vars` istnieje) — a714498
+- [x] 1.3 Odmowa #3 wiąże (build zamrożony na innym stosie) — a714498
+- [x] 1.4 Odmowa #4 wiąże (stos zatrzymany) — a714498
+- [x] 1.5 Po `.env` lokalnym + `npm run build`: `npx playwright test` startuje aplikację z konfiguracji — a714498
+- [x] 1.6 `npx tsc --noEmit` zielone — a714498
+- [x] 1.7 `npm run lint` zielone — a714498
+- [x] 1.8 `git status --porcelain` czyste poza gitignorowanym `.env` — a714498
 
 #### Ręczne
 
-- [x] 1.9 Docstring `playwright.config.ts` nie obiecuje niczego, czego faza nie dowozi
-- [x] 1.10 Cztery komunikaty odmów są rozróżnialne i mówią, co zrobić
+- [x] 1.9 Docstring `playwright.config.ts` nie obiecuje niczego, czego faza nie dowozi — a714498
+- [x] 1.10 Cztery komunikaty odmów są rozróżnialne i mówią, co zrobić — a714498
 
 ### Faza 2: Test ścieżki recenzenta bez zewnętrznych zmiennych
 
 #### Automatyczne
 
-- [ ] 2.1 Dwa zielone przebiegi pod rząd bez `E2E_EMAIL`/`E2E_PASSWORD` w środowisku
-- [ ] 2.2 Strażnik zniknięcia zmiennych: czerwony na `e136707`, zielony na HEAD
-- [ ] 2.3 Nowy test wiąże gałąź produkcyjną (`Check your email` obecne na HEAD, nieobecne na `e136707`)
-- [ ] 2.4 `npx tsc --noEmit` i `npm run lint` zielone
-- [ ] 2.5 Niezmiennik antywzorców w `e2e/` (zielony na bazie świadomie — nie dowód tej fazy)
+- [x] 2.1 Dwa zielone przebiegi pod rząd bez `E2E_EMAIL`/`E2E_PASSWORD` w środowisku
+- [x] 2.2 Strażnik zniknięcia zmiennych: czerwony na `e136707`, zielony na HEAD
+- [x] 2.3 Nowy test wiąże gałąź produkcyjną (`Check your email` obecne na HEAD, nieobecne na `e136707`)
+- [x] 2.4 `npx tsc --noEmit` i `npm run lint` zielone
+- [x] 2.5 Niezmiennik antywzorców w `e2e/` (zielony na bazie świadomie — nie dowód tej fazy)
 
 #### Ręczne
 
-- [ ] 2.6 Przebieg `--headed`: ekran po rejestracji pokazuje „Check your email"
-- [ ] 2.7 Komentarze o granicy (rejestracja jako osprzęt; czego nowy test nie dowodzi) są czytelne
+- [x] 2.6 Przebieg `--headed`: ekran po rejestracji pokazuje „Check your email"
+- [x] 2.7 Komentarze o granicy (rejestracja jako osprzęt; czego nowy test nie dowodzi) są czytelne
 
 ### Faza 3: Kontrola mutacyjna e2e
 

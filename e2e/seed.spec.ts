@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 
 import { CHARACTER_POOL } from "@/lib/domain/character-pool";
 import { findThresholdSolution } from "@/lib/domain/solvability";
@@ -25,13 +25,19 @@ import { findThresholdSolution } from "@/lib/domain/solvability";
  * §2 Risk Response Guidance: „gracz **przechodzi logowanie i dociera do zapisanej drużyny** —
  * cała ścieżka persony głównej w jednym przebiegu".
  *
- * **Granica automatu.** Test pokrywa **tor po potwierdzeniu adresu** — od logowania w dół.
- * Samo potwierdzanie zostaje jawnie ręcznym dymem, bo `supabase/config.toml` ma
- * `enable_confirmations = false`, a produkcja ma je **włączone**; rozjazd jest świadomy
- * (`AGENTS.md`) i automat, który by go przeskoczył, dowodziłby czegoś innego niż produkcja.
- * Dlatego logowanie stoi **w ciele testu**, a nie w `storageState`: tutaj jest częścią
- * chronionej ścieżki, nie osprzętem. W testach, gdzie sesja jest tylko warunkiem wstępnym,
- * należy sięgnąć po `storageState` — nie kopiować stąd logowania.
+ * **Granica automatu.** Testy pokrywają dwa człony ścieżki persony głównej: (1) rejestracja
+ * prowadzi na produkcyjnie wierny ekran potwierdzenia i **daje widoczną drogę dalej** do
+ * logowania; (2) tor po potwierdzeniu adresu — od logowania w dół.
+ *
+ * Czego **nie** pokrywają i nie pokryją: tego, że recenzent po rejestracji ląduje
+ * **wylogowany** i że kliknięcie linku z listu też go nie loguje. Lokalny stos ma
+ * `GOTRUE_MAILER_AUTOCONFIRM=true` wpieczone w kontener, więc rejestracja tutaj **loguje**
+ * (oddaje dwa ciasteczka `sb-`), a w produkcji nie. Asercja na tym byłaby fałszywym dowodem.
+ * Ten człon należy do dymu: `scripts/smoke-reviewer-path.sh`.
+ *
+ * Logowanie stoi **w ciele testu**, a nie w `storageState`: tutaj jest częścią chronionej
+ * ścieżki, nie osprzętem. W testach, gdzie sesja jest tylko warunkiem wstępnym, należy sięgnąć
+ * po `storageState` — nie kopiować stąd logowania.
  *
  * **Uruchomienie** — aplikację stawia `playwright.config.ts` (`webServer` na `npm run preview`),
  * ale stos wybierasz **przed** buildem. Kolejność trzech kroków jest częścią przepisu, nie
@@ -44,7 +50,7 @@ import { findThresholdSolution } from "@/lib/domain/solvability";
  * # 2. .env → SUPABASE_URL=http://127.0.0.1:54321 + SUPABASE_KEY = klucz anon z `npx supabase status`
  * #    NIGDY nie twórz `.dev.vars` w korzeniu — ten plik WYŁĄCZA `.env`, nie uzupełnia go
  * npm run build                            # 3. dopiero build przenosi te wartości do aplikacji
- * E2E_EMAIL=... E2E_PASSWORD=... npx playwright test
+ * npx playwright test                      # bez ani jednej zmiennej podanej z ręki
  * ```
  *
  * Pełna wersja przepisu żyje w `context/foundation/test-plan.md` §6.6.
@@ -59,12 +65,59 @@ import { findThresholdSolution } from "@/lib/domain/solvability";
  */
 const SOLUTION = findThresholdSolution(CHARACTER_POOL);
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing ${name}. Seed test needs a confirmed account — see the header of this file.`);
-  }
-  return value;
+interface Account {
+  email: string;
+  password: string;
+}
+
+/**
+ * Konto testowe — **osprzęt, nigdy wyrocznia**.
+ *
+ * Lokalny stos autopotwierdza adres, więc konto gotowe do logowania kosztuje jedno żądanie.
+ * Unikalny adres na przebieg jest tym, co czyni równoległe przebiegi i ponowienia bezkolizyjnymi —
+ * jedno wspólne konto podane z zewnątrz tego nie dawało.
+ *
+ * **Czego tu nie wolno asercjonować**: tego, że rejestracja NIE zostawia sesji. Lokalnie
+ * zostawia (dwa ciasteczka `sb-`, bo `GOTRUE_MAILER_AUTOCONFIRM=true`), w produkcji nie
+ * zostawia. Asercja na tym byłaby fałszywym dowodem — człon „recenzent ląduje wylogowany"
+ * pilnuje wyłącznie `scripts/smoke-reviewer-path.sh`.
+ *
+ * Nagłówek `Origin` jest wymagany: `security.checkOrigin` odbija `POST /api/auth/*` bez niego
+ * kodem 403, **zanim** kod trasy się wykona — bez tego nagłówka helper badałby CSRF, nie rejestrację.
+ */
+async function registerAccount(request: APIRequestContext, baseURL: string): Promise<Account> {
+  const account: Account = {
+    email: `reviewer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`,
+    password: "reviewer-path-e2e",
+  };
+
+  const response = await request.post("/api/auth/signup", {
+    form: { email: account.email, password: account.password },
+    headers: { Origin: baseURL },
+    maxRedirects: 0,
+  });
+
+  expect(response.status(), "signup must redirect, not render an error").toBe(302);
+  expect(response.headers().location).toBe("/auth/confirm-email");
+
+  return account;
+}
+
+/**
+ * Pola formularza są kontrolowane przez Reacta, a wyspa jest `client:load` — wpisanie wartości
+ * **przed** hydratacją zostaje nadpisane pustym stanem komponentu. Powtarzamy wpis aż do skutku
+ * **obserwowalnego** (pola trzymają wartości), nie przez `waitForTimeout`; to ten sam wzorzec
+ * co `openFromIsland`, tylko dla wpisywania zamiast klikania.
+ */
+async function fillWhenHydrated(page: Page, values: { label: string; value: string }[]): Promise<void> {
+  await expect(async () => {
+    for (const { label, value } of values) {
+      await page.getByRole("textbox", { name: label, exact: true }).fill(value);
+    }
+    for (const { label, value } of values) {
+      await expect(page.getByRole("textbox", { name: label, exact: true })).toHaveValue(value, { timeout: 1000 });
+    }
+  }).toPass({ timeout: 15_000 });
 }
 
 function characterById(id: string) {
@@ -113,6 +166,10 @@ async function deleteTeam(page: Page, callSign: string): Promise<void> {
  * Nazwa-hasz jest nadawana przez serwer i nieedytowalna (FR-011), więc unikalnego identyfikatora
  * nie da się **wstrzyknąć** — niesie go sama drużyna. Test zapamiętuje go, gdy tylko go pozna,
  * i sprząta wyłącznie tę drużynę; równoległe przebiegi na tym samym koncie nie kolidują.
+ *
+ * Zmienna jest modułowa, a testów w pliku jest dwa — mimo to nie ma tu współdzielenia:
+ * `fullyParallel` rozprasza testy **między** workerów, a w obrębie workera biegną seryjnie,
+ * więc każdy worker ma własną kopię modułu. Do tego drugi test w ogóle nie zapisuje drużyny.
  */
 let createdCallSign: string | null = null;
 
@@ -131,13 +188,54 @@ test.afterEach(async ({ page }) => {
   }
 });
 
-test("saved team survives a page reload on the reviewer path (risk #4)", async ({ page }) => {
-  // ——— Setup: logowanie, czyli wejście persony głównej po potwierdzeniu adresu ———
+/**
+ * Człon ścieżki **przed** logowaniem, w części, która jest własnością aplikacji.
+ *
+ * **Co ten test dowodzi**: że po rejestracji recenzent widzi ekran potwierdzenia w kopii
+ * **produkcyjnej** i ma z niego widoczną drogę dalej — do logowania. `confirm-email.astro:4`
+ * rozgałęzia treść na `import.meta.env.DEV`, więc gałąź produkcyjna („Check your email" /
+ * „Back to sign in") jest dostępna wyłącznie dlatego, że `webServer` stoi na `npm run preview`.
+ * Każdy przebieg na `npm run dev` oglądałby drugą gałąź i regresja tutaj byłaby niewidoczna.
+ *
+ * **Czego ten test NIE dowodzi**: że recenzent jest po rejestracji wylogowany. Lokalnie jest
+ * **zalogowany** (autopotwierdzanie stosu), w produkcji nie — to rozjazd konfiguracji, nie
+ * zachowanie aplikacji. Pilnuje go `scripts/smoke-reviewer-path.sh`, nie ten plik.
+ */
+test("registration lands the reviewer on the production confirmation screen with a way on (risk #4)", async ({
+  page,
+}) => {
+  const password = "reviewer-path-e2e";
+  const email = `reviewer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+
+  await page.goto("/auth/signup");
+  await fillWhenHydrated(page, [
+    { label: "Email", value: email },
+    { label: "Password", value: password },
+    { label: "Confirm password", value: password },
+  ]);
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await page.waitForURL("/auth/confirm-email");
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+
+  // Droga dalej musi być **widoczna i działać** — sam ekran potwierdzenia bez wyjścia zostawia
+  // recenzenta w ślepej uliczce, czyli dokładnie w ryzyku #4.
+  await page.getByRole("link", { name: "Back to sign in" }).click();
+  await page.waitForURL("/auth/signin");
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+});
+
+test("saved team survives a page reload on the reviewer path (risk #4)", async ({ page, request, baseURL }) => {
+  // ——— Setup: własne konto (osprzęt), potem logowanie — czyli wejście persony głównej ———
+  const account = await registerAccount(request, baseURL ?? "");
+
   await page.goto("/auth/signin");
   // Rola, nie `getByLabel`: przełącznik widoczności hasła też niesie etykietę „…password",
   // więc zawężenie do pola tekstowego jest tym, co czyni lokator jednoznacznym.
-  await page.getByRole("textbox", { name: "Email" }).fill(requireEnv("E2E_EMAIL"));
-  await page.getByRole("textbox", { name: "Password" }).fill(requireEnv("E2E_PASSWORD"));
+  await fillWhenHydrated(page, [
+    { label: "Email", value: account.email },
+    { label: "Password", value: account.password },
+  ]);
   await page.getByRole("button", { name: "Sign in" }).click();
 
   await page.waitForURL("/");
