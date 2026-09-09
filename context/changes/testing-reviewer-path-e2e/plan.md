@@ -865,32 +865,32 @@ odbierze:
 
 #### Automatyczne
 
-- [x] 2.1 Dwa zielone przebiegi pod rząd bez `E2E_EMAIL`/`E2E_PASSWORD` w środowisku
-- [x] 2.2 Strażnik zniknięcia zmiennych: czerwony na `e136707`, zielony na HEAD
-- [x] 2.3 Nowy test wiąże gałąź produkcyjną (`Check your email` obecne na HEAD, nieobecne na `e136707`)
-- [x] 2.4 `npx tsc --noEmit` i `npm run lint` zielone
-- [x] 2.5 Niezmiennik antywzorców w `e2e/` (zielony na bazie świadomie — nie dowód tej fazy)
+- [x] 2.1 Dwa zielone przebiegi pod rząd bez `E2E_EMAIL`/`E2E_PASSWORD` w środowisku — aee9232
+- [x] 2.2 Strażnik zniknięcia zmiennych: czerwony na `e136707`, zielony na HEAD — aee9232
+- [x] 2.3 Nowy test wiąże gałąź produkcyjną (`Check your email` obecne na HEAD, nieobecne na `e136707`) — aee9232
+- [x] 2.4 `npx tsc --noEmit` i `npm run lint` zielone — aee9232
+- [x] 2.5 Niezmiennik antywzorców w `e2e/` (zielony na bazie świadomie — nie dowód tej fazy) — aee9232
 
 #### Ręczne
 
-- [x] 2.6 Przebieg `--headed`: ekran po rejestracji pokazuje „Check your email"
-- [x] 2.7 Komentarze o granicy (rejestracja jako osprzęt; czego nowy test nie dowodzi) są czytelne
+- [x] 2.6 Przebieg `--headed`: ekran po rejestracji pokazuje „Check your email" — aee9232
+- [x] 2.7 Komentarze o granicy (rejestracja jako osprzęt; czego nowy test nie dowodzi) są czytelne — aee9232
 
 ### Faza 3: Kontrola mutacyjna e2e
 
 #### Automatyczne
 
-- [ ] 3.1 `git apply --check scripts/probe-reviewer-path.patch` przechodzi na czystym drzewie
-- [ ] 3.2 `scripts/probe-reviewer-path.sh` kończy się zerem (zielony → czerwony → zielony wykazane)
-- [ ] 3.3 Odmowa na brudnym `src/lib/supabase.ts` wiąże (exit 2, drzewo nietknięte)
-- [ ] 3.4 Odmowa na zajętym porcie wiąże (exit 6)
-- [ ] 3.5 Drzewo czyste po przebiegu **oraz** po przerwaniu sygnałem w trakcie przebiegu 2
-- [ ] 3.6 `npm run lint` zielone
+- [x] 3.1 `git apply --check scripts/probe-reviewer-path.patch` przechodzi na czystym drzewie
+- [x] 3.2 `scripts/probe-reviewer-path.sh` kończy się zerem (zielony → czerwony → zielony wykazane)
+- [x] 3.3 Odmowa na brudnym `src/lib/supabase.ts` wiąże (exit 2, drzewo nietknięte)
+- [x] 3.4 Odmowa na zajętym porcie wiąże (exit 6)
+- [x] 3.5 Drzewo czyste po przebiegu **oraz** po przerwaniu sygnałem w trakcie przebiegu 2
+- [x] 3.6 `npm run lint` zielone
 
 #### Ręczne
 
-- [ ] 3.7 Wyjście przebiegu 2 wymienia nazwy padłych testów
-- [ ] 3.8 Trzy kody wyjścia dają trzy różne, czytelne komunikaty
+- [x] 3.7 Wyjście przebiegu 2 wymienia nazwy padłych testów
+- [x] 3.8 Trzy kody wyjścia dają trzy różne, czytelne komunikaty
 
 ### Faza 4: Dym produkcyjny egzekwowalny
 

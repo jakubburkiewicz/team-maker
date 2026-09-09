@@ -1,0 +1,17 @@
+diff --git a/src/lib/supabase.ts b/src/lib/supabase.ts
+index a3b48e7..22575a7 100644
+--- a/src/lib/supabase.ts
++++ b/src/lib/supabase.ts
+@@ -15,9 +15,9 @@ export function createClient(requestHeaders: Headers, cookies: AstroCookies) {
+         }));
+       },
+       setAll(cookiesToSet) {
+-        cookiesToSet.forEach(({ name, value, options }) => {
+-          cookies.set(name, value, options);
+-        });
++        // PROBE (scripts/probe-reviewer-path.patch): propagacja ciasteczka sesji zerwana —
++        // logowanie „udaje się" (302 → `/`), ale middleware nie widzi sesji i odbija na /auth/signin.
++        void cookiesToSet;
+       },
+     },
+   });
