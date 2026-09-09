@@ -33,14 +33,21 @@ import { findThresholdSolution } from "@/lib/domain/solvability";
  * chronionej ścieżki, nie osprzętem. W testach, gdzie sesja jest tylko warunkiem wstępnym,
  * należy sięgnąć po `storageState` — nie kopiować stąd logowania.
  *
- * **Uruchomienie** (świadomie, przeciwko wybranemu stosowi — `playwright.config.ts` nie startuje
- * serwera):
+ * **Uruchomienie** — aplikację stawia `playwright.config.ts` (`webServer` na `npm run preview`),
+ * ale stos wybierasz **przed** buildem. Kolejność trzech kroków jest częścią przepisu, nie
+ * sugestią: preview serwuje wartości **zamrożone w chwili builda** (`dist/server/.dev.vars`),
+ * więc build po przestawieniu `.env`, nigdy przed. Złamanie kolejności kończy się odmową
+ * strażnika `e2e/stack-guard.ts`, nie cichym przebiegiem w projekt hostowany.
  *
  * ```bash
- * # 1. stos lokalny: npx supabase start; aplikacja z SUPABASE_URL/SUPABASE_KEY tego stosu
- * # 2. konto testowe musi istnieć i mieć potwierdzony adres
- * E2E_BASE_URL=http://localhost:4321 E2E_EMAIL=... E2E_PASSWORD=... npx playwright test
+ * npx supabase start                       # 1. lokalny stos (e2e nie biegnie przeciwko innemu)
+ * # 2. .env → SUPABASE_URL=http://127.0.0.1:54321 + SUPABASE_KEY = klucz anon z `npx supabase status`
+ * #    NIGDY nie twórz `.dev.vars` w korzeniu — ten plik WYŁĄCZA `.env`, nie uzupełnia go
+ * npm run build                            # 3. dopiero build przenosi te wartości do aplikacji
+ * E2E_EMAIL=... E2E_PASSWORD=... npx playwright test
  * ```
+ *
+ * Pełna wersja przepisu żyje w `context/foundation/test-plan.md` §6.6.
  */
 
 /**

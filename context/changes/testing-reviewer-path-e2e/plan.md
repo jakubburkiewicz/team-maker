@@ -847,19 +847,19 @@ odbierze:
 
 #### Automatyczne
 
-- [ ] 1.1 Strażnik czerwieni się na stanie bazowym (`.env` na hostowanym → odmowa #2, nie pad testu)
-- [ ] 1.2 Odmowa #1 wiąże (root `.dev.vars` istnieje)
-- [ ] 1.3 Odmowa #3 wiąże (build zamrożony na innym stosie)
-- [ ] 1.4 Odmowa #4 wiąże (stos zatrzymany)
-- [ ] 1.5 Po `.env` lokalnym + `npm run build`: `npx playwright test` startuje aplikację z konfiguracji
-- [ ] 1.6 `npx tsc --noEmit` zielone
-- [ ] 1.7 `npm run lint` zielone
-- [ ] 1.8 `git status --porcelain` czyste poza gitignorowanym `.env`
+- [x] 1.1 Strażnik czerwieni się na stanie bazowym (`.env` na hostowanym → odmowa #2, nie pad testu)
+- [x] 1.2 Odmowa #1 wiąże (root `.dev.vars` istnieje)
+- [x] 1.3 Odmowa #3 wiąże (build zamrożony na innym stosie)
+- [x] 1.4 Odmowa #4 wiąże (stos zatrzymany)
+- [x] 1.5 Po `.env` lokalnym + `npm run build`: `npx playwright test` startuje aplikację z konfiguracji
+- [x] 1.6 `npx tsc --noEmit` zielone
+- [x] 1.7 `npm run lint` zielone
+- [x] 1.8 `git status --porcelain` czyste poza gitignorowanym `.env`
 
 #### Ręczne
 
-- [ ] 1.9 Docstring `playwright.config.ts` nie obiecuje niczego, czego faza nie dowozi
-- [ ] 1.10 Cztery komunikaty odmów są rozróżnialne i mówią, co zrobić
+- [x] 1.9 Docstring `playwright.config.ts` nie obiecuje niczego, czego faza nie dowozi
+- [x] 1.10 Cztery komunikaty odmów są rozróżnialne i mówią, co zrobić
 
 ### Faza 2: Test ścieżki recenzenta bez zewnętrznych zmiennych
 
