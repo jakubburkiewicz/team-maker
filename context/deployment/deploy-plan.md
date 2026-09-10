@@ -231,8 +231,12 @@ adapter Astro 6 nie obsługuje Cloudflare Pages.
 
 - **Monitoring `1102` pod ruchem współbieżnym.** Pojedyncza sesja przeszła czysto (13 żądań, wszystkie `Ok`).
   Reakcja w razie wystąpienia: Workers Paid $5/mies., limit 30 s CPU.
-- **Konto testowe w produkcyjnej bazie.** Ręczna weryfikacja utworzyła realne konto — do usunięcia przed
-  oddaniem projektu, żeby recenzent nie oglądał danych testowych.
+- **Konto testowe w produkcyjnej bazie — domknięte krokiem skryptu, nie zapamiętaniem.** Ręczna
+  weryfikacja utworzyła realne konto; kolejne zmiany dołożyły następne (m.in. macierz dwóch kont
+  z `cross-account-team-isolation`). Usunięcie jest teraz **krokiem** `scripts/smoke-reviewer-path.sh`:
+  skrypt nie kończy się zerem, dopóki nie dostanie potwierdzenia, że konta zniknęły. Kadencja tego
+  dymu — **przed oddaniem projektu recenzentowi**, nie przy każdym scaleniu — bo każdy przebieg
+  zakłada kolejne trwałe konto i wysyła realny list (produkcyjny limit `email_sent = 2`).
 - **Niewymieniany kod PKCE po potwierdzeniu e-maila.** Link z maila prowadzi na `/?code=…`, ale
   aplikacja nie wymienia kodu na sesję, więc gracz ląduje niezalogowany i musi przejść przez
   `/auth/signin`. Do rozważenia przy implementacji: obsłużyć `?code=` i zalogować od razu.

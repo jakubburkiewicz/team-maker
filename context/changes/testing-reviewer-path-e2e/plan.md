@@ -880,32 +880,32 @@ odbierze:
 
 #### Automatyczne
 
-- [x] 3.1 `git apply --check scripts/probe-reviewer-path.patch` przechodzi na czystym drzewie
-- [x] 3.2 `scripts/probe-reviewer-path.sh` kończy się zerem (zielony → czerwony → zielony wykazane)
-- [x] 3.3 Odmowa na brudnym `src/lib/supabase.ts` wiąże (exit 2, drzewo nietknięte)
-- [x] 3.4 Odmowa na zajętym porcie wiąże (exit 6)
-- [x] 3.5 Drzewo czyste po przebiegu **oraz** po przerwaniu sygnałem w trakcie przebiegu 2
-- [x] 3.6 `npm run lint` zielone
+- [x] 3.1 `git apply --check scripts/probe-reviewer-path.patch` przechodzi na czystym drzewie — ca03141
+- [x] 3.2 `scripts/probe-reviewer-path.sh` kończy się zerem (zielony → czerwony → zielony wykazane) — ca03141
+- [x] 3.3 Odmowa na brudnym `src/lib/supabase.ts` wiąże (exit 2, drzewo nietknięte) — ca03141
+- [x] 3.4 Odmowa na zajętym porcie wiąże (exit 6) — ca03141
+- [x] 3.5 Drzewo czyste po przebiegu **oraz** po przerwaniu sygnałem w trakcie przebiegu 2 — ca03141
+- [x] 3.6 `npm run lint` zielone — ca03141
 
 #### Ręczne
 
-- [x] 3.7 Wyjście przebiegu 2 wymienia nazwy padłych testów
-- [x] 3.8 Trzy kody wyjścia dają trzy różne, czytelne komunikaty
+- [x] 3.7 Wyjście przebiegu 2 wymienia nazwy padłych testów — ca03141
+- [x] 3.8 Trzy kody wyjścia dają trzy różne, czytelne komunikaty — ca03141
 
 ### Faza 4: Dym produkcyjny egzekwowalny
 
 #### Automatyczne
 
-- [ ] 4.1 Trzy sondy bezmailowe przechodzą przeciwko produkcji (3/3 przed bramą ręczną)
-- [ ] 4.2 Odmowa zera wiąże: przebieg bez terminala kończy się niezerowo
-- [ ] 4.3 Odmowa na złym dowodzie wiąże (adres bez `code=` albo na innym hoście)
-- [ ] 4.4 Sekcje historyczne `deploy-plan.md` nietknięte wobec `e136707`
+- [x] 4.1 Trzy sondy bezmailowe przechodzą przeciwko produkcji (3/3 przed bramą ręczną)
+- [x] 4.2 Odmowa zera wiąże: przebieg bez terminala kończy się niezerowo
+- [x] 4.3 Odmowa na złym dowodzie wiąże (adres bez `code=` albo na innym hoście)
+- [x] 4.4 Sekcje historyczne `deploy-plan.md` nietknięte wobec `e136707`
 
 #### Ręczne
 
-- [ ] 4.5 Pełny przebieg dymu przeciwko produkcji wykonany, werdykt oddany skryptowi
-- [ ] 4.6 Konto testowe usunięte, w tym konta z poprzednich zmian
-- [ ] 4.7 Kroki ręczne wypisane przez skrypt dają się wykonać bez zaglądania do planu
+- [x] 4.5 Pełny przebieg dymu przeciwko produkcji wykonany, werdykt oddany skryptowi
+- [x] 4.6 Konto testowe usunięte, w tym konta z poprzednich zmian
+- [x] 4.7 Kroki ręczne wypisane przez skrypt dają się wykonać bez zaglądania do planu
 
 ### Faza 5: Przewodnik, bramki i przegląd zimnego czytelnika
 
