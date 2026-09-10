@@ -384,6 +384,11 @@ leżące u ich podstaw.
   z `CI on PR` na `local + przed oddaniem` decyzją Fazy 4 (2026-09-10). Uzasadnienie stoi
   przy wierszu w §5 i w `context/changes/testing-reviewer-path-e2e/plan.md`. Nie był to
   refresh — żaden z wyzwalaczy poniżej nie opisuje przypadku „faza rozstrzygnęła bramkę".
+  **Drugi wiersz tego samego wyjątku (dopisany 2026-09-10 po przeglądzie implementacji, F9):
+  §3, wiersz 4, kolumna obietnicy pokrycia** — z „a dolna granica zostaje zamknięta w CI" na
+  „a człon, którego automat nie sięga, dostaje egzekwowalny dym". Bez tej zmiany wiersz kłamałby
+  po osłabieniu §5, ale jest to zdanie strategiczne, nie zaślepka adresowana do Fazy 4 (jak
+  `Status` i `Change folder` w tym samym wierszu) — więc należy tu, a nie do cichego wypełnienia.
 - Stack versions last verified: 2026-09-07
 - AI-native tool references last verified: 2026-09-07
 - Ostatni refresh: 2026-09-07 — wyzwalacz: przepisanie reguły czystości testów w `AGENTS.md`

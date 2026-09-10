@@ -399,6 +399,22 @@ Moduł-poziomowy `createdCallSign` (`:110`) zostaje: `fullyParallel` rozprasza t
 a w obrębie workera biegną seryjnie, więc zmienna jest per-worker i nie ma współdzielenia; ten powód
 warto dopisać obok, bo przy dwóch testach w pliku pytanie się nasunie.
 
+**Aneks 2026-09-10 (przegląd implementacji, F5) — umowa „bez zmian" została rozszerzona.**
+Wykonanie dołożyło dwa helpery, których ta umowa nie przewidywała: `fillWhenHydrated` (Faza 2)
+i mocniejszy `waitForFormHydration` (`seed.spec.ts:121-142`), który wszedł dopiero w **`bd2e70f`**,
+czyli w commicie Fazy 5. Powód jest realny i przesondowany: React 19 hydratuje istniejący DOM **nie
+kasując wartości pól**, więc `fill` przed hydratacją przechodził, a `toHaveValue` potwierdzało wartość,
+której kontrolowany stan wyspy nie znał. Dowodem hydratacji jest tu obserwowalny skutek — przełącznik
+`Show password` faktycznie zmieniający `type` — nigdy `waitForTimeout`; to ta sama konwencja co
+`openFromIsland`, rozszerzona z wyzwalaczy na pola.
+
+Dwie konsekwencje do odnotowania, nie do przemilczenia: (a) Progress 2.1–2.7 jest podpisany commitem
+`aee9232`, więc odhaczenia Fazy 2 **nie pokrywają** kodu, który dziś realizuje jej kryteria — kryteria
+przeliczono ponownie w przeglądzie implementacji 2026-09-10 i są zielone na HEAD; (b) sama wada
+produktowa (wyścig hydratacji w formularzach wysp) **nie jest** zakresem tej zmiany i została
+wyprowadzona do osobnego folderu `context/changes/form-island-hydration-race/`. Ustalenie stoi też
+w `test-plan.md` §6.6 („Wyścig hydratacji — obowiązkowy") i §6.7.
+
 ### Kryteria sukcesu:
 
 #### Weryfikacja automatyczna:
@@ -411,9 +427,19 @@ warto dopisać obok, bo przy dwóch testach w pliku pytanie się nasunie.
 - Nowy test istnieje i wiąże gałąź produkcyjną: `grep -n 'Check your email' e2e/seed.spec.ts`
   zwraca trafienie, a `git show e136707:e2e/seed.spec.ts | grep -c 'Check your email'` daje `0`
 - `npx tsc --noEmit` i `npm run lint` zielone
-- Niezmiennik utrzymaniowy antywzorców — `! grep -rnE 'waitForTimeout|getByTestId|page\.(locator|\$\$?)\(' e2e/`.
-  **Zielony na bazie świadomie**: nie jest dowodem tej fazy, tylko strażnikiem tego, co faza dopisuje.
-  Zapisane jawnie, żeby nie liczyć go jako drugiej bariery
+- Niezmiennik utrzymaniowy antywzorców —
+  `! grep -rnE 'waitForTimeout|getByTestId|page\.(locator|\$\$?)\(' e2e/ | grep -vE '[0-9]+:\s*(\*|//)'`.
+  Kotwica na `[0-9]+:` bez wiodącego `:` jest celowa — działa tak samo na `grep -rn` po katalogu
+  (`ścieżka:linia:treść`) jak na `git show <sha>:<plik> | grep -n` (`linia:treść`), czyli obie
+  połówki porównania z bazą przechodzą przez ten sam wzorzec (`lessons.md` §„Strażnik musi mierzyć
+  to, co deklaruje" — rozjazd narzędzi).
+  **Poprawione 2026-09-10 (przegląd implementacji, F1→F3):** wariant bez strzyżenia komentarzy jest
+  czerwony **w obu połówkach** — `seed.spec.ts` opisuje w docstringu dokładnie te antywzorce, których
+  zakazuje (3 trafienia na `e136707`, 3 na HEAD). Pierwotny zapis „zielony na bazie świadomie" był
+  nieprawdziwy, a `[x]` podpisano przy komendzie, która dosłownie nie przechodzi — klasa
+  `lessons.md` §„Kryteria grepowe kotwicz na składni, nie na słowach — komentarze też są w pliku".
+  Kryterium nie jest dowodem tej fazy, tylko strażnikiem tego, co faza dopisuje; zapisane jawnie,
+  żeby nie liczyć go jako drugiej bariery
 
 #### Weryfikacja ręczna:
 
@@ -577,7 +603,12 @@ Reszta sekcji nietknięta; historyczne §1–§6 `deploy-plan.md` nietknięte.
   3/3 przed dojściem do bramy ręcznej
 - **Odmowa zera wiąże**: uruchomienie bez terminala (`scripts/smoke-reviewer-path.sh < /dev/null`)
   kończy się **niezerowo**, nie zerem — brak dowodu nie może wyglądać jak dym wykonany
-- Odmowa na złym dowodzie wiąże: podany adres bez `code=` albo na innym hoście → niezerowo
+- Odmowa na złym dowodzie wiąże: `scripts/smoke-reviewer-path.sh --check-landing <adres>` kończy się
+  **3** dla adresu bez `code=`, na innym hoście, nieabsolutnego i pustego, a **0** dla poprawnego.
+  **Poprawione 2026-09-10 (przegląd implementacji, F4):** pierwotny zapis wołał pełny skrypt, który
+  odmawia wcześniej kodem 2 („brak terminala"), więc kryterium przechodziło na dowodzie należącym
+  do kryterium wyżej — jedna bariera podana jako dwie (`lessons.md` §„Strażnik musi mierzyć to, co
+  deklaruje"). Tryb `--check-landing` rozdziela je z powrotem
 - `deploy-plan.md` nadal zawiera swoje sekcje historyczne: `grep -c '^### ' context/deployment/deploy-plan.md`
   daje tę samą wartość co `git show e136707:context/deployment/deploy-plan.md | grep -c '^### '`
 
@@ -869,7 +900,8 @@ odbierze:
 - [x] 2.2 Strażnik zniknięcia zmiennych: czerwony na `e136707`, zielony na HEAD — aee9232
 - [x] 2.3 Nowy test wiąże gałąź produkcyjną (`Check your email` obecne na HEAD, nieobecne na `e136707`) — aee9232
 - [x] 2.4 `npx tsc --noEmit` i `npm run lint` zielone — aee9232
-- [x] 2.5 Niezmiennik antywzorców w `e2e/` (zielony na bazie świadomie — nie dowód tej fazy) — aee9232
+- [x] 2.5 Niezmiennik antywzorców w `e2e/` (czerwony w obu połówkach bez strzyżenia komentarzy — komenda
+      poprawiona 2026-09-10 w przeglądzie implementacji; nie dowód tej fazy) — aee9232
 
 #### Ręczne
 
@@ -898,7 +930,8 @@ odbierze:
 
 - [x] 4.1 Trzy sondy bezmailowe przechodzą przeciwko produkcji (3/3 przed bramą ręczną) — cc99f95
 - [x] 4.2 Odmowa zera wiąże: przebieg bez terminala kończy się niezerowo — cc99f95
-- [x] 4.3 Odmowa na złym dowodzie wiąże (adres bez `code=` albo na innym hoście) — cc99f95
+- [x] 4.3 Odmowa na złym dowodzie wiąże — przez `--check-landing`, tryb dodany 2026-09-10 w przeglądzie
+      implementacji; wcześniej kryterium przechodziło na barierze TTY kryterium 4.2 — cc99f95
 - [x] 4.4 Sekcje historyczne `deploy-plan.md` nietknięte wobec `e136707` — cc99f95
 
 #### Ręczne

@@ -54,14 +54,16 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: "on-first-retry",
   },
-  // `reuseExistingServer` opiera się na odmowie #3: ręcznie postawione `npm run preview` czyta
-  // ten sam `dist/server/.dev.vars`, który strażnik sprawdza, więc reużycie **preview** jest
-  // pokryte. Proces innego rodzaju nasłuchujący na tym porcie już nie jest — strażnik czyta
-  // pliki i adres, nie to, co siedzi w gnieździe.
+  // `reuseExistingServer: false` świadomie — odmowa #3 NIE pokrywa reużycia. Strażnik czyta
+  // `dist/server/.dev.vars` z dysku, a stojący preview serwuje kompilację zamrożoną w chwili
+  // *swojego* startu; te dwa stany rozjeżdżają się po każdym `npm run build`. Sonda 2026-09-10:
+  // preview postawiony na buildzie wskazującym obcy projekt, potem `.env` → lokalny + rebuild —
+  // wszystkie pięć odmów przeszło, a testy pobiegły przeciwko obcemu Supabase. Przy `false`
+  // zajęty port jest głośną odmową Playwrighta zamiast cichego fałszywego przebiegu.
   webServer: {
     command: "npm run preview",
     url: BASE_URL,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     // Hojnie, ale bez budowania: `dist/` jest już gotowe, więc preview wstaje w sekundach.
     timeout: 60_000,
   },

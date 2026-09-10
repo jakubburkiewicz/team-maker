@@ -51,17 +51,30 @@ PATCH="scripts/probe-reviewer-path.patch"
 SOURCE="src/lib/supabase.ts"
 APP_PORT="${E2E_PORT:-4321}"
 PATCH_APPLIED=0
+# Drzewo źródłowe i `dist/` mają OSOBNE cykle życia, więc osobne flagi. `git apply -R` czyści
+# to pierwsze; drugie czyści dopiero udana przebudowa bez łatki. Zrównanie ich znaczy, że
+# ostrzeżenie milknie w ścieżce „łatka zdjęta, przebudowa padła" (exit 5) — a to jedyna
+# ścieżka, w której rozbrojona kompilacja zostaje przy CZYSTYM `git status`.
+DIST_DIRTY=0
 LOG="$(mktemp -t probe-reviewer-path)"
 
 cleanup() {
   if [[ "$PATCH_APPLIED" == "1" ]]; then
     PATCH_APPLIED=0
     if git apply -R "$PATCH"; then
-      printf '\n!! Łatka zdjęta, ale dist/ trzyma jeszcze ROZBROJONĄ kompilację.\n' >&2
-      printf '   Uruchom `npm run build`, zanim odpalisz cokolwiek przeciwko preview.\n' >&2
+      printf '\n!! Łatka zdjęta z drzewa źródłowego.\n' >&2
     else
       printf '\n!! Nie udało się zdjąć łatki. Cofnij ręcznie: git checkout -- %s\n' "$SOURCE" >&2
     fi
+  fi
+  if [[ "$DIST_DIRTY" == "1" ]]; then
+    # Zerowane od razu, tak jak `PATCH_APPLIED` — `on_signal` woła `cleanup`, a potem robi to
+    # jeszcze trap EXIT; bez tego ostrzeżenie pojawia się dwa razy pod rząd.
+    DIST_DIRTY=0
+    printf '\n!! dist/ trzyma jeszcze ROZBROJONĄ kompilację (zerwana propagacja ciasteczka sesji).\n' >&2
+    printf '   `git status` tego NIE pokaże — zerwanie siedzi w skompilowanym workerze, nie w źródle.\n' >&2
+    printf '   Uruchom `npm run build`, zanim odpalisz cokolwiek przeciwko preview — i bezwzględnie\n' >&2
+    printf '   zanim wykonasz `npx wrangler deploy`.\n' >&2
   fi
   rm -f "$LOG"
 }
@@ -126,6 +139,9 @@ printf '  ✓ zielone\n\n'
 printf '→ Przebieg 2/3: łatka nałożona + przebudowa — e2e ma być CZERWONE.\n'
 git apply "$PATCH"
 PATCH_APPLIED=1
+# Od tej chwili najbliższy `npm run build` (w `run_e2e`) rozbraja `dist/`. Flaga leci w górę
+# PRZED buildem, bo przerwanie w jego trakcie zostawia kompilację w stanie pośrednim.
+DIST_DIRTY=1
 : >"$LOG"
 set +e
 run_e2e
@@ -155,12 +171,20 @@ set +e
 run_e2e
 RUN3=$?
 set -e
+if [[ "$RUN3" -eq 90 ]]; then
+  printf '\n✗ PRZEBIEG 3: przebudowa po zdjęciu łatki PADŁA — e2e w ogóle nie ruszyło.\n' >&2
+  printf '  To awaria builda, nie werdykt o teście. dist/ został ROZBROJONY (patrz ostrzeżenie niżej).\n\n' >&2
+  cat "$LOG" >&2
+  exit 5
+fi
 if [[ "$RUN3" -ne 0 ]]; then
   printf '\n✗ PRZEBIEG 3 CZERWONY: po zdjęciu łatki e2e nie wróciło do zieleni.\n' >&2
   printf '  Drzewo albo build zostały w stanie pośrednim — sprawdź `git status` i przebuduj.\n\n' >&2
   cat "$LOG" >&2
   exit 5
 fi
+# Dopiero UDANA przebudowa bez łatki czyni `dist/` znowu wiarygodnym.
+DIST_DIRTY=0
 printf '  ✓ zielone\n\n'
 
 printf '✓ SONDA WIĄŻE: zielony → czerwony → zielony. e2e widzi zerwaną propagację sesji.\n'
