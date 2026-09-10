@@ -26,25 +26,25 @@ ZIELONY     →  napisz minimalny kod produkcyjny, aby test przeszedł
 REFAKTORYZACJA →  posprzątaj, utrzymując test w stanie zielonym
 ```
 
-Ta umiejętność jest **test-first odpowiednikiem `/10x-implement`**. Odczytuje ten sam plan, modyfikuje tę samą kanoniczną sekcję `## Progress` i używa tego samego rytuału zatwierdzania na koniec fazy oraz przekazywania do schowka. Jedyną różnicą jest kolejność: tutaj test, który zawodzi, jest pisany **przed** kodem produkcyjnym. Ponieważ ta kolejność jest kluczowa, nie używaj tej umiejętności do dodawania testów po tym, jak implementacja już istnieje. Ponieważ obie umiejętności współdzielą `## Progress`, możesz je swobodnie przeplatać — TDD jednej fazy tutaj, przekazanie następnej fazy do `/10x-implement`, powrót, a stan nigdy nie zostanie utracony.
+Ta umiejętność jest **test-first odpowiednikiem `/10x-implement`**. Odczytuje ten sam plan, modyfikuje tę samą kanoniczną sekcję `## Progress` i używa tego samego rytuału zatwierdzania na koniec fazy oraz przekazywania do schowka. Jedyną różnicą jest kolejność: tutaj test, który zawodzi, jest pisany **przed** kodem produkcyjnym. Ponieważ ta kolejność jest kluczowa, nie używaj tej umiejętności do dodawania testów po tym, jak implementacja już istnieje. Ponieważ obie umiejętności współdzielą `## Progress`, możesz je swobodnie przeplatać — wykonaj TDD dla jednej fazy tutaj, przekaż następną fazę do `/10x-implement`, wróć, a stan nigdy nie zostanie utracony.
 
 Ścieżka planu: `$ARGUMENTS`
 
 ## Co zakłada ta umiejętność — i czego nie zrobi
 
-- **Infrastruktura testowa już istnieje.** Zakłada się, że istnieje runner (Vitest / Playwright / Jest / pytest / …), sposób uruchamiania pojedynczego pliku oraz konwencje testowe projektu. Ta umiejętność je **odkrywa**; **nie** instaluje runnera, nie tworzy konfiguracji, nie tworzy fixture'ów ani nie podłącza CI. Jeśli w ogóle nie ma runnera, zatrzymaj się i powiedz użytkownikowi, aby najpierw go skonfigurował (wskaż mu `/10x-test-plan` dla fazowego wdrożenia testów lub `/10x-bootstrapper` dla tworzenia szkieletu).
+- **Infrastruktura testowa już istnieje.** Zakłada się, że istnieje runner (Vitest / Playwright / Jest / pytest / …), sposób uruchamiania pojedynczego pliku oraz konwencje testowe projektu. Ta umiejętność je **odkrywa**; **nie** instaluje runnera, nie tworzy konfiguracji, nie tworzy fixture'ów ani nie konfiguruje CI. Jeśli w ogóle nie ma runnera, zatrzymaj się i powiedz użytkownikowi, aby najpierw go skonfigurował (wskaż mu `/10x-test-plan` dla fazowego wdrożenia testów lub `/10x-bootstrapper` dla tworzenia szkieletu).
 - **Implementacja produkcyjna jeszcze nie istnieje.** TDD działa tylko wtedy, gdy test, który zawodzi, może prowadzić implementację. Jeśli odpowiednie zachowanie, punkt końcowy, komponent, migracja, okablowanie lub inna zmiana produkcyjna dla danej fazy już istnieje, zatrzymaj się natychmiast; nie pisz testów retrospektywnych i nie kontynuuj fazy pod etykietą TDD. Powiedz użytkownikowi, aby użył `/10x-implement <change-id> phase N`, aby kontynuować już rozpoczętą fazę.
-- **Prowadzi implementację, a nie tylko szkielet testowy.** W przeciwieństwie do starego przepływu „napisz wszystkie testy z góry”, ta umiejętność pisze mały test, który zawodzi, a następnie natychmiast sprawia, że jest zielony, faza po fazie. Nie ma oddzielnej partii osieroconych testów, które zawiodły.
-- **Każda faza jest sprawdzana pod kątem tego, czy test-first faktycznie pasuje i czy implementacja jest nieobecna.** Niektóre fazy (konfiguracja, tworzenie szkieletu, wizualne dopracowanie, okablowanie infrastruktury) nie mogą być sensownie prowadzone przez test, który zawodzi. Już rozpoczęta implementacja również nie może zostać odzyskana do prawdziwego TDD. Te przypadki są przekierowywane lub zatrzymywane, jak opisano poniżej.
+- **Prowadzi implementację, a nie tylko szkielet testowy.** W przeciwieństwie do starego przepływu "napisz wszystkie testy z góry", ta umiejętność pisze mały test, który zawodzi, a następnie natychmiast sprawia, że przechodzi, faza po fazie. Nie ma oddzielnej partii osieroconych testów, które zawiodły.
+- **Każda faza jest sprawdzana pod kątem tego, czy test-first faktycznie pasuje i czy implementacja jest nieobecna.** Niektóre fazy (konfiguracja, tworzenie szkieletu, wizualne dopracowanie, okablowanie infrastruktury) nie mogą być sensownie prowadzone przez test, który zawodzi. Już rozpoczęta implementacja również nie może zostać przywrócona do prawdziwego TDD. Te przypadki są przekierowywane lub zatrzymywane, jak opisano poniżej.
 
 ## Przegląd faz
 
 ```
 SETUP            →  Rozwiąż plan, przeczytaj w całości, potwierdź istnienie infrastruktury testowej, utwórz zadania dla każdej fazy
 Dla każdej fazy:
-  ├─ BRAMKA       →  Czy ta faza jest TDD'owalna i czy implementacja jest nieobecna? Jeśli nie → przekieruj lub zatrzymaj
+  ├─ BRAMKA       →  Czy ta faza nadaje się do TDD i czy implementacja jest nieobecna? Jeśli nie → przekieruj lub zatrzymaj
   ├─ CZERWONY/ZIELONY/REFAKTORYZACJA  →  Pętla dla każdego zachowania w fazie, aż do spełnienia kryteriów sukcesu
-  └─ KONIEC FAZY  →  Cały zestaw zielony → bramka ręczna → rytuał zatwierdzania → decyzja o następnej fazie (schowek)
+  └─ KONIEC FAZY   →  Cały zestaw zielony → bramka ręczna → rytuał zatwierdzania → decyzja o następnej fazie (schowek)
 Po wszystkich fazach →  Podsumowanie ukończenia + opcjonalny /10x-impl-review
 ```
 
@@ -73,14 +73,14 @@ You can list active changes with: `ls context/changes/`
 Tip: the plan should already be reviewed and approved — this skill implements it, it doesn't write it.
 ```
 
-2. **Przeczytaj plan w całości** — każdą fazę, każdy blok Changes Required, każdy element Success Criteria. Nigdy nie używaj limit/offset; potrzebujesz pełnego kontekstu. Sekcja `## Progress` na dole jest **autorytatywna dla stanu wykonania** — znaczniki wyboru (`- [x]`) znajdują się TYLKO tam (patrz `references/progress-format.md`). Bloki faz zawierają zwykłe punktorzy `- `, bez pól wyboru.
+2. **Przeczytaj plan w całości** — każdą fazę, każdy blok `Changes Required`, każdy element `Success Criteria`. Nigdy nie używaj limitu/offsetu; potrzebujesz pełnego kontekstu. Sekcja `## Progress` na dole jest **autorytatywna dla stanu wykonania** — znaczniki wyboru (`- [x]`) znajdują się TYLKO tam (patrz `references/progress-format.md`). Bloki faz zawierają zwykłe punktorzy `- `, bez pól wyboru.
 
 3. **Przeczytaj `context/foundation/lessons.md`** jeśli istnieje i przyswój każdy wpis przed rozpoczęciem jakiejkolwiek fazy — są to zaakceptowane powtarzające się zasady zespołu i muszą kształtować każdy wybór implementacyjny w tym przebiegu.
 
 4. **Potwierdź istnienie infrastruktury testowej (lekkie sprawdzenie — nie badaj całego świata):**
    - Jeśli `context/foundation/test-stack.md` istnieje, przeczytaj go — zawiera on informacje o runnerze, środowisku, konwencjach i poleceniach uruchamiania. Użyj go i pomiń skanowanie. Jeśli wygląda na nieaktualny (odwołuje się do narzędzi/konfiguracji, które już nie istnieją), zanotuj to dla użytkownika i wróć do szybkiego skanowania.
    - W przeciwnym razie wykonaj **szybkie** skanowanie konwencji (to nie jest faza intensywnych badań infrastruktury): znajdź konfigurację testową i 1-2 reprezentatywne istniejące pliki testowe, aby poznać styl importu, zagnieżdżanie describe/it, wzorce mocków i polecenie do uruchamiania **pojedynczego** pliku testowego. Wystarczy pojedynczy `Glob` dla `*.test.*` / `*.spec.*` plus przeczytanie jednego przykładu.
-   - **Jeśli nie ma runnera i w ogóle żadnej konfiguracji testowej**, ZATRZYMAJ:
+   - **Jeśli w ogóle nie ma runnera i konfiguracji testowej**, ZATRZYMAJ:
 
 ```
 This plan needs a test runner in place before I can drive it test-first — I found none
@@ -92,13 +92,13 @@ This skill assumes test infrastructure already exists; it won't set it up. Optio
   • Use /10x-test-plan for a phased test-rollout strategy.
 ```
 
-5. **Zaktualizuj `change.md`**: ustaw `status: implementing` (tylko jeśli aktualnie w `{planned, plan_reviewed}`) i `updated: <dzisiejsza_data>`.
+5. **Zaktualizuj `change.md`**: ustaw `status: implementing` (tylko jeśli aktualnie w `{planned, plan_reviewed}`) i `updated: <today>`.
 
-6. **Utwórz jedno zadanie na fazę** (pojawiają się one na pasku stanu użytkownika): dla każdego nagłówka `## Phase N:`, `TaskCreate` z `subject: "Phase N: [Nazwa Fazy]"` i `activeForm: "TDD Phase N"`. Oznacz bieżącą fazę jako `in_progress` przed rozpoczęciem; oznacz ją jako `completed` po spełnieniu kryteriów sukcesu.
+6. **Utwórz jedno zadanie na fazę** (pojawiają się one na pasku stanu użytkownika): dla każdego nagłówka `## Phase N:`, `TaskCreate` z `subject: "Phase N: [Phase Name]"` i `activeForm: "TDD Phase N"`. Oznacz bieżącą fazę jako `in_progress` przed rozpoczęciem; oznacz ją jako `completed`, gdy jej kryteria sukcesu zostaną spełnione.
 
 7. **Znajdź punkt początkowy**: przeskanuj `## Progress` — pierwsza linia `- [ ]` w kolejności dokumentu to miejsce, od którego zaczynasz. Jeśli podano argument `phase N`, przejdź do pierwszej linii `- [ ]` pod `### Phase N:`.
 
-> **Konwencja schowka.** Wszędzie tam, gdzie ta umiejętność mówi *skopiuj `X` do schowka*, przekaż dokładny ciąg `X` do schowka platformy — spróbuj `pbcopy` (macOS), następnie `clip.exe` (Windows/WSL), następnie `xclip -selection clipboard` (Linux) i cicho wróć, jeśli żadne nie istnieją. Następnie wyświetl skopiowane polecenie w osobnej linii z sufiksem `(✓ copied)`.
+> **Konwencja schowka.** Wszędzie tam, gdzie ta umiejętność mówi *skopiuj `X` do schowka*, przekaż dokładny ciąg `X` do schowka platformy — spróbuj `pbcopy` (macOS), następnie `clip.exe` (Windows/WSL), następnie `xclip -selection clipboard` (Linux), i wróć do poprzedniego stanu po cichu, jeśli żadne nie istnieją. Następnie wyświetl skopiowane polecenie w osobnej linii z sufiksem `(✓ copied)`.
 
 ---
 
@@ -135,21 +135,21 @@ Jeśli implementacja jest nieobecna, przejdź do sprawdzenia zdolności do TDD.
 
 ### Sprawdzenie zdolności do TDD
 
-Po potwierdzeniu braku implementacji, zdecyduj, czy faza może być **sensownie prowadzona przez test, który zawodzi**. Faza jest TDD'owalna, gdy istnieje **obserwowalny wynik, który można potwierdzić, zanim kod będzie istniał**.
+Po potwierdzeniu braku implementacji, zdecyduj, czy faza może być **sensownie prowadzona przez test, który zawodzi**. Faza jest zdolna do TDD, gdy istnieje **obserwowalny wynik, który można potwierdzić, zanim kod będzie istniał**.
 
-| TDD'owalne — prowadź tutaj | Nie TDD'owalne — przekieruj do `/10x-implement` |
+| Zdolne do TDD — prowadź tutaj | Niezdolne do TDD — przekieruj do `/10x-implement` |
 |---|---|
 | Czyste funkcje, transformacje danych, parsery, walidatory | Czyste tworzenie szkieletu: tworzenie katalogów, plików konfiguracyjnych, edycje `package.json`/manifestu |
 | Maszyny stanów / reduktory / obliczanie flag | Okablowanie i infrastruktura: pliki CI, Dockerfile, konfiguracja środowiska, konfiguracja wdrożenia |
-| Kontrakty żądanie API → odpowiedź (status, kształt, autoryzacja, bramkowanie) | Wizualne / stylistyczne dopracowanie bez zautomatyzowanej ścieżki asercji w stosie |
-| Logika biznesowa z jasnymi wejściami/wyjściami | Eksploracyjne spiki, gdzie kontrakt nie jest jeszcze znany |
+| Kontrakty żądań API → odpowiedzi (status, kształt, autoryzacja, bramkowanie) | Wizualne / stylistyczne dopracowanie bez zautomatyzowanej ścieżki asercji w stosie |
+| Logika biznesowa z jasnymi wejściami/wyjściami | Eksploracyjne spike'i, gdzie kontrakt nie jest jeszcze znany |
 | Przepływy integracji przez granice, które można mockować (DB/KV/HTTP) | Dokumentacja, komentarze, edycje tylko treści |
-| Naprawy błędów (najpierw napisz test, który zawodzi) | Cienkie połączenia, gdzie test tylko powtórzyłby implementację (tautologiczne) |
+| Naprawy błędów (najpierw napisz test, który zawodzi) | Cienki klej, gdzie test tylko powtórzyłby implementację (tautologiczny) |
 
 **Jak zastosować sprawdzenie zdolności do TDD:**
 
-- Jeśli implementacja jest nieobecna, a faza jest **wyraźnie TDD'owalna**, stwierdź to w jednej linii i przejdź do pętli red-green-refactor.
-- Jeśli faza jest **wyraźnie nie TDD'owalna**, uruchom **przekierowanie** (poniżej).
+- Jeśli implementacja jest nieobecna, a faza jest **wyraźnie zdolna do TDD**, stwierdź to w jednej linii i przejdź do pętli czerwony-zielony-refaktoryzacja.
+- Jeśli faza jest **wyraźnie niezdolna do TDD**, uruchom **przekierowanie** (poniżej).
 - Jeśli jest **mieszana lub niejednoznaczna** (np. faza, która tworzy szkielet konfiguracji *i* dodaje walidator z prawdziwą logiką), użyj `AskUserQuestion`:
 
   - question: "Phase [N] is partly scaffolding, partly logic. How should I drive it?"
@@ -163,7 +163,7 @@ Po potwierdzeniu braku implementacji, zdecyduj, czy faza może być **sensownie 
       description: "Force test-first even for the thin parts. May produce low-value tests."
     multiSelect: false
 
-### Przekieruj fazę nie TDD'owalną do `/10x-implement`
+### Przekieruj fazę niezdolną do TDD do `/10x-implement`
 
 Podaj *dlaczego* faza nie pasuje (jedno lub dwa zdania, oparte na powyższej tabeli), a następnie użyj `AskUserQuestion`:
 
@@ -197,25 +197,25 @@ Clear context (`/clear`), run that, then come back with:
 
 ## Cykl Red-Green-Refactor
 
-Wewnątrz fazy TDD'owalnej pracuj zachowanie po zachowaniu. Każdy krok `#### Automated` w Progress fazy (lub każde odrębne zachowanie w Changes Required) to jedno przejście przez pętlę. Utrzymuj pętlę ciasną — mały test, mały kod, uruchamiaj często.
+Wewnątrz fazy zdolnej do TDD, pracuj zachowanie po zachowaniu. Każdy krok `#### Automated` w Progress fazy (lub każde odrębne zachowanie w Changes Required) to jedno przejście przez pętlę. Utrzymuj pętlę ciasną — mały test, mały kod, uruchamiaj często.
 
 ### Budżet testowy na fazę
 
-Napisz **ukierunkowany** zestaw, a nie wyczerpujące pokrycie — zazwyczaj **2–5 testów na fazę**. Wybierz zachowania, które dowodzą, że faza działa i wychwyciłyby rzeczywiste regresje. Ustanawiasz wzorzec; deweloper rozszerza go później. Nie pisz testu na każdy getter czy stałą.
+Napisz **ukierunkowany** zestaw, a nie wyczerpujące pokrycie — zazwyczaj **2-5 testów na fazę**. Wybierz zachowania, które dowodzą, że faza działa i wychwyciłyby rzeczywiste regresje. Ustanawiasz wzorzec; deweloper rozszerza go później. Nie pisz testu dla każdego gettera lub stałej.
 
 ### CZERWONY — najpierw napisz test, który zawodzi
 
 1. Napisz **jeden** test (lub ścisłą grupę) dla następnego zachowania, zgodnie z konwencjami odkrytymi w Setup — styl importu, zagnieżdżanie describe/it, istniejące pomocniki mocków. Nie wymyślaj nowych wzorców.
 2. Nazwij go dla **wyniku**, a nie mechanizmu. Dobrze: `"returns 429 when token exceeds 20 submissions per hour"`. Źle: `"calls rateLimiter.check()"`.
 3. Testuj **wyniki, a nie wewnętrzne elementy** — sprawdzaj wartości zwracane, renderowany wynik, odpowiedzi HTTP lub kształt stanu, nigdy wywołania prywatnych metod ani kolejność wykonania.
-4. **Uruchom tylko ten plik testowy** z wywołaniem pojedynczego pliku projektu odkrytym w Setup (np. forma `run <path>` runnera, wynik przycięty do ogona) i potwierdź, że **zawodzi z właściwego powodu** — błąd asercji lub "moduł nie znaleziony / nie zaimplementowany" dla kodu, który masz zamiar napisać, **nie** błąd składniowy lub uszkodzony import w samym teście. Krótko pokaż użytkownikowi czerwony wynik.
+4. **Uruchom tylko ten plik testowy** z wywołaniem pojedynczego pliku projektu odkrytym w Setup (np. forma `run <path>` runnera, wynik przycięty do ogona) i potwierdź, że **zawodzi z właściwego powodu** — błąd asercji lub "moduł nie znaleziony / nie zaimplementowany" dla kodu, który masz zamiar napisać, **a nie** błąd składniowy lub uszkodzony import w samym teście. Krótko pokaż użytkownikowi czerwony wynik.
 
-Nigdy nie używaj `it.skip()` / `xit()` do „przejścia” fazy — pominięty test jest niewidoczny. Czerwień jest celem.
+Nigdy nie używaj `it.skip()` / `xit()` do "przejścia" fazy — pominięty test jest niewidoczny. Czerwień jest celem.
 
 ### ZIELONY — minimalny kod do przejścia
 
 5. Napisz **najmniejszy** kod produkcyjny, który sprawi, że test, który zawodzi, przejdzie. Oprzyj się pokusie budowania przed testem — przyszłe zachowania mają swój własny krok CZERWONY.
-6. Uruchom ponownie test. Potwierdź **zielony**. Jeśli inne testy się zepsuły, zmieniłeś zachowanie — napraw kod (nie testy), aż cały zestaw będzie ponownie zielony.
+6. Uruchom ponownie test. Potwierdź **zielony**. Jeśli inne testy zawiodły, zmieniłeś zachowanie — napraw kod (nie testy), aż cały zestaw będzie ponownie zielony.
 
 ### REFAKTORYZACJA — posprzątaj, pozostań zielony
 
@@ -229,11 +229,11 @@ Powtarzaj CZERWONY→ZIELONY→REFAKTORYZACJA, aż każdy krok `#### Automated` 
 
 ## Zakończenie fazy
 
-Gdy wszystkie wiersze `#### Automated` w `### Phase N:` są `[x]`, uruchom rytuał zakończenia fazy (odzwierciedla to `/10x-implement` — jedno zatwierdzenie Conventional-Commits na fazę, a następnie zapisz jego krótki SHA z powrotem do odwróconych wierszy).
+Gdy wszystkie wiersze `#### Automated` w `### Phase N:` są `[x]`, uruchom rytuał zakończenia fazy (odzwierciedla to `/10x-implement` — jedno zatwierdzenie Conventional-Commits na fazę, a następnie zapisz jego krótkie SHA z powrotem do odwróconych wierszy).
 
-> **Twardy niezmiennik — zatwierdzaj tylko na zielono.** Nigdy nie proponuj, nie przygotowuj ani nie twórz zatwierdzenia, gdy jakikolwiek test w zakresie jest CZERWONY, pominięty w celu udawania przejścia lub w inny sposób uszkodzony. Zatwierdzenie jest oferowane **tylko po tym, jak stan ZIELONY (lub REFAKTORYZACJA) zostanie utrzymany, a cały zestaw przejdzie**. Krok CZERWONY to przejściowy punkt kontrolny, który pokazujesz użytkownikowi, nigdy granica zatwierdzenia. Jeśli zestaw jest czerwony na końcu fazy, napraw kod, aż będzie zielony — nie przechodź do kroku 1 rytuału z nieudanymi testami.
+> **Twardy niezmiennik — zatwierdzaj tylko na zielono.** Nigdy nie proponuj, nie przygotowuj ani nie twórz zatwierdzenia, gdy jakikolwiek test w zakresie jest CZERWONY, pominięty w celu udawania przejścia lub w inny sposób uszkodzony. Zatwierdzenie jest oferowane **tylko po tym, jak stan ZIELONY (lub REFAKTORYZACJA) zostanie utrzymany, a cały zestaw przejdzie**. Krok CZERWONY to przejściowy punkt kontrolny, który pokazujesz użytkownikowi, nigdy granica zatwierdzenia. Jeśli zestaw jest czerwony na końcu fazy, napraw kod, aż będzie zielony — nie przechodź do kroku 1 rytuału z testami, które zawiodły.
 
-Utrzymuj **zestaw zmienionych plików** przez całą fazę: każdy plik, który `Edit`/`Write` (testy *i* kod produkcyjny) trafia do niego, plus `context/changes/<change-id>/plan.md` (zawsze — edytujesz jego Progress). W **pierwszej fazie** zmiany, również zasil go wszystkimi nieśledzonymi/zmodyfikowanymi plikami w `context/changes/<change-id>/` (`change.md`, `research.md` itp.). Zestaw **resetuje się na każdej granicy fazy**.
+Utrzymuj **zestaw dotkniętych plików** przez całą fazę: każdy plik, który `Edit`/`Write` (testy *i* kod produkcyjny) trafia do niego, plus `context/changes/<change-id>/plan.md` (zawsze — edytujesz jego Progress). W **pierwszej fazie** zmiany, również zasil go wszystkimi nieśledzonymi/zmodyfikowanymi plikami w `context/changes/<change-id>/` (`change.md`, `research.md` itp.). Zestaw **resetuje się na każdej granicy fazy**.
 
 1. **Uruchom cały zestaw** (nie tylko pojedyncze pliki) i potwierdź zielony. Napraw wszelkie uszkodzenia międzyfazowe przed zatwierdzeniem.
 
@@ -252,23 +252,23 @@ Please perform the manual verification steps from the plan:
 Let me know when manual testing is complete so I can commit.
 ```
 
-   W **ostatniej fazie** również zsumuj wszystkie nadal oczekujące wiersze `#### Manual` z wcześniejszych faz (informacyjnie; bramka nadal tylko pauzuje, nie blokuje twardo).
+   W **ostatniej fazie** również zsumuj wszystkie nadal oczekujące wiersze `#### Manual` z wcześniejszych faz (informacyjnie; bramka nadal tylko wstrzymuje, nie blokuje twardo).
 
-3. **Wykryj niezwiązane, brudne ścieżki.** Uruchom `git status --porcelain`; sprawdź przecięcie ze ścieżkami **poza** zestawem dotkniętych plików. Jeśli takie istnieją, przedstaw je i zapytaj za pomocą `AskUserQuestion`, czy zatwierdzić tylko zaplanowany zestaw (zalecane), przygotować wszystkie, czy przerwać. Jeśli żadne nie istnieją, pomiń.
+3. **Wykryj niezwiązane brudne ścieżki.** Uruchom `git status --porcelain`; przetnij z ścieżkami **poza** zestawem dotkniętych. Jeśli takie istnieją, przedstaw je i zapytaj za pomocą `AskUserQuestion`, czy zatwierdzić tylko zaplanowany zestaw (zalecane), przygotować wszystkie, czy przerwać. Jeśli żadne, pomiń.
 
-4. **Przygotuj jawnie według ścieżki** — `git add` każdy plik w zestawie dotkniętych plików według nazwy. Nigdy `git add -A` / `git add .`.
+4. **Przygotuj jawnie według ścieżki** — `git add` każdy plik w zestawie dotkniętych według nazwy. Nigdy `git add -A` / `git add .`.
 
 5. **Sprawdzenie pustego diffa.** `git diff --cached --quiet`; jeśli wyjście 0, wydrukuj, że faza nie miała diffa (wiersze pozostają bez SHA), ustaw `SHA=""` i przejdź do kroku 8.
 
-6. **Zaproponuj wiadomość Conventional-Commits** i zatwierdź ją za pomocą `AskUserQuestion` (zatwierdź jako zaproponowaną / edytuj temat / nadpisz). Temat: `<type>(<change-id>): <phase title> (p<N>)`. Dla faz TDD'owanych, preferuj `test`/`feat` i wspomnij o charakterze test-first w treści. Dołącz linię `Refs:` jeśli rozmowa zawiera rzeczywiste odniesienia Jira/Linear/GitHub (nigdy nie twórz ich z change-id lub gałęzi).
+6. **Zaproponuj wiadomość Conventional-Commits** i zatwierdź ją za pomocą `AskUserQuestion` (zatwierdź jako zaproponowane / edytuj temat / nadpisz). Temat: `<type>(<change-id>): <phase title> (p<N>)`. Dla faz TDD, preferuj `test`/`feat` i wspomnij o charakterze test-first w treści. Dołącz linię `Refs:` jeśli rozmowa zawiera rzeczywiste odniesienia Jira/Linear/GitHub (nigdy nie wymyślaj ich z change-id lub gałęzi).
 
-7. **Zatwierdź** za pomocą pojedynczego `git commit` z treścią heredoc, zgodnie z globalnym protokołem wiadomości zatwierdzenia: zatwierdzona linia tematu, a następnie krótka treść wymieniająca dodane testy + zmieniony kod produkcyjny (i linię `Refs:` w stosownych przypadkach). Nigdy nie przekazuj flag `--no-verify` / `--amend` / signing-bypass. Jeśli hook pre-commit zawiedzie, napraw przyczynę i utwórz NOWE zatwierdzenie.
+7. **Zatwierdź** za pomocą pojedynczego `git commit` z treścią heredoc, zgodnie z globalnym protokołem wiadomości zatwierdzenia: zatwierdzona linia tematu, a następnie krótka treść wymieniająca dodane testy + dotknięty kod produkcyjny (i linię `Refs:` w stosownych przypadkach). Nigdy nie przekazuj flag `--no-verify` / `--amend` / signing-bypass. Jeśli hook pre-commit zawiedzie, napraw przyczynę i utwórz NOWE zatwierdzenie.
 
 8. **Zapisz i odczytaj SHA.** `git rev-parse --short HEAD` → `SHA`. Dla każdego wiersza Progress odwróconego w tej fazie, Edytuj `- [x] N.M <title>` → `- [x] N.M <title> — <SHA>` (pomiń wiersze, które już zawierają SHA; jeśli `SHA=""`, pomiń — `/10x-archive` wyświetla wiersze bez SHA jako ostrzeżenia informacyjne).
 
-9. **Zaktualizuj `change.md`**: `updated: <dzisiejsza_data>`; utrzymuj `status: implementing` do ostatniej fazy.
+9. **Zaktualizuj `change.md`**: `updated: <today>`; utrzymuj `status: implementing` do ostatniej fazy.
 
-10. **Zresetuj zestaw zmienionych plików** przed następną fazą.
+10. **Zresetuj zestaw dotkniętych plików** przed następną fazą.
 
 ### Decyzja o następnej fazie
 
@@ -285,13 +285,13 @@ Użyj `AskUserQuestion`:
     description: "Run /10x-impl-review to verify the implementation against the plan before continuing."
   multiSelect: false
 
-**Kontynuuj:** przeczytaj następną fazę, ustaw jej zadanie jako `in_progress`, uruchom bramkę TDD, kontynuuj. Nie ma potrzeby ponownego czytania całego planu.
+**Kontynuuj:** przeczytaj następną fazę, ustaw jej zadanie `in_progress`, uruchom bramkę TDD, kontynuuj. Nie ma potrzeby ponownego czytania całego planu.
 
 **Przejrzyj:** uruchom `/10x-impl-review @<path-to-plan> phase [N]`, a następnie ponownie przedstaw decyzję o kontynuacji/wyczyszczeniu (bez opcji przeglądu).
 
 **Wyczyść:** skopiuj `/10x-tdd <change-id> phase [N+1]` do schowka (zgodnie z konwencją schowka) i wyświetl jako `→ /10x-tdd <change-id> phase [N+1] (✓ copied)`.
 
-Jeśli polecono uruchomić wiele faz kolejno, pomiń to pytanie między fazami. Nie zaznaczaj wierszy **ręcznych**, dopóki użytkownik nie potwierdzi.
+Jeśli zostanie polecone uruchomienie wielu faz kolejno, pomiń to pytanie między fazami. Nie zaznaczaj wierszy **ręcznych**, dopóki użytkownik nie potwierdzi.
 
 ---
 
@@ -307,9 +307,9 @@ Jeśli polecono uruchomić wiele faz kolejno, pomiń to pytanie między fazami. 
 
 Gdy każdy `- [ ]` w całej sekcji `## Progress` jest `[x]`:
 
-1. **Defensywne skanowanie pozostałości.** Ponownie przeskanuj w poszukiwaniu pozostałych `- [ ]`. W normalnym przepływie nie ma żadnych. Jeśli jakieś istnieją (ręczna edycja lub pominięty wyzwalacz je pozostawił), wymień je pogrupowane według Automated/Manual i zapytaj za pomocą `AskUserQuestion`, czy **Wstrzymać** (ZATRZYMAJ, nie dotykaj `change.md`) czy **Przejść do epilogu**.
+1. **Defensywne skanowanie pozostałości.** Ponownie przeskanuj w poszukiwaniu pozostałych `- [ ]`. W normalnym przepływie ich nie ma. Jeśli jakieś istnieją (ręczna edycja lub pominięty wyzwalacz je pozostawił), wymień je pogrupowane według Automated/Manual i zapytaj za pomocą `AskUserQuestion`, czy **Wstrzymać** (ZATRZYMAJ, nie dotykaj `change.md`) czy **Przejść do epilogu**.
 
-2. **Zaktualizuj `change.md`**: `status: implemented`, `updated: <dzisiejsza_data>`. (NIE ustawiaj `archived_at` — to jest `/10x-archive`.)
+2. **Zaktualizuj `change.md`**: `status: implemented`, `updated: <today>`. (NIE ustawiaj `archived_at` — to jest `/10x-archive`.)
 
 3. **Zatwierdzenie epilogu.** Zapis SHA ostatniej fazy i zmiana statusu `change.md` pozostają brudne po ostatnim rytuale. Przygotuj dokładnie `plan.md` + `change.md` (jawne ścieżki), sprawdź `git diff --cached --quiet` (pomiń, jeśli puste), zaproponuj `chore(<change-id>): close out plan (epilogue)`, zatwierdź i zatwierdź za pomocą heredoc. NIE zapisuj SHA epilogu z powrotem.
 
@@ -340,18 +340,18 @@ Summary:
 ### Czego unikać
 
 - Testowania szczegółów implementacji (prywatny stan, wewnętrzna kolejność wywołań, sekwencjonowanie efektów ubocznych).
-- Nadmiernego mockowania — jeśli wszystko jest mockowane, testujesz swoje mocki. Nie mockuj testowanego elementu; mockuj jego współpracowników (KV, DB, HTTP).
+- Nadmiernego mockowania — jeśli wszystko jest mockowane, testujesz swoje mocki. Nie mockuj testowanej rzeczy; mockuj jej współpracowników (KV, DB, HTTP).
 - Testów migawkowych dla logiki biznesowej (migawki służą do stabilności renderowania interfejsu użytkownika).
 - Prawie identycznych testów z nieco innymi nazwami; testów dla trywialnego kodu.
-- Budowania kodu produkcyjnego przed testem, który zawodzi — każde zachowanie zasługuje najpierw na swój krok CZERWONY.
+- Budowania kodu produkcyjnego przed testem, który zawodzi — każde zachowanie najpierw zasługuje na swój krok CZERWONY.
 
 ### Obsługa niejasności planu
 
-Jeśli kryteria akceptacji fazy są niejasne („działa zgodnie z oczekiwaniami”), nie zgaduj. Sprawdź Desired End State i Changes Required fazy pod kątem konkretnych danych wejściowych/wyjściowych. Jeśli nadal jest niejasne, zadaj użytkownikowi jedno ukierunkowane pytanie o to, jak wygląda „sukces”, zanim napiszesz test CZERWONY.
+Jeśli kryteria akceptacji fazy są niejasne ("działa zgodnie z oczekiwaniami"), nie zgaduj. Sprawdź Desired End State i Changes Required fazy pod kątem konkretnych wejść/wyjść. Jeśli nadal jest niejasne, zadaj użytkownikowi jedno ukierunkowane pytanie o to, jak wygląda "sukces", zanim napiszesz test CZERWONY.
 
 ### Obsługa niezgodności planu z rzeczywistością
 
-Jeśli faza nie może zostać zaimplementowana zgodnie z opisem, ZATRZYMAJ się i przedstaw to jasno:
+Jeśli faza nie może być zaimplementowana zgodnie z opisem, ZATRZYMAJ się i przedstaw to jasno:
 
 ```
 Issue in Phase [N]:
