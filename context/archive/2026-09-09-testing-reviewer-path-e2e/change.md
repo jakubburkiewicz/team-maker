@@ -1,10 +1,10 @@
 ---
 change_id: testing-reviewer-path-e2e
 title: E2E ścieżki recenzenta — Faza 4 planu testów (ryzyko #4)
-status: impl_reviewed
+status: archived
 created: 2026-09-09
 updated: 2026-09-10
-archived_at: null
+archived_at: 2026-09-10T07:56:22Z
 ---
 
 ## Notes
