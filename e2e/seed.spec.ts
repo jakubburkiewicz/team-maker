@@ -104,20 +104,41 @@ async function registerAccount(request: APIRequestContext, baseURL: string): Pro
 }
 
 /**
- * Pola formularza są kontrolowane przez Reacta, a wyspa jest `client:load` — wpisanie wartości
- * **przed** hydratacją zostaje nadpisane pustym stanem komponentu. Powtarzamy wpis aż do skutku
- * **obserwowalnego** (pola trzymają wartości), nie przez `waitForTimeout`; to ten sam wzorzec
- * co `openFromIsland`, tylko dla wpisywania zamiast klikania.
+ * Dowód, że wyspa formularza **żyje** — nie że wpis się utrzymał.
+ *
+ * Pola są kontrolowane przez Reacta, a wyspa jest `client:load`. Wpis przed hydratacją trafia
+ * do DOM, ale `onChange` nie ma jeszcze komu wystrzelić, więc stan komponentu zostaje pusty —
+ * i wtedy `handleSubmit` woła `validate()`, dostaje pustkę i **blokuje wysyłkę**: formularz
+ * pokazuje „Email is required" na polach, które widocznie mają treść.
+ *
+ * Sprawdzanie samych wartości (`toHaveValue`) tego nie łapie: React 19 hydratuje istniejący DOM
+ * i **nie kasuje** wpisanych wartości, więc asercja przechodzi przy pustym stanie. Odtworzone
+ * na produkcji 2026-09-09.
+ *
+ * Wiążący sygnał jest inny: przełącznik widoczności hasła zmienia `type` pola dopiero wtedy,
+ * gdy React podepnie handler. Dopóki nie zadziała, wyspa jest martwa i wpis nie ma sensu.
  */
-async function fillWhenHydrated(page: Page, values: { label: string; value: string }[]): Promise<void> {
+async function waitForFormHydration(page: Page): Promise<void> {
+  const password = page.getByRole("textbox", { name: "Password", exact: true });
   await expect(async () => {
-    for (const { label, value } of values) {
-      await page.getByRole("textbox", { name: label, exact: true }).fill(value);
-    }
-    for (const { label, value } of values) {
-      await expect(page.getByRole("textbox", { name: label, exact: true })).toHaveValue(value, { timeout: 1000 });
-    }
+    await page.getByRole("button", { name: "Show password" }).first().click();
+    await expect(password).toHaveAttribute("type", "text", { timeout: 1000 });
   }).toPass({ timeout: 15_000 });
+
+  await page.getByRole("button", { name: "Hide password" }).first().click();
+  await expect(password).toHaveAttribute("type", "password");
+}
+
+/** Wpis do pól kontrolowanych — dopiero po dowodzie hydratacji, patrz wyżej. */
+async function fillWhenHydrated(page: Page, values: { label: string; value: string }[]): Promise<void> {
+  await waitForFormHydration(page);
+
+  for (const { label, value } of values) {
+    await page.getByRole("textbox", { name: label, exact: true }).fill(value);
+  }
+  for (const { label, value } of values) {
+    await expect(page.getByRole("textbox", { name: label, exact: true })).toHaveValue(value);
+  }
 }
 
 function characterById(id: string) {

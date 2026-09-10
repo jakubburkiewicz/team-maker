@@ -896,35 +896,35 @@ odbierze:
 
 #### Automatyczne
 
-- [x] 4.1 Trzy sondy bezmailowe przechodzą przeciwko produkcji (3/3 przed bramą ręczną)
-- [x] 4.2 Odmowa zera wiąże: przebieg bez terminala kończy się niezerowo
-- [x] 4.3 Odmowa na złym dowodzie wiąże (adres bez `code=` albo na innym hoście)
-- [x] 4.4 Sekcje historyczne `deploy-plan.md` nietknięte wobec `e136707`
+- [x] 4.1 Trzy sondy bezmailowe przechodzą przeciwko produkcji (3/3 przed bramą ręczną) — cc99f95
+- [x] 4.2 Odmowa zera wiąże: przebieg bez terminala kończy się niezerowo — cc99f95
+- [x] 4.3 Odmowa na złym dowodzie wiąże (adres bez `code=` albo na innym hoście) — cc99f95
+- [x] 4.4 Sekcje historyczne `deploy-plan.md` nietknięte wobec `e136707` — cc99f95
 
 #### Ręczne
 
-- [x] 4.5 Pełny przebieg dymu przeciwko produkcji wykonany, werdykt oddany skryptowi
-- [x] 4.6 Konto testowe usunięte, w tym konta z poprzednich zmian
-- [x] 4.7 Kroki ręczne wypisane przez skrypt dają się wykonać bez zaglądania do planu
+- [x] 4.5 Pełny przebieg dymu przeciwko produkcji wykonany, werdykt oddany skryptowi — cc99f95
+- [x] 4.6 Konto testowe usunięte, w tym konta z poprzednich zmian — cc99f95
+- [x] 4.7 Kroki ręczne wypisane przez skrypt dają się wykonać bez zaglądania do planu — cc99f95
 
 ### Faza 5: Przewodnik, bramki i przegląd zimnego czytelnika
 
 #### Automatyczne
 
-- [ ] 5.1 §6.6 nie zawiera `TBD`
-- [ ] 5.2 §6.6 ma wszystkie siedem pól
-- [ ] 5.3 §3 wiersz 4 nie ma `not started`; strażnik czerwony na `e136707`
-- [ ] 5.4 §5 nie wiąże e2e z `CI on PR`; strażnik czerwony na `e136707`
-- [ ] 5.5 §1 i §7 `test-plan.md` nietknięte wobec `e136707`
-- [ ] 5.5a §8 `Strategy (§1–§5) last reviewed` przedatowane; linia `Ostatni refresh` identyczna
+- [x] 5.1 §6.6 nie zawiera `TBD`
+- [x] 5.2 §6.6 ma wszystkie siedem pól
+- [x] 5.3 §3 wiersz 4 nie ma `not started`; strażnik czerwony na `e136707`
+- [x] 5.4 §5 nie wiąże e2e z `CI on PR`; strażnik czerwony na `e136707`
+- [x] 5.5 §1 i §7 `test-plan.md` nietknięte wobec `e136707`
+- [x] 5.5a §8 `Strategy (§1–§5) last reviewed` przedatowane; linia `Ostatni refresh` identyczna
       jak w `e136707`; §8 nazywa osłabiony wiersz §5 i odsyła do tego folderu zmiany
-- [ ] 5.6 `ci.yml` nietknięty wobec `e136707`
-- [ ] 5.7 `AGENTS.md` zmieniony o dopisek, bez przepisania istniejącej reguły
-- [ ] 5.8 `npm run lint`, `npx tsc --noEmit`, `npm test` zielone; `prettier --check` na dotkniętych `.md`
+- [x] 5.6 `ci.yml` nietknięty wobec `e136707`
+- [x] 5.7 `AGENTS.md` zmieniony o dopisek, bez przepisania istniejącej reguły
+- [x] 5.8 `npm run lint`, `npx tsc --noEmit`, `npm test` zielone; `prettier --check` na dotkniętych `.md`
 
 #### Ręczne
 
-- [ ] 5.9 Przegląd zimnego czytelnika wykonany na 1–3 ekranach, werdykty w §6.7
-- [ ] 5.10 §6.6 wystarcza komuś, kto ma napisać drugi test e2e
-- [ ] 5.11 §5 wiersz e2e czyta się jako decyzja z powodem, nie jak niedokończona robota
-- [ ] 5.12 Nota §6.7 mówi, czego faza się nauczyła, a nie co zrobiła
+- [x] 5.9 Przegląd zimnego czytelnika wykonany na 1–3 ekranach, werdykty w §6.7
+- [x] 5.10 §6.6 wystarcza komuś, kto ma napisać drugi test e2e
+- [x] 5.11 §5 wiersz e2e czyta się jako decyzja z powodem, nie jak niedokończona robota
+- [x] 5.12 Nota §6.7 mówi, czego faza się nauczyła, a nie co zrobiła

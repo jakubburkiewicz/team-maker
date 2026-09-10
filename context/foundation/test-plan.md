@@ -82,7 +82,7 @@ w miarę pojawiania się artefaktów na dysku.
 | 1 | Bariera serwerowa zapisu drużyny | Skład łamiący próg albo limity nie zostaje utrwalony, choćby żądanie ominęło interfejs | #1, #6 | integration, contract | complete | `context/changes/2026-09-07-testing-save-barrier/` |
 | 2 | Wykonywalny dowód izolacji i przepuszczania | Cudza drużyna jest niedostępna na wszystkich czterech operacjach, a bariera trasy przepuszcza wyłącznie sesję — sprawdzone wykonaniem, nie grepem; bramka CI domyka tor żądania, a sam efekt polityk RLS zostaje dymem ręcznym na lokalnym stosie | #2, #3 | integration na poziomie żądania (dwie tożsamości, atrapa klienta), jawnie ręczny dym RLS na lokalnym stosie | not started | — |
 | 3 | Podpięcie wyspy: skład → wykres → werdykt | Reguła domenowa widoczna na ekranie odpowiada regule liczonej w module, w obie strony | #5 | component (DOM) | not started | — |
-| 4 | Ścieżka recenzenta e2e i bramki jakości | Persona główna przechodzi rejestracja → logowanie → zapisana drużyna w jednym przebiegu, a dolna granica zostaje zamknięta w CI | #4, cross-cutting | e2e, gates, AI-native review | not started | — |
+| 4 | Ścieżka recenzenta e2e i bramki jakości | Persona główna przechodzi rejestracja → logowanie → zapisana drużyna w jednym przebiegu, a człon, którego automat nie sięga, dostaje egzekwowalny dym | #4, cross-cutting | e2e, gates, AI-native review | complete | `context/changes/testing-reviewer-path-e2e/` |
 
 Uzasadnienie kolejności: Faza 1 domyka jedno z dwóch High × High najtańszą warstwą, jaka może
 je udowodnić. Strukturalne pytanie o pogodzenie testu wykonawczego z regułą czystości testów
@@ -92,6 +92,9 @@ która w tym repozytorium już raz zawiodła, na wykonanie. Faza 3 bierze najwy�
 przy zerowym pokryciu warstwą tańszą niż e2e, więc idzie przed nim. Faza 4 kupuje jedyne,
 czego tańsze warstwy nie dają — całą ścieżkę persony głównej naraz — i dopiero wtedy zamyka
 bramki, gdy jest już co bramkować.
+
+**Faza 4 została otwarta poza kolejnością** (przed Fazami 2 i 3, 2026-09-09) z powodu
+kontekstu kursowego, a nie rewizji powyższego uzasadnienia — ono zostaje w mocy.
 
 Warstwa AI-natywna (jeden wiersz, Faza 4): przegląd „zimnego czytelnika" — agent multimodalny
 przechodzi 1–3 krytyczne ekrany i orzeka, czy reguła domenowa jest odkrywalna **bez tutoriala**.
@@ -110,7 +113,7 @@ Status vocabulary (fixed — parser literals): `not started` → `change opened`
 | unit (czyste moduły) | Vitest | ^4.1.11 | `npm test` = `vitest run`, zakres `src/**/*.test.ts`; 18 plików, wszystkie w `src/lib/` |
 | integration (trasy, baza) | Vitest (wzorzec §6.2) | ^4.1.11 | Rozstrzygnięte 2026-09-07: wykonanie trasy w Vitest jest zgodne z regułą czystości, gdy `@/lib/supabase` jest w teście podmieniony hoistowanym `vi.mock`; sonda w badaniu Fazy 1 przeprowadziła całą sekwencję `POST /api/teams` aż do redirectu, bez zmian w konfiguracji Vitest. Faza 1 to dowiozła: `src/lib/team-save-route.test.ts` wykonuje obie trasy zapisu, a `vitest.config.ts` i `ci.yml` pozostały nietknięte — warstwa nie potrzebuje ani nowego runnera, ani przegrody, ani osobnego kroku CI. Wzorzec: §6.2 |
 | component (DOM) | none yet — see Phase 3 | — | Brak środowiska DOM; zakres Vitest obejmuje `.ts`, nie `.tsx` |
-| e2e | none yet — see Phase 4 | — | Wzorzec dla Astro SSR: `webServer` uruchamiający `npm run preview`; `wrangler dev` jest w tym repozytorium zakazany |
+| e2e | Playwright | ^1.63.0 | Dowiezione w Fazie 4. `playwright.config.ts` stawia aplikację `webServer`em na `npm run preview` (ten sam artefakt co wdrożenie; `wrangler dev` jest zakazany), a `globalSetup` → `e2e/stack-guard.ts` odmawia przebiegu przeciwko czemukolwiek poza lokalnym stosem — pięć rozłącznych odmów. Zakres `e2e/`, poza Vitest. Wzorzec: §6.6 |
 | lint + typecheck | ESLint + `astro sync` | ESLint ^9.29.0 | Już w CI; `astro sync` musi poprzedzać lint, inaczej reguły typowane padają |
 | build | Astro + adapter Cloudflare | Astro ^6.3.1 | Już w CI; jedyny krok wymagający sekretów Supabase |
 | (optional) AI-native | przegląd „zimnego czytelnika" na 1–3 ekranach — checked: 2026-09-07 | n/a | NIE używać do wartości liczbowych, werdyktu progu ani stanu przycisku — te są deterministyczne i tańsze |
@@ -150,10 +153,19 @@ Supabase. Wynika z tego, że warstwy wykonawcze są dostępne bez wyjątku od re
 | dym ręczny na politykach RLS (lokalny stos) | local (`npx supabase start`) | recommended after §3 Phase 2 | regresja polityki RLS niewidzialna dla CI — bramka integracyjna idzie na atrapie klienta, więc rozbrojenie polityki w migracji przejdzie w niej na zielono |
 | component na podpięciu wyspy | local + CI | required after §3 Phase 3 | rozjazd wykresu i werdyktu ze składem |
 | build | CI | required (wired) | awarie wyłącznie kompilacyjne i konfiguracyjne |
-| e2e na ścieżce persony głównej | CI on PR | required after §3 Phase 4 | zerwana ścieżka rejestracja → logowanie → zapisana drużyna |
-| hook po edycji | local (pętla agenta) | recommended after §3 Phase 4 | regresje w chwili edycji; **nie zastępuje CI** |
-| przegląd multimodalny (1–3 ekrany) | CI on PR | optional after §3 Phase 4 | nieodkrywalność reguły domenowej bez tutoriala |
-| dym ręczny przeciwko produkcji | między scaleniem a produkcją | recommended after §3 Phase 4 | tor potwierdzania adresu, którego lokalny stos **nie** wykonuje |
+| e2e na ścieżce persony głównej | local (`npx supabase start` + `npm run build`) + przed oddaniem | required after §3 Phase 4 (local) | zerwana ścieżka rejestracja → logowanie → zapisana drużyna |
+| hook po edycji | local (pętla agenta) — **podpięty**: `.claude/settings.json` → `.claude/hooks/lint-typecheck.sh`, commit `5041b88` | recommended after §3 Phase 4 (spełniona) | regresje w chwili edycji; **nie zastępuje CI** |
+| przegląd multimodalny (1–3 ekrany) | jednorazowo, poza CI — wykonany 2026-09-10, werdykty w §6.7 | optional (nie jest bramką) | nieodkrywalność reguły domenowej bez tutoriala |
+| dym ręczny przeciwko produkcji | `scripts/smoke-reviewer-path.sh` — kadencja: **przed oddaniem projektu**, nie przy każdym scaleniu | recommended after §3 Phase 4 | tor potwierdzania adresu, którego lokalny stos **nie** wykonuje |
+
+**Osłabione świadomie w Fazie 4** (`context/changes/testing-reviewer-path-e2e/`, 2026-09-10):
+wiersz `e2e na ścieżce persony głównej` miał tu wartość `CI on PR`. Spełnienie jej co do litery
+wymaga postawienia stosu Supabase na runnerze (`services:`, Docker), co unieważnia **jawne
+założenie**, na którym stoi granica CI/ręczne ryzyka #2 — a ta decyzja należy do Fazy 2 albo do
+wspólnego rozstrzygnięcia obu faz, nie do Fazy 4 „przy okazji". Cena osłabienia jest nazwana:
+zerwana ścieżka recenzenta może wejść do `main` niezauważona, bo żadna bramka PR jej nie broni.
+Do przewartościowania, gdy Faza 2 rozstrzygnie kwestię Dockera w CI. To jest **decyzja z powodem,
+nie niedokończona robota** — i jedyny wyjątek od zamrożenia §1–§5 w tej fazie (patrz §8).
 
 ## 6. Cookbook Patterns
 
@@ -217,8 +229,59 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 
 ### 6.6 Dodanie testu e2e ścieżki persony głównej
 
-- TBD — see §3 Phase 4 (wzorzec przebiegu rejestracja → logowanie → zapisana drużyna oraz
-  granica między tym, co pokrywa automat, a tym, co zostaje dymem ręcznym).
+- **Lokalizacja**: `e2e/`, poza zakresem Vitest (`src/**/*.test.ts`) — bez wyjątku w rodzaju §6.2,
+  bo `e2e/` nie leży w `src/pages/` i żaden plik stamtąd nie staje się trasą. `tsconfig.json`
+  ma `include: ["**/*"]`, więc `npx tsc --noEmit` obejmuje `e2e/` i `playwright.config.ts`.
+- **Nazewnictwo**: `<obszar>.spec.ts`. `seed.spec.ts` zachowuje nazwę mimo że pokrywa ryzyko #4:
+  pełni podwójną rolę — jest **wzorcem, z którego `/10x-e2e` czyta konwencje** i zarazem pokryciem
+  ryzyka. Rozdzielenie tych ról to osobna decyzja, nie efekt uboczny dopisania drugiego testu.
+- **Czystość**: kryterium jest **inne niż w Vitest**. Nic w `e2e/` nie może importować modułu
+  rozwiązującego `astro:*` — czyli `@/lib/supabase` jest zakazany, a `@/lib/domain/*` dozwolony
+  i pożądany (alias `@/*` rozwiązuje się przez `paths` z `tsconfig.json`). Zakaz jest praktyczny,
+  nie estetyczny: test biegnie w Node bez runtime'u Astro, więc taki import wywraca przebieg.
+  Antywzorce zakazane bez wyjątku: `page.waitForTimeout`, `getByTestId`, `page.locator`, selektory
+  CSS i XPath. Lokatory wyłącznie po rolach i etykietach — w `src/` nie ma ani jednego atrybutu
+  testowego i ma nie być.
+- **Wyrocznia**: **trwałość drużyny** po `reload()` i jej obecność na liście — **nigdy** sumy
+  punktowe. `findThresholdSolution` jest nawigacją po łamigłówce (setup), nie wyrocznią; sumy
+  odzwierciedlają surowy wybór i podnoszą się także przy naruszeniu limitów (ta sama pułapka
+  co w §6.2). Rejestracja jest **osprzętem, nigdy wyrocznią** — patrz „Granica" niżej.
+- **Test referencyjny**: `e2e/seed.spec.ts` — dwa testy. Pierwszy: rejestracja → produkcyjna kopia
+  ekranu potwierdzenia → widoczna droga do logowania. Drugi: konto z fixture'u → logowanie → skład
+  domykający próg → zapis → trwałość po odświeżeniu → usunięcie przez okno potwierdzenia.
+- **Uruchomienie**: `npx supabase start` → `.env` na `SUPABASE_URL=http://127.0.0.1:54321`
+  i klucz publishable ze `npx supabase status` (**nigdy** `.dev.vars` w korzeniu — ten plik
+  *wyłącza* `.env`, nie uzupełnia go) → `npm run build` (zamraża te wartości w
+  `dist/server/.dev.vars`, bo to **ten** plik serwuje preview, nie `.env`) → `npx playwright test`.
+  Kolejność jest częścią przepisu: `.env` → `build` → `test`. Aplikację stawia `webServer`
+  (`npm run preview`, ten sam artefakt co wdrożenie), a `e2e/stack-guard.ts` odmawia przebiegu
+  na pięć sposobów — root `.dev.vars`, `.env` spoza lokalnego stosu, build zamrożony na innym
+  stosie, leżący stos, `baseURL` poza pętlą zwrotną. Żadnej zmiennej nie podaje się z ręki.
+- **Kontrola mutacyjna**: `scripts/probe-reviewer-path.sh` + wersjonowana
+  `scripts/probe-reviewer-path.patch`. Kanoniczna mutacja: **zerwana propagacja ciasteczka sesji**
+  (`setAll` w `src/lib/supabase.ts` przestaje zapisywać) — logowanie „udaje się", ale middleware
+  nie widzi sesji i odbija recenzenta. Żadna warstwa poniżej e2e tego nie widzi, bo ani jeden test
+  trasy nie prowadzi prawdziwego słoika ciasteczek przez dwa żądania. **Trzy przebiegi i dwa
+  buildy**, nie jeden przebieg jak w §6.2: preview serwuje skompilowanego workera, więc łatka na
+  `src/` bez przebudowy nie ma żadnego skutku, a przebiegi 1 i 3 odróżniają czerwień od mutacji
+  od czerwieni od osprzętu. Kod wyjścia odwrócony na przebiegu 2. Świadomie **nie** w CI.
+
+**Granica — co automat pokrywa, a co nie.** Automat pokrywa tor od rejestracji w dół, przeciwko
+**lokalnemu stosowi**. Nie pokrywa i nie pokryje: (a) tego, że recenzent po rejestracji ląduje
+**wylogowany** i że kliknięcie linku z listu też go nie loguje — lokalny stos ma
+`GOTRUE_MAILER_AUTOCONFIRM=true` wpieczone w kontener, więc rejestracja tam **loguje** i asercja
+na tym byłaby fałszywym dowodem; (b) konfiguracji `site_url` projektu hostowanego; (c) produkcyjnej
+kopii ekranów poza tym jednym, który preview serwuje wiernie; (d) dostarczalności listu — świadomie
+wyłączonej w §7. Reszta żyje w `scripts/smoke-reviewer-path.sh` (kadencja: przed oddaniem projektu),
+który odmawia zakończenia zerem bez oddanego dowodu wylądowania i bez usunięcia konta testowego.
+
+**Wyścig hydratacji — obowiązkowy, nie opcjonalny.** Wyzwalacz w wyspie `client:load` jest w DOM
+**przed** hydratacją, więc pierwsze kliknięcie przepada, a wpis do pola kontrolowanego ginie
+w pustym stanie komponentu. Dwie konwencje z `seed.spec.ts` obowiązują każdy nowy test:
+`openFromIsland` ponawia klik do skutku obserwowalnego, a `waitForFormHydration` **dowodzi**, że
+React żyje (przełącznik hasła zmienia `type` pola), zanim cokolwiek wpisze. Samo sprawdzenie
+`toHaveValue` nie wystarcza: React 19 hydratuje istniejący DOM i nie kasuje wpisanych wartości,
+więc asercja przechodzi przy pustym stanie, a formularz i tak odmawia wysyłki.
 
 ### 6.7 Notatki z faz wdrożenia
 
@@ -244,6 +307,54 @@ wdrożenia zostanie dowieziona; przedtem czyta się „TBD — see §3 Phase `<N
 - **Drugi znany dług:** `createTeam` rzucające na trasie `POST /api/teams` nie ma przypadku —
   Faza 1 zakresowała gałąź repo wyłącznie do `team === null` w trasie edycji.
 
+**Faza 4 — Ścieżka recenzenta e2e i bramki jakości (2026-09-10).**
+
+- **Build zamraża stos, więc strażnik czytający `.env` byłby zielony na rozbrojonym stanie.**
+  Plugin Cloudflare wypieka `dist/server/.dev.vars` jako asset builda, a preview czyta **ten**
+  plik, nie `.env`. Stąd trzy rzeczy naraz: kolejność `.env` → `build` → `test`, odmowa strażnika
+  na nieodświeżonym buildzie i **dwa buildy** w sondzie mutacyjnej. Pominięcie któregokolwiek
+  daje zielony przebieg, który nie dowodzi niczego.
+- **Rozjazdów lokalne/produkcja na tym torze jest trzy, nie jeden, i dwa nie były nigdzie
+  zapisane.** `enable_confirmations` (jedyny, który zna `AGENTS.md`), `site_url` wskazujący port
+  `:3000`, na którym nic nie stoi, oraz `src/pages/auth/confirm-email.astro:4` rozgałęziający
+  **treść ekranu** na `import.meta.env.DEV`. Ten trzeci jest powodem, dla którego `webServer`
+  stoi na `npm run preview`, a nie na `npm run dev`: preview serwuje ten sam artefakt co wdrożenie.
+- **Automat na potwierdzaniu istnieje i przeszedł w badaniu — odrzucono go na koszcie × sygnale,
+  nie na niewykonalności.** Sekwencja `email_confirmed_at = null` → `resend` z PKCE → link
+  z Mailpita działa w całości, ale asercjonuje GoTrue, nie aplikację, i nie pokrywa wylądowania
+  recenzenta. **Do nieodtwarzania bez zmiany tej decyzji.**
+- **Strażnik pilnujący zmiennych nie pilnuje adresu.** Cztery odmowy z umowy planu przepuszczały
+  `E2E_BASE_URL` na odpowiadający obcy serwer, który `reuseExistingServer` chętnie reużywa —
+  po dołożeniu fixture'u zakładającego konto byłaby to droga do rejestracji w produkcyjnej bazie.
+  Dopisana odmowa #5 (`baseURL` musi leżeć na pętli zwrotnej) jest dopiskiem z implementacji,
+  wykrytym sondą, nie z planu.
+- **Sonda mutacyjna miała błąd, który ujawnił się dopiero na wyniku pożądanym.** `set -e`
+  przełączane wewnątrz funkcji wracało przed `return`, więc niezerowy zwrot przebiegu 2 —
+  czyli sukces sondy — wywracał powłokę bez komunikatu i wyglądał jak „sonda nie wiąże".
+  Skrypt bashowy, którego pomyślna ścieżka biegnie przez kod niezerowy, wymaga sprawdzenia
+  **obu** wyników, nie tylko tego, który uznajemy za awarię.
+- **Wyścig hydratacji jest realny i odtworzony na produkcji.** Wpis do formularza przed
+  hydratacją wyspy zostawia wartości w DOM, a stan Reacta pusty; `validate()` blokuje wtedy
+  wysyłkę komunikatem „Email is required" na widocznie wypełnionych polach. Asercja
+  `toHaveValue` tego **nie** łapie — React 19 nie kasuje wpisanych wartości przy hydratacji.
+  Test wymaga dowodu, że wyspa żyje (`waitForFormHydration`). **Wada produktowa, nie testowa:
+  uderza w personę główną, która wchodzi raz i pisze szybko — do osobnej zmiany.**
+- **Przegląd zimnego czytelnika (3 ekrany, 2026-09-10) — werdykt: reguła domenowa jest
+  odkrywalna bez tutoriala.**
+  - *Pusta lista drużyn* — **spełnia**. „No crew on the books yet" plus zdanie nazywające regułę
+    („up to six characters whose specializations and perks cover all seven competencies") i wezwanie
+    „Assemble your first team". Obcy poznaje regułę, zanim zobaczy ekran kompletowania.
+  - *Ekran kompletowania* — **spełnia**, z wadą wizualną. Widoczne naraz: `Members: 2/6`,
+    `Perks 0/2` na karcie, wykres z wartością przy każdej osi, lista „Below threshold" z „2 points
+    short" i podpis pod zablokowanym przyciskiem („Every competency needs at least 2 points before
+    the team can embark"). Wada: **etykiety wykresu są przycięte na obu krawędziach** — przy 1440 px
+    „negotiation" renderuje się jako „tiation 0", a przy „stealth" nie widać wartości. Reguła zostaje
+    odkrywalna wyłącznie dlatego, że lista brakujących punktów niesie tę samą informację tekstem.
+    **Do osobnej zmiany**; FR-016 nazywa wykres jedynym elementem czyniącym regułę widoczną.
+  - *Ekran po zapisie* — **spełnia**. Potwierdzenie zapisu („Team 3DE2D837 is on the books",
+    „stays on your list until you delete it") stoi **przed** notą „Work in Progress", czyli
+    dokładnie w kolejności, której żąda FR-019.
+
 ## 7. What We Deliberately Don't Test
 
 Wyłączenia uzgodnione w wywiadzie (Faza 2, Q5). Respektuj je, dopóki nie zmieni się założenie
@@ -268,7 +379,11 @@ leżące u ich podstaw.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-09-07
+- Strategy (§1–§5) last reviewed: 2026-09-10
+- Wyjątek od zamrożenia §1–§5: **§5, wiersz `e2e na ścieżce persony głównej`** osłabiony
+  z `CI on PR` na `local + przed oddaniem` decyzją Fazy 4 (2026-09-10). Uzasadnienie stoi
+  przy wierszu w §5 i w `context/changes/testing-reviewer-path-e2e/plan.md`. Nie był to
+  refresh — żaden z wyzwalaczy poniżej nie opisuje przypadku „faza rozstrzygnęła bramkę".
 - Stack versions last verified: 2026-09-07
 - AI-native tool references last verified: 2026-09-07
 - Ostatni refresh: 2026-09-07 — wyzwalacz: przepisanie reguły czystości testów w `AGENTS.md`
