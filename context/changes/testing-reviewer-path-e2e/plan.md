@@ -911,20 +911,20 @@ odbierze:
 
 #### Automatyczne
 
-- [x] 5.1 §6.6 nie zawiera `TBD`
-- [x] 5.2 §6.6 ma wszystkie siedem pól
-- [x] 5.3 §3 wiersz 4 nie ma `not started`; strażnik czerwony na `e136707`
-- [x] 5.4 §5 nie wiąże e2e z `CI on PR`; strażnik czerwony na `e136707`
-- [x] 5.5 §1 i §7 `test-plan.md` nietknięte wobec `e136707`
-- [x] 5.5a §8 `Strategy (§1–§5) last reviewed` przedatowane; linia `Ostatni refresh` identyczna
+- [x] 5.1 §6.6 nie zawiera `TBD` — bd2e70f
+- [x] 5.2 §6.6 ma wszystkie siedem pól — bd2e70f
+- [x] 5.3 §3 wiersz 4 nie ma `not started`; strażnik czerwony na `e136707` — bd2e70f
+- [x] 5.4 §5 nie wiąże e2e z `CI on PR`; strażnik czerwony na `e136707` — bd2e70f
+- [x] 5.5 §1 i §7 `test-plan.md` nietknięte wobec `e136707` — bd2e70f
+- [x] 5.5a §8 `Strategy (§1–§5) last reviewed` przedatowane; linia `Ostatni refresh` identyczna — bd2e70f
       jak w `e136707`; §8 nazywa osłabiony wiersz §5 i odsyła do tego folderu zmiany
-- [x] 5.6 `ci.yml` nietknięty wobec `e136707`
-- [x] 5.7 `AGENTS.md` zmieniony o dopisek, bez przepisania istniejącej reguły
-- [x] 5.8 `npm run lint`, `npx tsc --noEmit`, `npm test` zielone; `prettier --check` na dotkniętych `.md`
+- [x] 5.6 `ci.yml` nietknięty wobec `e136707` — bd2e70f
+- [x] 5.7 `AGENTS.md` zmieniony o dopisek, bez przepisania istniejącej reguły — bd2e70f
+- [x] 5.8 `npm run lint`, `npx tsc --noEmit`, `npm test` zielone; `prettier --check` na dotkniętych `.md` — bd2e70f
 
 #### Ręczne
 
-- [x] 5.9 Przegląd zimnego czytelnika wykonany na 1–3 ekranach, werdykty w §6.7
-- [x] 5.10 §6.6 wystarcza komuś, kto ma napisać drugi test e2e
-- [x] 5.11 §5 wiersz e2e czyta się jako decyzja z powodem, nie jak niedokończona robota
-- [x] 5.12 Nota §6.7 mówi, czego faza się nauczyła, a nie co zrobiła
+- [x] 5.9 Przegląd zimnego czytelnika wykonany na 1–3 ekranach, werdykty w §6.7 — bd2e70f
+- [x] 5.10 §6.6 wystarcza komuś, kto ma napisać drugi test e2e — bd2e70f
+- [x] 5.11 §5 wiersz e2e czyta się jako decyzja z powodem, nie jak niedokończona robota — bd2e70f
+- [x] 5.12 Nota §6.7 mówi, czego faza się nauczyła, a nie co zrobiła — bd2e70f

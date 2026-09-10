@@ -1,9 +1,9 @@
 ---
 change_id: testing-reviewer-path-e2e
 title: E2E ścieżki recenzenta — Faza 4 planu testów (ryzyko #4)
-status: implementing
+status: implemented
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 archived_at: null
 ---
 
