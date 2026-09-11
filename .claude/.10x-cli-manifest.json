@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.20.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-09-10T08:32:51.624Z",
-  "lessonId": "m3l5",
+  "lastApplied": "2026-09-11T14:48:49.663Z",
+  "lessonId": "m4l1",
   "course": "10xdevs3",
   "tool": "claude-code",
   "files": {
@@ -1884,6 +1884,12 @@
         "m1l5-4-store-plan.md",
         "m3l2-ad-hoc-testing.md"
       ],
+      "configs": []
+    },
+    "m4l1": {
+      "appliedAt": "2026-09-11T14:48:49.661Z",
+      "skills": {},
+      "prompts": [],
       "configs": []
     }
   }
